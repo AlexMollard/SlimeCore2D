@@ -9,7 +9,7 @@ public:
 	Mesh(const char* name);
 	~Mesh();
 
-	void create(float width, float height);
+	void CreateQuad();
 	virtual void draw();
 
 	std::string GetName() { return name; };

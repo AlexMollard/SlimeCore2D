@@ -1,5 +1,8 @@
 #include "Window.h"
 #include "Game2D.h"
+
+InputManager* InputManager::instance = 0;
+
 int main()
 {	
 	Window* app = new Window(1280, 720, (char*)"SlimeCore2D");
@@ -9,12 +12,15 @@ int main()
 	{
 		app->Update_Window();
 		
-		game->Draw();
 		game->Update(app->GetDeltaTime());
+		game->Draw();
 	}
 
 	delete app;
+	app = nullptr;
+
 	delete game;
+	game = nullptr;
 
 	return 0;
 }

@@ -1,8 +1,7 @@
 #pragma once
-#include "Mesh.h"
-#include "Shader.h"
 #include "GameObject.h"
-#include "gtc/matrix_transform.hpp"
+#include "Renderer2D.h"
+#include "InputManager.h"
 
 class Game2D
 {
@@ -14,13 +13,8 @@ public:
 	void Draw();
 
 private:
-	glm::mat4 orthoMatrix = glm::ortho<float>(-16, 16, -9, 9, -1, 1);
-
-	Shader* testShader = nullptr;
-	Mesh* cube = nullptr;
-
-	GameObject* go = nullptr;
-
+	Renderer2D* renderer = nullptr;
+	InputManager* inputManager = nullptr;
 	float timer = 0.0f;
 };
 

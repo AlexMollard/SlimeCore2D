@@ -11,12 +11,12 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::create(float width, float height)
+void Mesh::CreateQuad()
 {
-	glm::vec3 topLeft = glm::vec3(-1.0f * width, 1.0f * height, 0.0f);
-	glm::vec3 bottomLeft = glm::vec3(1.0f * width, 1.0f * height, 0.0f);
-	glm::vec3 topRight = glm::vec3(-1.0f * width, -1.0f * height, 0.0f);
-	glm::vec3 bottomRight = glm::vec3(1.0f * width, -1.0f * height, 0.0f);
+	glm::vec3 topLeft = glm::vec3(-0.5f, 0.5f, 0.0f);
+	glm::vec3 bottomLeft = glm::vec3(0.5f, 0.5f, 0.0f);
+	glm::vec3 topRight = glm::vec3(-0.5f, -0.5f, 0.0f);
+	glm::vec3 bottomRight = glm::vec3(0.5f, -0.5f, 0.0f);
 
 	vertices.push_back(topLeft);	// Back-Left	0
 	vertices.push_back(bottomLeft);	// Back-Right	1
