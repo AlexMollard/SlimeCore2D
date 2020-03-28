@@ -1,7 +1,6 @@
 #pragma once
-#include "GameObject.h"
+#include "Button.h"
 #include "Renderer2D.h"
-#include "InputManager.h"
 
 class Game2D
 {

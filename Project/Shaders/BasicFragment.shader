@@ -12,5 +12,5 @@ void main()
 		discard;
 
     vec3 col = vec3(texture(Texture, TexCoords).rgb) * color;
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(col, 1.0);
 }

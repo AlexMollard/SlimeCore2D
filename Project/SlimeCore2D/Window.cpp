@@ -29,14 +29,13 @@ int Window::Window_intit(int width, int height, char* name)
 
 	window = glfwCreateWindow(width, height, name, NULL, NULL);
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(0);
+
 	if (!window)
 	{
 		glfwTerminate();
 		return -1;
 	}
 
-	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);

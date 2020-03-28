@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "GameObject.h"
+#include "Button.h"
 
 class Renderer2D
 {
@@ -14,8 +14,14 @@ public:
 	~Renderer2D();
 
 	void AddObject(GameObject* newObject);
-	GameObject* CreateQuad(glm::vec3 pos, glm::vec3 color = glm::vec3(1), glm::vec3 scale = glm::vec3(1));
+	GameObject* CreateQuad(glm::vec3 pos, glm::vec3 color = glm::vec3(1), glm::vec3 scale = glm::vec3(1), int TexIndex = 0);
+	Button* CreateButton(glm::vec3 pos, glm::vec3 color = glm::vec3(1), std::string text = "Button", glm::vec3 scale = glm::vec3(1), int TexIndex = 0);
+	Texture* LoadTexture(std::string dir);
+
 	void Draw();
+
+	Mesh* GetQuadMesh();
+	Shader* GetBasicShader();
 
 private:
 	Renderer2D();
@@ -24,11 +30,14 @@ private:
 	glm::mat4 orthoMatrix = glm::ortho<float>(-16, 16, -9, 9, -1, 1);
 
 	Shader* currentShader = nullptr;
+	Texture* currentTexture = nullptr;
 
 	std::vector<GameObject*> objectPool;
+	std::vector<Texture*> texturePool;
+	std::vector<Button*> buttonPool;
 	std::vector<Shader*> shaderPool;
 
 	Shader* basicShader = nullptr;
-	Mesh* cube = nullptr;
+	Mesh* quad = nullptr;
 };
 

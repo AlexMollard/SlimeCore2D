@@ -3,18 +3,19 @@
 #include "Shader.h"
 #include "BoundingBox.h"
 #include "gtc/matrix_transform.hpp"
-#include "InputManager.h"
+#include "Texture.h"
 
 class GameObject
 {
 public:
-	GameObject(Mesh* mesh, Shader* shader);
+	GameObject() {};
+	GameObject(Mesh* mesh, Shader* shader, Texture* tex = nullptr);
 	~GameObject();
 
 	void Draw();
-	void Update(float deltaTime);
+	virtual void Update(float deltaTime);
 
-	void Create(glm::vec3 pos, glm::vec3 color, glm::vec3 scale, int id);
+	virtual void Create(glm::vec3 pos, glm::vec3 color, glm::vec3 scale, int id);
 
 	void SetPos(glm::vec2 newPos);
 	void SetPos(float x, float y);
@@ -37,6 +38,9 @@ public:
 
 	BoundingBox* GetBoundingBox();
 
+	Texture* GetTexture();
+	void SetTexture(Texture* tex);
+
 protected:
 	int ID = -404;
 	bool isHeld = false;
@@ -54,5 +58,6 @@ protected:
 
 	Shader* shader = nullptr;
 	Mesh* mesh = nullptr;
+	Texture* texture = nullptr;
 };
 

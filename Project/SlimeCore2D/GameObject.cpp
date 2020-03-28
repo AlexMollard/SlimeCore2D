@@ -1,9 +1,12 @@
 #include "GameObject.h"
 
-GameObject::GameObject(Mesh* mesh, Shader* shader)
+GameObject::GameObject(Mesh* mesh, Shader* shader, Texture* tex)
 {
 	this->mesh = mesh;
 	this->shader = shader;
+
+	if (tex != nullptr)
+		this->texture = tex;
 }
 
 GameObject::~GameObject()
@@ -19,28 +22,7 @@ void GameObject::Draw()
 
 void GameObject::Update(float deltaTime)
 {
-	if (isHeld)
-		SetPos(position.x - inputManager->GetDeltaMouse().x, position.y - inputManager->GetDeltaMouse().y);
-	
 	boundingBox.UpdateBoundingBox(position, scale);
-
-	if (boundingBox.GetMouseColliding())
-	{
-		SetColor(defaultColor * 0.75f);
-		if (inputManager->GetMouseDown(0))
-		{
-			SetColor(defaultColor * 0.5f);
-			isHeld = true;
-		}
-		else
-		{
-			isHeld = false;
-		}
-	}
-	else
-	{
-		SetColor(defaultColor);
-	}
 }
 
 void GameObject::Create(glm::vec3 pos, glm::vec3 color, glm::vec3 scale, int id)
@@ -127,4 +109,14 @@ int GameObject::GetID()
 BoundingBox* GameObject::GetBoundingBox()
 {
 	return &boundingBox;
+}
+
+Texture* GameObject::GetTexture()
+{
+	return texture;
+}
+
+void GameObject::SetTexture(Texture* tex)
+{
+	texture = tex;
 }
