@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "Button.h"
-
+#include "TextRenderer.h"
 class Renderer2D
 {
 public:
@@ -31,13 +31,12 @@ private:
 
 	Shader* currentShader = nullptr;
 	Texture* currentTexture = nullptr;
+	TextRenderer* textRenderer = nullptr;
 
 	std::vector<GameObject*> objectPool;
 	std::vector<Texture*> texturePool;
-	std::vector<Button*> buttonPool;
 	std::vector<Shader*> shaderPool;
 
 	Shader* basicShader = nullptr;
 	Mesh* quad = nullptr;
 };
-

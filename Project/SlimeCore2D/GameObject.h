@@ -1,11 +1,11 @@
 #pragma once
 #include "Mesh.h"
 #include "Shader.h"
-#include "BoundingBox.h"
 #include "gtc/matrix_transform.hpp"
 #include "Texture.h"
+#include "RigidBody.h"
 
-class GameObject
+class GameObject : public RigidBody
 {
 public:
 	GameObject() {};
@@ -16,9 +16,6 @@ public:
 	virtual void Update(float deltaTime);
 
 	virtual void Create(glm::vec3 pos, glm::vec3 color, glm::vec3 scale, int id);
-
-	void SetPos(glm::vec2 newPos);
-	void SetPos(float x, float y);
 
 	Shader* GetShader();
 	void SetShader(Shader* newShader);
@@ -36,25 +33,20 @@ public:
 	void SetID(int id);
 	int GetID();
 
-	BoundingBox* GetBoundingBox();
-
 	Texture* GetTexture();
 	void SetTexture(Texture* tex);
+
+	int type = 0;
 
 protected:
 	int ID = -404;
 	bool isHeld = false;
-
-	InputManager* inputManager = InputManager::GetInstance();
+	bool release = false;
 
 	glm::vec3 color = glm::vec3(1);
 	glm::vec3 defaultColor = glm::vec3(1);
 	
-	glm::mat4 model = glm::mat4(1);
-	glm::vec3 position = glm::vec3(0);
 	glm::vec3 scale = glm::vec3(1);
-
-	BoundingBox boundingBox;
 
 	Shader* shader = nullptr;
 	Mesh* mesh = nullptr;

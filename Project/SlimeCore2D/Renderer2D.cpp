@@ -9,22 +9,20 @@ Renderer2D::Renderer2D()
 
     LoadTexture("..\\Textures\\White.png");
     LoadTexture("..\\Textures\\Test.png");
-    LoadTexture("..\\Textures\\CreeperHead.png");
-    LoadTexture("..\\Textures\\CreeperSkin.png");
+    
+    textRenderer = new TextRenderer();
 }
 
 Renderer2D::~Renderer2D()
 {
     for (int i = 0; i < objectPool.size(); i++)
     {
-        delete objectPool[i];
+        if (objectPool[i]->type == 0)
+            delete objectPool[i];
+        else
+            delete (Button*)objectPool[i];
+         
         objectPool[i] = nullptr;
-    }
-
-    for (int i = 0; i < buttonPool.size(); i++)
-    {
-        delete buttonPool[i];
-        buttonPool[i] = nullptr;
     }
 
     for (int i = 0; i < texturePool.size(); i++)
@@ -38,6 +36,9 @@ Renderer2D::~Renderer2D()
 
     delete quad;
     quad = nullptr;
+
+    delete textRenderer;
+    textRenderer = nullptr;
 }
 
 void Renderer2D::AddObject(GameObject* newObject)
@@ -59,7 +60,6 @@ GameObject* Renderer2D::CreateQuad(glm::vec3 pos, glm::vec3 color, glm::vec3 sca
 {
     GameObject* go = new GameObject(quad, basicShader);
     go->Create(pos, color, scale, objectPool.size());
-    
     go->SetTexture(texturePool[TexIndex]);
 
     objectPool.push_back(go);
@@ -69,12 +69,11 @@ GameObject* Renderer2D::CreateQuad(glm::vec3 pos, glm::vec3 color, glm::vec3 sca
 Button* Renderer2D::CreateButton(glm::vec3 pos, glm::vec3 color, std::string text, glm::vec3 scale, int TexIndex)
 {
     Button* go = new Button();
-    go->Create(pos, color, text, scale, buttonPool.size());
-
-
+    go->Create(pos, color, text, scale, objectPool.size());
+    go->type = 1;
     go->SetTexture(texturePool[TexIndex]);
 
-    buttonPool.push_back(go);
+    objectPool.push_back(go);
     return go;
 }
 
@@ -88,9 +87,10 @@ Texture* Renderer2D::LoadTexture(std::string dir)
 
 void Renderer2D::Draw()
 {
+    currentShader = nullptr;
     for (int i = 0; i < objectPool.size(); i++)
     {
-        if (objectPool[i]->GetShader() != currentShader)
+        if (objectPool[i]->GetShader() != currentShader || currentShader == nullptr)
         {
             currentShader = objectPool[i]->GetShader();
             currentShader->Use();
@@ -111,38 +111,14 @@ void Renderer2D::Draw()
             currentTexture->Bind();
         }
 
-        // Temp
+        // Temp (Need to be in a object manager)
         objectPool[i]->Update(0.0f);
         
         objectPool[i]->Draw();
-    }
+        
+        //textRenderer->RenderText(((Button*)objectPool[i])->GetText(), objectPool[i]->GetPos().x, objectPool[i]->GetPos().y, 1, glm::vec3(1));
+        //currentShader->Use();
 
-    for (int i = 0; i < buttonPool.size(); i++)
-    {
-        if (buttonPool[i]->GetShader() != currentShader)
-        {
-            currentShader = buttonPool[i]->GetShader();
-            currentShader->Use();
-            currentShader->setMat4("OrthoMatrix", orthoMatrix);
-        }
-
-        if (buttonPool[i]->GetTexture() == nullptr)
-        {
-            currentTexture = nullptr;
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
-        else if (buttonPool[i]->GetTexture() != currentTexture)
-        {
-            currentTexture = buttonPool[i]->GetTexture();
-            glActiveTexture(GL_TEXTURE0);
-            currentTexture->Bind();
-        }
-
-        // Temp
-        buttonPool[i]->Update(0.0f);
-
-        buttonPool[i]->Draw();
     }
 }
 

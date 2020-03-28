@@ -34,19 +34,6 @@ void GameObject::Create(glm::vec3 pos, glm::vec3 color, glm::vec3 scale, int id)
 	SetID(id);
 }
 
-void GameObject::SetPos(glm::vec2 newPos)
-{
-	SetPos(newPos.x, newPos.y);
-}
-
-void GameObject::SetPos(float x, float y)
-{
-	position.x = x;
-	position.y = y;
-
-	model[3] = glm::vec4(position, 1);
-}
-
 Shader* GameObject::GetShader()
 {
 	return shader;
@@ -104,11 +91,6 @@ void GameObject::SetID(int id)
 int GameObject::GetID()
 {
 	return ID;
-}
-
-BoundingBox* GameObject::GetBoundingBox()
-{
-	return &boundingBox;
 }
 
 Texture* GameObject::GetTexture()

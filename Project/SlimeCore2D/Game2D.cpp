@@ -2,29 +2,26 @@
 
 Game2D::Game2D()
 {
-	renderer->CreateButton(glm::vec3(0, 0, 0), glm::vec3(1),"", glm::vec3(1.5f), 2);
-	renderer->CreateQuad(glm::vec3(2.0f, 0, 0), glm::vec3(0.8f, 0.3f, 0.4f));
-	renderer->CreateQuad(glm::vec3(-1.25f, -1.5f, 0), glm::vec3(0.3f, 0.4f, 0.8f));
+	physicsScene = new PhysicsScene();
+	physicsScene->addActor(renderer->CreateButton(glm::vec3(0, 0, 0), glm::vec3(1), "", glm::vec3(1.5f), 1),"Slime");
+	physicsScene->addActor(renderer->CreateButton(glm::vec3(2.0f, 0, 0), glm::vec3(0.8f, 0.3f, 0.4f)),"Red");
+	physicsScene->addActor(renderer->CreateButton(glm::vec3(-1.25f, -1.5f, 0), glm::vec3(0.3f, 0.4f, 0.8f)),"Blue");
+	physicsScene->addActor(renderer->CreateButton(glm::vec3(1.0f, 1.5f, 0), glm::vec3(0.3f, 0.7f, 0.4f)), "Green");
 
-	renderer->CreateButton(glm::vec3(-2.0f, 0.5f, 0), glm::vec3(0.7f, 0.4f, 0.8f));
-	renderer->CreateButton(glm::vec3(1.0f, 1.5f, 0), glm::vec3(0.3f, 0.7f, 0.8f));
-
-	renderer->CreateButton(glm::vec3(-1.25f, 2.5f, 0), glm::vec3(1), "", glm::vec3(0.75f), 3);
-	renderer->CreateButton(glm::vec3(-2.25f, 2.5f, 0), glm::vec3(1), "", glm::vec3(0.75f), 3);
-	renderer->CreateButton(glm::vec3(-3.25f, 2.5f, 0), glm::vec3(1), "", glm::vec3(0.75f), 3);
-	renderer->CreateButton(glm::vec3(-4.25f, 2.5f, 0), glm::vec3(1), "", glm::vec3(0.75f), 3);
-	renderer->CreateButton(glm::vec3(-5.25f, 2.5f, 0), glm::vec3(1), "", glm::vec3(0.75f), 3);
-	renderer->CreateButton(glm::vec3(-6.25f, 2.5f, 0), glm::vec3(1), "", glm::vec3(0.75f), 3);
-	renderer->CreateButton(glm::vec3(-7.25f, 2.5f, 0), glm::vec3(1), "", glm::vec3(1.25f, 2.0f, 1.75f), 3);
+	physicsScene->addActor(renderer->CreateButton(glm::vec3(0, -5, 0), glm::vec3(0.3f, 0.3f, 0.3f), "", glm::vec3(25, 1, 1)), "Grey", true);
 }
 
 Game2D::~Game2D()
 {
+	delete physicsScene;
+	physicsScene = nullptr;
 }
 
 void Game2D::Update(float deltaTime)
 {
 	inputManager->Update();
+	physicsScene->update(deltaTime);
+	physicsScene->Debug();
 }
 
 void Game2D::Draw()

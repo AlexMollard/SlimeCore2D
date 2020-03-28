@@ -9,6 +9,7 @@ public:
 
 	void OnHover();
 	void OnPress();
+	void OnRelease();
 	void Update(float deltaTime);
 	void Create(glm::vec3 pos, glm::vec3 color, std::string name, glm::vec3 scale, int id);
 

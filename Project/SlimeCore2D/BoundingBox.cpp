@@ -8,20 +8,19 @@ BoundingBox::~BoundingBox()
 {
 }
 
-void BoundingBox::UpdateBoundingBox(glm::vec3 pos, glm::vec3 size)
+void BoundingBox::UpdateBoundingBox(glm::vec2 pos, glm::vec2 size)
 {
 	topRight = glm::vec2(pos.x + (size.x * 0.5f), pos.y + (size.y * 0.5f));
 	bottomLeft = glm::vec2(pos.x - (size.x * 0.5f), pos.y - (size.y * 0.5f));
 }
 
-bool BoundingBox::GetIsColliding(glm::vec2 other)
+bool BoundingBox::GetIsColliding(BoundingBox& other)
 {
-	return false;
-}
+	bool collisionX = (other.bottomLeft.x > topRight.x || other.topRight.x < bottomLeft.x);
 
-bool BoundingBox::GetIsColliding(float x, float y)
-{
-	return false;
+	bool collisionY = (other.bottomLeft.y > topRight.y || other.topRight.y < bottomLeft.y);
+
+	return !(collisionX || collisionY);
 }
 
 bool BoundingBox::GetMouseColliding()

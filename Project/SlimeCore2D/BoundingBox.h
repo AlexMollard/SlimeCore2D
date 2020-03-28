@@ -8,10 +8,9 @@ public:
 	BoundingBox();
 	~BoundingBox();
 
-	void UpdateBoundingBox(glm::vec3 pos, glm::vec3 size);
+	void UpdateBoundingBox(glm::vec2 pos, glm::vec2 size);
 
-	bool GetIsColliding(glm::vec2 other);
-	bool GetIsColliding(float x, float y);
+	bool GetIsColliding(BoundingBox& other);
 
 	bool GetMouseColliding();
 

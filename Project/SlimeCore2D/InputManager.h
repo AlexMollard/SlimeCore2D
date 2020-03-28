@@ -19,6 +19,7 @@ public:
 	glm::vec2 GetMousePos();
 	glm::vec2 GetDeltaMouse();
 	glm::vec2 GetWindowSize();
+	glm::vec2 GetAspectRatio();
 	bool GetMouseDown(int button);
 
 private:
@@ -28,8 +29,11 @@ private:
 
 	GLFWwindow* window;
 
-	double mouseXPos, mouseYPos;
-	int winWidth, winHeight;
+	double mouseXPos = 0;
+	double mouseYPos = 0;
+
+	int winWidth = 0;
+	int winHeight = 0;
 
 	double aspectX = 16;
 	double aspectY = 9;
