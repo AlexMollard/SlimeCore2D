@@ -13,8 +13,9 @@ public:
 	void Draw();
 
 private:
-	Renderer2D* renderer = nullptr;
-	InputManager* inputManager = nullptr;
+	Renderer2D* renderer = Renderer2D::GetInstance();
+	InputManager* inputManager = InputManager::GetInstance();
+
 	float timer = 0.0f;
 };
 

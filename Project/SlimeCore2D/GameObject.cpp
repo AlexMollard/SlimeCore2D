@@ -19,6 +19,9 @@ void GameObject::Draw()
 
 void GameObject::Update(float deltaTime)
 {
+	if (isHeld)
+		SetPos(position.x - inputManager->GetDeltaMouse().x, position.y - inputManager->GetDeltaMouse().y);
+	
 	boundingBox.UpdateBoundingBox(position, scale);
 
 	if (boundingBox.GetMouseColliding())
@@ -27,6 +30,11 @@ void GameObject::Update(float deltaTime)
 		if (inputManager->GetMouseDown(0))
 		{
 			SetColor(defaultColor * 0.5f);
+			isHeld = true;
+		}
+		else
+		{
+			isHeld = false;
 		}
 	}
 	else

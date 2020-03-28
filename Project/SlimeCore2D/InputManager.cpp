@@ -1,5 +1,5 @@
 #include "InputManager.h"
-
+#include <iostream>
 InputManager::InputManager()
 {
 	window = glfwGetCurrentContext();
@@ -11,20 +11,29 @@ InputManager::~InputManager()
 
 void InputManager::Update()
 {
+	deltaMouse = glm::vec2((float)mouseXPos, (float)mouseYPos);
+
 	glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
 	glfwGetWindowSize(window, &winWidth, &winHeight);
 
-	mouseXPos /= (winWidth / 32);
-	mouseXPos -= 16;
+	mouseXPos /= (winWidth / (aspectX * 2.0f));
+	mouseXPos -= aspectX;
 
-	mouseYPos /= (winHeight / 18);
-	mouseYPos -= 9;
+	mouseYPos /= (winHeight / (aspectY * 2.0f));
+	mouseYPos -= aspectY;
 	mouseYPos = -mouseYPos;
+
+	deltaMouse -= glm::vec2((float)mouseXPos, (float)mouseYPos);
 }
 
 glm::vec2 InputManager::GetMousePos()
 {
 	return glm::vec2(mouseXPos, mouseYPos);
+}
+
+glm::vec2 InputManager::GetDeltaMouse()
+{
+	return deltaMouse;
 }
 
 glm::vec2 InputManager::GetWindowSize()

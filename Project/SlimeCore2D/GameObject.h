@@ -39,7 +39,8 @@ public:
 
 protected:
 	int ID = -404;
-	
+	bool isHeld = false;
+
 	InputManager* inputManager = InputManager::GetInstance();
 
 	glm::vec3 color = glm::vec3(1);

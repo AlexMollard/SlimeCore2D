@@ -5,7 +5,12 @@
 class Renderer2D
 {
 public:
-	Renderer2D();
+	static Renderer2D* GetInstance() {
+		if (!instance)
+			instance = new Renderer2D;
+		return instance;
+	};
+
 	~Renderer2D();
 
 	void AddObject(GameObject* newObject);
@@ -13,6 +18,9 @@ public:
 	void Draw();
 
 private:
+	Renderer2D();
+	static Renderer2D* instance;
+
 	glm::mat4 orthoMatrix = glm::ortho<float>(-16, 16, -9, 9, -1, 1);
 
 	Shader* currentShader = nullptr;
