@@ -14,13 +14,13 @@ Mesh::~Mesh()
 void Mesh::CreateQuad()
 {
 	glm::vec3 topLeft = glm::vec3(-0.5f, 0.5f, 0.0f);
-	glm::vec3 bottomLeft = glm::vec3(0.5f, 0.5f, 0.0f);
-	glm::vec3 topRight = glm::vec3(-0.5f, -0.5f, 0.0f);
+	glm::vec3 min = glm::vec3(0.5f, 0.5f, 0.0f);
+	glm::vec3 max = glm::vec3(-0.5f, -0.5f, 0.0f);
 	glm::vec3 bottomRight = glm::vec3(0.5f, -0.5f, 0.0f);
 
 	vertices.push_back(topLeft);	// Back-Left	0
-	vertices.push_back(bottomLeft);	// Back-Right	1
-	vertices.push_back(topRight);	// Front-Left	2
+	vertices.push_back(min);	// Back-Right	1
+	vertices.push_back(max);	// Front-Left	2
 	vertices.push_back(bottomRight); //Front-Right	3
 
 	unsigned int planeIndices[] =
@@ -79,7 +79,7 @@ void Mesh::CreateQuad()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// Enable third element as UVS
+	// Enable second element as UVS
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 

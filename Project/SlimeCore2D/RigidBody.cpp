@@ -1,5 +1,5 @@
 #include "RigidBody.h"
-
+#include <iostream>
 
 void RigidBody::SetPos(glm::vec2 newPos)
 {
@@ -21,7 +21,12 @@ glm::vec2 RigidBody::GetPos()
 
 void RigidBody::ApplyForceToActor(RigidBody* obj, glm::vec2 force)
 {
-	this->ApplyForce(force);
+	if (!this->GetKinematic())
+		this->ApplyForce(force);
+
+	if (obj->GetKinematic())
+		return;
+
 	obj->ApplyForce(-force);
 }
 
@@ -32,16 +37,21 @@ void RigidBody::ApplyForce(glm::vec2 force)
 
 void RigidBody::ApplyOffSetToActor(RigidBody* obj, glm::vec2 overlap)
 {
-	if (overlap.x < 0.001f || overlap.y < 0.001f)
-		return;
-
-	if (GetKinematic() != true)
+	if (!(this->GetKinematic() || obj->GetKinematic()))
+	{
 		this->SetPos(GetPos() + overlap * 0.5f);
-
-	if (obj->GetKinematic() == true)
+		obj->SetPos(obj->GetPos() - overlap * 0.5f);
 		return;
+	}
 
-	obj->SetPos(obj->GetPos() - overlap * 0.5f);
+	if (this->GetKinematic())
+	{
+		obj->SetPos(obj->GetPos() - overlap);
+		return;
+	}
+	
+	this->SetPos(this->GetPos() + overlap);
+	return;
 }
 
 bool RigidBody::GetIsColliding(RigidBody* other)
@@ -57,12 +67,37 @@ void RigidBody::fixedUpdate(glm::vec2 gravity, float timeStep)
 		return;
 	}
 
+	ApplyDrag(timeStep);
 	ApplyForce(gravity * timeStep);
 	position += velocity * timeStep;
+
+	if (velocity.x < -0.05f && velocity.x > 0.05f)
+		velocity.x = 0.0f;
+
+	if (velocity.y < -0.05f && velocity.y > 0.05f)
+		velocity.y = 0.0f;
+
 	SetPos(position);
+}
+
+void RigidBody::ApplyDrag(float timeStep)
+{
+	float dragX = (GetVelocity().x > 0) ? -drag : drag;
+	float dragY = (GetVelocity().y > 0) ? -drag : drag;
+	ApplyForce(glm::vec2(dragX, dragY) * timeStep);
 }
 
 BoundingBox* RigidBody::GetBoundingBox()
 {
 	return &boundingBox;
+}
+
+void RigidBody::resolveCollision(RigidBody* actor2)
+{ 
+	glm::vec2 normal = glm::normalize(actor2->GetPos() - GetPos());
+	glm::vec2 relativeVelocity = actor2->GetVelocity() - GetVelocity();
+	float elasticity = 1;
+	float j = glm::dot(-(1 + elasticity) * (relativeVelocity), normal) / glm::dot(normal, normal * ((1 / GetMass()) + (1 / actor2->GetMass())));
+	glm::vec2 force = normal * j;
+	ApplyForceToActor(actor2, -force);
 }

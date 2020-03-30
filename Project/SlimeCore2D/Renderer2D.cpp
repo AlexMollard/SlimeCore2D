@@ -111,14 +111,21 @@ void Renderer2D::Draw()
             currentTexture->Bind();
         }
 
-        // Temp (Need to be in a object manager)
-        objectPool[i]->Update(0.0f);
-        
         objectPool[i]->Draw();
         
         //textRenderer->RenderText(((Button*)objectPool[i])->GetText(), objectPool[i]->GetPos().x, objectPool[i]->GetPos().y, 1, glm::vec3(1));
         //currentShader->Use();
 
+    }
+}
+
+
+// Temp Function
+void Renderer2D::Update(float deltaTime)
+{
+    for (int i = 0; i < objectPool.size(); i++)
+    {
+        objectPool[i]->Update(deltaTime);
     }
 }
 

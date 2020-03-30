@@ -18,5 +18,6 @@ public:
 
 private:
 	std::string text = "";
+	float timer = 0.0f;
 };
 

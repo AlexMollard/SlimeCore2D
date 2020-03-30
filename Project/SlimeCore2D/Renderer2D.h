@@ -19,6 +19,7 @@ public:
 	Texture* LoadTexture(std::string dir);
 
 	void Draw();
+	void Update(float deltaTime);
 
 	Mesh* GetQuadMesh();
 	Shader* GetBasicShader();

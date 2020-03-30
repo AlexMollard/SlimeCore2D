@@ -18,7 +18,7 @@ void Button::Update(float deltaTime)
 	if (isHeld)
 	{
 		SetVelocity(glm::vec2(0));
-		SetPos(position.x - inputManager->GetDeltaMouse().x, position.y - inputManager->GetDeltaMouse().y);
+		SetPos(inputManager->GetMousePos().x, inputManager->GetMousePos().y);
 	}
 
 	if (boundingBox.GetMouseColliding())
@@ -28,6 +28,12 @@ void Button::Update(float deltaTime)
 
 	if (release && !isHeld)
 		OnRelease();
+
+	if (timer > 0.0f)
+	{
+		timer -= deltaTime;
+		AddVelocity(-inputManager->GetDeltaMouse() * glm::vec2(2));
+	}
 }
 
 void Button::Create(glm::vec3 pos, glm::vec3 color, std::string name, glm::vec3 scale, int id)
@@ -72,7 +78,5 @@ void Button::OnPress()
 void Button::OnRelease()
 {
 	release = false;
-	std::cout << "Released: " << ID << std::endl;
-	SetVelocity(GetVelocity() - (inputManager->GetDeltaMouse() * glm::vec2(20)));
-
+	timer = 0.075f;
 }

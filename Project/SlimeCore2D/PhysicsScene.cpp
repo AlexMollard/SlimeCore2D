@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, -1.0f))
+PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, -3.2f))
 {
 	tex = new TextRenderer();
 }
@@ -48,8 +48,7 @@ void PhysicsScene::update(float dt) {
 	{
 		for (auto pActor : actors)
 		{
-			if (!pActor->GetKinematic())
-				pActor->fixedUpdate(gravity, timeStep);
+			pActor->fixedUpdate(gravity, timeStep);
 		}
 		accumulatedTime -= timeStep;
 	}
@@ -71,10 +70,10 @@ void PhysicsScene::update(float dt) {
 	
 			if (object->GetIsColliding(other))
 			{
-				glm::vec2 overLap = GetOverLap(*object, *other);
+				glm::vec2 overLap = GetOverLap(*other->GetBoundingBox(), *object->GetBoundingBox());
 	
-				other->ApplyForceToActor(object, object->GetVelocity() * object->GetMass());
 				other->ApplyOffSetToActor(object, overLap);
+				other->resolveCollision(object);
 
 				//std::cout << object->name << " Collided with: " << other->name << std::endl;
 	
@@ -83,7 +82,7 @@ void PhysicsScene::update(float dt) {
 			}
 		}
 	}
-	dirty.clear();
+		dirty.clear();
 }
 
 void PhysicsScene::Debug()
@@ -102,22 +101,22 @@ void PhysicsScene::Debug()
 	}
 }
 
-glm::vec2 PhysicsScene::GetOverLap(RigidBody& one, RigidBody& two)
+glm::vec2 PhysicsScene::GetOverLap(BoundingBox& one, BoundingBox& two)
 {
 	glm::vec2 overlap = { 0,0 };
 	float overlap_size = 999999999999.0f;
 	bool hasChanged = false;
 	
-	float a = one.GetPos().x - two.GetPos().x;
-	if (abs(a) < overlap_size)
+	float a = abs(one.GetMax().x - two.GetMin().x);
+	if (a < overlap_size)
 	{
 		overlap_size = a;
-		overlap.x = a;
+		overlap.x = -a;
 		hasChanged = true;
 	}
 	
-	float b = one.GetPos().x - two.GetPos().x;
-	if (abs(b) < overlap_size)
+	float b = abs(two.GetMax().x - one.GetMin().x);
+	if (b < overlap_size)
 	{
 		overlap = { 0,0 };
 		overlap_size = b;
@@ -125,17 +124,17 @@ glm::vec2 PhysicsScene::GetOverLap(RigidBody& one, RigidBody& two)
 		hasChanged = true;
 	}
 	
-	float c = one.GetPos().y +  two.GetPos().y;
-	if (abs(c) < overlap_size)
+	float c = abs(one.GetMax().y - two.GetMin().y);
+	if (c < overlap_size)
 	{
 		overlap = { 0,0 };
 		overlap_size = c;
-		overlap.y = c;
+		overlap.y = -c;
 		hasChanged = true;
 	}
 	
-	float d = one.GetPos().y - two.GetPos().y;
-	if (abs(d) < overlap_size)
+	float d = abs(two.GetMax().y - one.GetMin().y);
+	if (d < overlap_size)
 	{
 		overlap = { 0,0 };
 		overlap_size = d;

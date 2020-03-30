@@ -18,7 +18,7 @@ public:
 	void update(float dt);
 	void Debug();
 
-	glm::vec2 GetOverLap(RigidBody& one, RigidBody& two);
+	glm::vec2 GetOverLap(BoundingBox& one, BoundingBox& two);
 	
 	void setGravity(const glm::vec3 gravity) { this->gravity = gravity; }
 	glm::vec2 getGravity() const { return gravity; }
