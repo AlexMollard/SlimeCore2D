@@ -1,11 +1,4 @@
 #include "Button.h"
-#include "Renderer2D.h"
-
-Button::Button()
-{
-	mesh = Renderer2D::GetInstance()->GetQuadMesh();
-	shader = Renderer2D::GetInstance()->GetBasicShader();
-}
 
 Button::~Button()
 {
@@ -14,6 +7,11 @@ Button::~Button()
 void Button::Update(float deltaTime)
 {
 	boundingBox.UpdateBoundingBox(position, scale);
+
+	if (inputManager->GetMouseDown(3))
+	{
+		Respawn();
+	}
 
 	if (isHeld)
 	{

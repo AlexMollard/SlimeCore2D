@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, -3.2f))
+PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, -10.0f))
 {
 	tex = new TextRenderer();
 }
@@ -53,36 +53,40 @@ void PhysicsScene::update(float dt) {
 		accumulatedTime -= timeStep;
 	}
 
-	static std::vector<RigidBody*> dirty;
 	
-	for (auto object : actors)
+	for (int i = 0; i < actors.size(); i++)//)auto object : actors)
 	{
-		for (auto other : actors)
+		RigidBody* object = actors[i];
+
+		for (int y = i + 1; y < actors.size(); y++)
 		{
-			if (object == other)
+			RigidBody* other = actors[y];
+			
+			if (other->GetKinematic() && object->GetKinematic())
 				continue;
-	
-			if (std::find(dirty.begin(), dirty.end(), object) != dirty.end() && std::find(dirty.begin(), dirty.end(), other) != dirty.end())
-			{
+			
+			if (std::find(object->collided.begin(), object->collided.end(), other) != object->collided.end())
 				continue;
-			}
-	
-	
+
 			if (object->GetIsColliding(other))
 			{
 				glm::vec2 overLap = GetOverLap(*other->GetBoundingBox(), *object->GetBoundingBox());
-	
+
+				other->SetNormal(overLap);
+
 				other->ApplyOffSetToActor(object, overLap);
 				other->resolveCollision(object);
 
-				//std::cout << object->name << " Collided with: " << other->name << std::endl;
-	
-				dirty.push_back(object);
-				dirty.push_back(other);
+				//Debug::PrintLog(object->name + " Collided with: " + other->name);
+
+				other->collided.push_back(object);
 			}
 		}
 	}
-		dirty.clear();
+	for (int i = 0;  i < actors.size(); i++)
+	{
+		actors[i]->collided.clear();
+	}
 }
 
 void PhysicsScene::Debug()
@@ -103,44 +107,56 @@ void PhysicsScene::Debug()
 
 glm::vec2 PhysicsScene::GetOverLap(BoundingBox& one, BoundingBox& two)
 {
-	glm::vec2 overlap = { 0,0 };
-	float overlap_size = 999999999999.0f;
-	bool hasChanged = false;
-	
-	float a = abs(one.GetMax().x - two.GetMin().x);
-	if (a < overlap_size)
-	{
-		overlap_size = a;
-		overlap.x = -a;
-		hasChanged = true;
-	}
-	
-	float b = abs(two.GetMax().x - one.GetMin().x);
-	if (b < overlap_size)
-	{
-		overlap = { 0,0 };
-		overlap_size = b;
-		overlap.x = b;
-		hasChanged = true;
-	}
-	
-	float c = abs(one.GetMax().y - two.GetMin().y);
-	if (c < overlap_size)
-	{
-		overlap = { 0,0 };
-		overlap_size = c;
-		overlap.y = -c;
-		hasChanged = true;
-	}
-	
-	float d = abs(two.GetMax().y - one.GetMin().y);
-	if (d < overlap_size)
-	{
-		overlap = { 0,0 };
-		overlap_size = d;
-		overlap.y = d;
-		hasChanged = true;
-	}
+	glm::vec2 overlapVector = { 0,0 };
+	float overlap = 999999999999.0f;
 
-	return (hasChanged) ? overlap : glm::vec2(0);
+	if (one.GetMax().x > two.GetMin().x)
+	{
+		float localOverLap = abs(one.GetMax().x - two.GetMin().x);
+		if (localOverLap < overlap)
+		{
+			overlap = localOverLap;
+			overlapVector = glm::vec2(-overlap, 0);
+		}
+	}
+	else
+		return glm::vec2(0.0f);
+
+	if (two.GetMax().x > one.GetMin().x)
+	{
+		float localOverLap = abs(two.GetMax().x - one.GetMin().x);
+		if (localOverLap < overlap)
+		{
+			overlap = localOverLap;
+			overlapVector = glm::vec2(overlap, 0);
+		}
+	}
+	else
+		return glm::vec2(0.0f);
+
+	if (one.GetMax().y > two.GetMin().y)
+	{
+		float localOverLap = abs(one.GetMax().y - two.GetMin().y);
+		if (localOverLap < overlap)
+		{
+			overlap = localOverLap;
+			overlapVector = glm::vec2(0, -overlap);
+		}
+	}
+	else
+		return glm::vec2(0.0f);
+
+	if (two.GetMax().y > one.GetMin().y)
+	{
+		float localOverLap = abs(two.GetMax().y - one.GetMin().y);
+		if (localOverLap < overlap)
+		{
+			overlap = localOverLap;
+			overlapVector = glm::vec2(0, overlap);
+		}
+	}
+	else
+		return glm::vec2(0.0f);
+
+	return overlapVector;
 }

@@ -1,16 +1,15 @@
 #pragma once
 #include <vector>
-#include "Button.h"
 #include "TextRenderer.h"
+#include "Mesh.h"
+#include "Texture.h"
+#include "Button.h"
+#include "gtc/matrix_transform.hpp"
+
 class Renderer2D
 {
 public:
-	static Renderer2D* GetInstance() {
-		if (!instance)
-			instance = new Renderer2D;
-		return instance;
-	};
-
+	Renderer2D();
 	~Renderer2D();
 
 	void AddObject(GameObject* newObject);
@@ -25,10 +24,7 @@ public:
 	Shader* GetBasicShader();
 
 private:
-	Renderer2D();
-	static Renderer2D* instance;
-
-	glm::mat4 orthoMatrix = glm::ortho<float>(-16, 16, -9, 9, -1, 1);
+	glm::mat4 orthoMatrix = glm::ortho<float>(-32, 32, -18, 18, -1, 1);
 
 	Shader* currentShader = nullptr;
 	Texture* currentTexture = nullptr;

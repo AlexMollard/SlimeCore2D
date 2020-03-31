@@ -61,6 +61,7 @@ GameObject* Renderer2D::CreateQuad(glm::vec3 pos, glm::vec3 color, glm::vec3 sca
     GameObject* go = new GameObject(quad, basicShader);
     go->Create(pos, color, scale, objectPool.size());
     go->SetTexture(texturePool[TexIndex]);
+    go->SetSpawn(pos);
 
     objectPool.push_back(go);
     return go;
@@ -68,10 +69,11 @@ GameObject* Renderer2D::CreateQuad(glm::vec3 pos, glm::vec3 color, glm::vec3 sca
 
 Button* Renderer2D::CreateButton(glm::vec3 pos, glm::vec3 color, std::string text, glm::vec3 scale, int TexIndex)
 {
-    Button* go = new Button();
+    Button* go = new Button(quad, basicShader);
     go->Create(pos, color, text, scale, objectPool.size());
     go->type = 1;
     go->SetTexture(texturePool[TexIndex]);
+    go->SetSpawn(pos);
 
     objectPool.push_back(go);
     return go;
@@ -112,10 +114,6 @@ void Renderer2D::Draw()
         }
 
         objectPool[i]->Draw();
-        
-        //textRenderer->RenderText(((Button*)objectPool[i])->GetText(), objectPool[i]->GetPos().x, objectPool[i]->GetPos().y, 1, glm::vec3(1));
-        //currentShader->Use();
-
     }
 }
 

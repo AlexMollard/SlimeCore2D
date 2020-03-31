@@ -4,7 +4,7 @@ GameObject::GameObject(Mesh* mesh, Shader* shader, Texture* tex)
 {
 	this->mesh = mesh;
 	this->shader = shader;
-
+	
 	if (tex != nullptr)
 		this->texture = tex;
 }
@@ -23,6 +23,7 @@ void GameObject::Draw()
 void GameObject::Update(float deltaTime)
 {
 	boundingBox.UpdateBoundingBox(position, scale);
+
 }
 
 void GameObject::Create(glm::vec3 pos, glm::vec3 color, glm::vec3 scale, int id)
@@ -52,6 +53,17 @@ Mesh* GameObject::GetMesh()
 void GameObject::SetMesh(Mesh* newMesh)
 {
 	mesh = newMesh;
+}
+
+void GameObject::Respawn()
+{
+	SetVelocity(glm::vec2(0));
+	SetPos(spawnPoint);
+}
+
+void GameObject::SetSpawn(glm::vec2 newSpawn)
+{
+	spawnPoint = newSpawn;
 }
 
 glm::vec3 GameObject::GetColor()

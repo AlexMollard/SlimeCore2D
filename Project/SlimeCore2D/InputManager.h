@@ -35,8 +35,8 @@ private:
 	int winWidth = 0;
 	int winHeight = 0;
 
-	double aspectX = 16;
-	double aspectY = 9;
+	double aspectX = 32;
+	double aspectY = 18;
 
 	glm::vec2 deltaMouse = glm::vec2();
 

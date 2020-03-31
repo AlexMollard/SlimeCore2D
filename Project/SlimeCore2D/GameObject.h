@@ -1,14 +1,12 @@
 #pragma once
+#include "RigidBody.h"
 #include "Mesh.h"
 #include "Shader.h"
-#include "gtc/matrix_transform.hpp"
 #include "Texture.h"
-#include "RigidBody.h"
 
 class GameObject : public RigidBody
 {
 public:
-	GameObject() {};
 	GameObject(Mesh* mesh, Shader* shader, Texture* tex = nullptr);
 	~GameObject();
 
@@ -22,6 +20,9 @@ public:
 	
 	Mesh* GetMesh();
 	void SetMesh(Mesh* newMesh);
+
+	void Respawn();
+	void SetSpawn(glm::vec2 newSpawn);
 
 	glm::vec3 GetColor();
 	void SetColor(glm::vec3 newColor);
@@ -45,7 +46,7 @@ protected:
 
 	glm::vec3 color = glm::vec3(1);
 	glm::vec3 defaultColor = glm::vec3(1);
-	
+	glm::vec2 spawnPoint = glm::vec2(0);
 	glm::vec3 scale = glm::vec3(1);
 
 	Shader* shader = nullptr;

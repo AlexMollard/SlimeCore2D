@@ -4,7 +4,7 @@
 class Button : public GameObject
 {
 public:
-	Button();
+	Button(Mesh* mesh, Shader* shader, Texture* tex = nullptr) : GameObject(mesh, shader, tex) {};
 	~Button();
 
 	void OnHover();

@@ -22,12 +22,12 @@ glm::vec2 RigidBody::GetPos()
 void RigidBody::ApplyForceToActor(RigidBody* obj, glm::vec2 force)
 {
 	if (!this->GetKinematic())
-		this->ApplyForce(force);
+		this->ApplyForce(-force);
 
 	if (obj->GetKinematic())
 		return;
 
-	obj->ApplyForce(-force);
+	obj->ApplyForce(force);
 }
 
 void RigidBody::ApplyForce(glm::vec2 force)
@@ -59,6 +59,16 @@ bool RigidBody::GetIsColliding(RigidBody* other)
 	return (GetBoundingBox()->GetIsColliding(*other->GetBoundingBox()));
 }
 
+void RigidBody::SetNormal(glm::vec2 newNormal)
+{
+	normal = newNormal;
+}
+
+glm::vec2 RigidBody::GetNormal()
+{
+	return normal;
+}
+
 void RigidBody::fixedUpdate(glm::vec2 gravity, float timeStep)
 {
 	if (GetKinematic())
@@ -67,7 +77,7 @@ void RigidBody::fixedUpdate(glm::vec2 gravity, float timeStep)
 		return;
 	}
 
-	ApplyDrag(timeStep);
+	//ApplyDrag(timeStep);
 	ApplyForce(gravity * timeStep);
 	position += velocity * timeStep;
 
@@ -94,10 +104,14 @@ BoundingBox* RigidBody::GetBoundingBox()
 
 void RigidBody::resolveCollision(RigidBody* actor2)
 { 
-	glm::vec2 normal = glm::normalize(actor2->GetPos() - GetPos());
+	if (normal == glm::vec2(0))
+		return;
+	
+	normal = glm::normalize(normal);
+
 	glm::vec2 relativeVelocity = actor2->GetVelocity() - GetVelocity();
 	float elasticity = 1;
 	float j = glm::dot(-(1 + elasticity) * (relativeVelocity), normal) / glm::dot(normal, normal * ((1 / GetMass()) + (1 / actor2->GetMass())));
 	glm::vec2 force = normal * j;
-	ApplyForceToActor(actor2, -force);
+	ApplyForceToActor(actor2, force);
 }
