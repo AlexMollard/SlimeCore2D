@@ -8,10 +8,14 @@ BoundingBox::~BoundingBox()
 {
 }
 
-void BoundingBox::UpdateBoundingBox(glm::vec2 pos, glm::vec2 size)
+void BoundingBox::UpdateQuadBoundingBox(glm::vec2 pos, glm::vec2 size)
 {
 	max = glm::vec2(pos.x + (size.x * 0.5f), pos.y + (size.y * 0.5f));
 	min = glm::vec2(pos.x - (size.x * 0.5f), pos.y - (size.y * 0.5f));
+}
+
+void BoundingBox::UpdateCircleBoundingBox(glm::vec2 pos, glm::vec2 size)
+{
 }
 
 bool BoundingBox::GetIsColliding(BoundingBox& other)

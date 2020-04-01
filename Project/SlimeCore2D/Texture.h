@@ -19,4 +19,3 @@ public:
 protected:
 	unsigned int textureID = 0;
 };
-

@@ -11,7 +11,8 @@ uniform vec3 position;
 
 void main()
 {
-    TexCoords = aTexCoords;
-    TexCoords.y = -1 * TexCoords.y;
-    gl_Position = OrthoMatrix * Model * vec4(aPos.xy, 0.0, 1.0);
+	TexCoords = aTexCoords;
+	TexCoords.y = -1 * TexCoords.y;
+
+	gl_Position = OrthoMatrix * Model * vec4(aPos.xy, 0.0, 1.0);
 }

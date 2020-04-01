@@ -3,6 +3,11 @@
 #include <vector>
 #include "glm.hpp"
 #include "TextRenderer.h"
+#include "CollisionManager.h"
+
+#include <functional>
+#include <algorithm>
+using Collision_Function = std::function<glm::vec2(const RigidBody * rbOne, const RigidBody * rbTwo)>;
 
 class PhysicsScene
 {
@@ -14,17 +19,17 @@ public:
 	void addActor(std::vector<RigidBody*> actors);
 	void addActor(RigidBody** actors, int amount);
 	void removeActor(RigidBody* actor);
-	
+
 	void update(float dt);
 	void Debug();
 
-	glm::vec2 GetOverLap(BoundingBox& one, BoundingBox& two);
-	
 	void setGravity(const glm::vec3 gravity) { this->gravity = gravity; }
 	glm::vec2 getGravity() const { return gravity; }
-	
+
 	void setTimeStep(const float timeStep) { this->timeStep = timeStep; }
 	float getTimeStep() const { return timeStep; }
+	
+	static const Collision_Function collisionFunctions[];
 
 protected:
 	TextRenderer* tex = nullptr;
@@ -32,4 +37,3 @@ protected:
 	float timeStep = 0.01f;
 	std::vector<RigidBody*> actors;
 };
-

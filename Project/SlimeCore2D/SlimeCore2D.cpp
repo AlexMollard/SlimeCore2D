@@ -4,7 +4,7 @@
 InputManager* InputManager::instance = 0;
 
 int main()
-{	
+{
 	Window* app = new Window(1280, 720, (char*)"SlimeCore2D");
 	Game2D* game = new Game2D();
 	InputManager* inputManager = InputManager::GetInstance();

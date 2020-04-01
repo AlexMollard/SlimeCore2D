@@ -11,6 +11,6 @@ void main()
 	if (texture(Texture, TexCoords).a < 0.1)
 		discard;
 
-    vec3 col = vec3(texture(Texture, TexCoords).rgb) * color;
-    FragColor = vec4(col, 1.0);
+	vec3 col = vec3(texture(Texture, TexCoords).rgb) * color;
+	FragColor = vec4(col, 1.0);
 }

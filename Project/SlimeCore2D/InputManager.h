@@ -39,6 +39,4 @@ private:
 	double aspectY = 18;
 
 	glm::vec2 deltaMouse = glm::vec2();
-
 };
-

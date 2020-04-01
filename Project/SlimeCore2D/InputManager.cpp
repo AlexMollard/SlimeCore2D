@@ -43,7 +43,7 @@ glm::vec2 InputManager::GetWindowSize()
 
 glm::vec2 InputManager::GetAspectRatio()
 {
-	return glm::vec2(aspectX,aspectY);
+	return glm::vec2(aspectX, aspectY);
 }
 
 bool InputManager::GetMouseDown(int button)

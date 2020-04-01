@@ -40,7 +40,6 @@ void PhysicsScene::removeActor(RigidBody* actor)
 }
 
 void PhysicsScene::update(float dt) {
-
 	// update physics at a fixed time step
 	static float accumulatedTime = 0.0f;
 	accumulatedTime += dt;
@@ -53,37 +52,40 @@ void PhysicsScene::update(float dt) {
 		accumulatedTime -= timeStep;
 	}
 
-	
-	for (int i = 0; i < actors.size(); i++)//)auto object : actors)
+	for (int i = 0; i < actors.size(); i++)
 	{
 		RigidBody* object = actors[i];
 
 		for (int y = i + 1; y < actors.size(); y++)
 		{
 			RigidBody* other = actors[y];
-			
+
 			if (other->GetKinematic() && object->GetKinematic())
 				continue;
-			
+
 			if (std::find(object->collided.begin(), object->collided.end(), other) != object->collided.end())
 				continue;
 
-			if (object->GetIsColliding(other))
+			// using function pointers
+			int functionIdx = (int(object->GetType()) * int(ObjectType::ShapeCount)) + int(other->GetType());
+			Collision_Function collisionFunctionPtr = collisionFunctions[functionIdx];
+
+			if (collisionFunctionPtr != nullptr)
 			{
-				glm::vec2 overLap = GetOverLap(*other->GetBoundingBox(), *object->GetBoundingBox());
+				auto result = collisionFunctionPtr(object, other);
+				if (glm::length(result) > 0.00001)
+				{
+					other->SetNormal(result);
 
-				other->SetNormal(overLap);
+					other->ApplyOffSetToActor(object, result);
+					other->resolveCollision(object);
 
-				other->ApplyOffSetToActor(object, overLap);
-				other->resolveCollision(object);
-
-				//Debug::PrintLog(object->name + " Collided with: " + other->name);
-
-				other->collided.push_back(object);
+					other->collided.push_back(object);
+				}
 			}
 		}
 	}
-	for (int i = 0;  i < actors.size(); i++)
+	for (int i = 0; i < actors.size(); i++)
 	{
 		actors[i]->collided.clear();
 	}
@@ -91,8 +93,13 @@ void PhysicsScene::update(float dt) {
 
 void PhysicsScene::Debug()
 {
+	std::cout.precision(2);
+
 	for (int i = 0; i < actors.size(); i++)
 	{
+		if (actors[i]->GetKinematic())
+			continue;
+
 		std::ostringstream ss;
 		ss << actors[i]->GetVelocity().x;
 		std::string x(ss.str());
@@ -105,58 +112,9 @@ void PhysicsScene::Debug()
 	}
 }
 
-glm::vec2 PhysicsScene::GetOverLap(BoundingBox& one, BoundingBox& two)
+const Collision_Function PhysicsScene::collisionFunctions[] =
 {
-	glm::vec2 overlapVector = { 0,0 };
-	float overlap = 999999999999.0f;
-
-	if (one.GetMax().x > two.GetMin().x)
-	{
-		float localOverLap = abs(one.GetMax().x - two.GetMin().x);
-		if (localOverLap < overlap)
-		{
-			overlap = localOverLap;
-			overlapVector = glm::vec2(-overlap, 0);
-		}
-	}
-	else
-		return glm::vec2(0.0f);
-
-	if (two.GetMax().x > one.GetMin().x)
-	{
-		float localOverLap = abs(two.GetMax().x - one.GetMin().x);
-		if (localOverLap < overlap)
-		{
-			overlap = localOverLap;
-			overlapVector = glm::vec2(overlap, 0);
-		}
-	}
-	else
-		return glm::vec2(0.0f);
-
-	if (one.GetMax().y > two.GetMin().y)
-	{
-		float localOverLap = abs(one.GetMax().y - two.GetMin().y);
-		if (localOverLap < overlap)
-		{
-			overlap = localOverLap;
-			overlapVector = glm::vec2(0, -overlap);
-		}
-	}
-	else
-		return glm::vec2(0.0f);
-
-	if (two.GetMax().y > one.GetMin().y)
-	{
-		float localOverLap = abs(two.GetMax().y - one.GetMin().y);
-		if (localOverLap < overlap)
-		{
-			overlap = localOverLap;
-			overlapVector = glm::vec2(0, overlap);
-		}
-	}
-	else
-		return glm::vec2(0.0f);
-
-	return overlapVector;
-}
+	CollisionManager::CircleVsCircle, CollisionManager::CircleVsQuad, CollisionManager::CircleVsLine,
+	CollisionManager::QuadVsCircle, CollisionManager::QuadVsQuad, CollisionManager::QuadVsLine,
+	CollisionManager::LineVsCircle, CollisionManager::LineVsQuad, CollisionManager::LineVsLine
+};

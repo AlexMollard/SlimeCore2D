@@ -46,7 +46,6 @@ int Window::Window_intit(int width, int height, char* name)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glfwSwapInterval(1);
 
-
 	// Initializing Glew
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)

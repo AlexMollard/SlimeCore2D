@@ -1,5 +1,5 @@
 #pragma once
-#include "Renderer2D.h"
+#include "ObjectManager.h"
 #include "PhysicsScene.h"
 #include "Debug.h"
 
@@ -14,8 +14,8 @@ public:
 
 private:
 	Renderer2D* renderer = nullptr;
+	ObjectManager* objectManager = nullptr;
 	InputManager* inputManager = InputManager::GetInstance();
 	PhysicsScene* physicsScene = nullptr;
 	float timer = 0.0f;
 };
-

@@ -10,6 +10,8 @@ public:
 	~Mesh();
 
 	void CreateQuad();
+	void CreateCircle();
+
 	virtual void draw();
 
 	std::string GetName() { return name; };
@@ -25,4 +27,3 @@ protected:
 	std::string name;
 	bool hasIBO = false;
 };
-

@@ -11,7 +11,7 @@ void RigidBody::SetPos(float x, float y)
 	position.x = x;
 	position.y = y;
 
-	model[3] = glm::vec4(position,0, 1);
+	model[3] = glm::vec4(position, 0, 1);
 }
 
 glm::vec2 RigidBody::GetPos()
@@ -39,18 +39,18 @@ void RigidBody::ApplyOffSetToActor(RigidBody* obj, glm::vec2 overlap)
 {
 	if (!(this->GetKinematic() || obj->GetKinematic()))
 	{
-		this->SetPos(GetPos() + overlap * 0.5f);
-		obj->SetPos(obj->GetPos() - overlap * 0.5f);
+		this->SetPos(GetPos() - overlap * 0.5f);
+		obj->SetPos(obj->GetPos() + overlap * 0.5f);
 		return;
 	}
 
 	if (this->GetKinematic())
 	{
-		obj->SetPos(obj->GetPos() - overlap);
+		obj->SetPos(obj->GetPos() + overlap);
 		return;
 	}
-	
-	this->SetPos(this->GetPos() + overlap);
+
+	this->SetPos(this->GetPos() - overlap);
 	return;
 }
 
@@ -67,6 +67,21 @@ void RigidBody::SetNormal(glm::vec2 newNormal)
 glm::vec2 RigidBody::GetNormal()
 {
 	return normal;
+}
+
+glm::mat4 RigidBody::GetModel()
+{
+	return model;
+}
+
+void RigidBody::SetType(ObjectType newType)
+{
+	type = newType;
+}
+
+ObjectType RigidBody::GetType()
+{
+	return type;
 }
 
 void RigidBody::fixedUpdate(glm::vec2 gravity, float timeStep)
@@ -103,10 +118,10 @@ BoundingBox* RigidBody::GetBoundingBox()
 }
 
 void RigidBody::resolveCollision(RigidBody* actor2)
-{ 
+{
 	if (normal == glm::vec2(0))
 		return;
-	
+
 	normal = glm::normalize(normal);
 
 	glm::vec2 relativeVelocity = actor2->GetVelocity() - GetVelocity();

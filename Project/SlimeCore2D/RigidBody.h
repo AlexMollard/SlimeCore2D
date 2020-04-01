@@ -4,8 +4,15 @@
 #include "BoundingBox.h"
 #include "Debug.h"
 #include <vector>
+enum class ObjectType
+{
+	Circle = 0,
+	Quad,
+	Line,
+	ShapeCount
+};
 
-class RigidBody 
+class RigidBody
 {
 public:
 	std::string name = "";
@@ -40,16 +47,26 @@ public:
 	void SetNormal(glm::vec2 newNormal);
 	glm::vec2 GetNormal();
 
+	void SetType(ObjectType newType);
+	ObjectType GetType();
+
+	glm::mat4 GetModel();
+
 	BoundingBox* GetBoundingBox();
 
 	std::vector<RigidBody*> collided;
-protected:
+
+	glm::vec2 position = glm::vec2(0);
+	glm::vec2 scale = glm::vec2(1);
+
 	bool isKinematic = false;
+protected:
+	ObjectType type = ObjectType::Quad;
+
 	BoundingBox boundingBox;
 
 	InputManager* inputManager = InputManager::GetInstance();
 
-	glm::vec2 position = glm::vec2(0);
 	glm::vec2 velocity = glm::vec2(0);
 	glm::vec2 normal = glm::vec2(1);
 	glm::mat4 model = glm::mat4(1);

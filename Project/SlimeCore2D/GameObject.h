@@ -7,17 +7,13 @@
 class GameObject : public RigidBody
 {
 public:
-	GameObject(Mesh* mesh, Shader* shader, Texture* tex = nullptr);
-	~GameObject();
+	GameObject(Mesh* mesh);
+	virtual ~GameObject();
 
 	void Draw();
 	virtual void Update(float deltaTime);
+	virtual void Create(glm::vec2 pos, glm::vec3 color, glm::vec2 scale, int id);
 
-	virtual void Create(glm::vec3 pos, glm::vec3 color, glm::vec3 scale, int id);
-
-	Shader* GetShader();
-	void SetShader(Shader* newShader);
-	
 	Mesh* GetMesh();
 	void SetMesh(Mesh* newMesh);
 
@@ -28,8 +24,8 @@ public:
 	void SetColor(glm::vec3 newColor);
 	void SetColor(float r, float g, float b);
 
-	glm::vec3 GetScale();
-	void SetScale(glm::vec3 newScale);
+	glm::vec2 GetScale();
+	void SetScale(glm::vec2 newScale);
 
 	void SetID(int id);
 	int GetID();
@@ -37,20 +33,25 @@ public:
 	Texture* GetTexture();
 	void SetTexture(Texture* tex);
 
-	int type = 0;
+	void UpdateInteraction(float deltaTime);
+
+	void OnHover();
+	void OnPress();
+	void OnRelease();
 
 protected:
 	int ID = -404;
-	bool isHeld = false;
-	bool release = false;
 
 	glm::vec3 color = glm::vec3(1);
 	glm::vec3 defaultColor = glm::vec3(1);
 	glm::vec2 spawnPoint = glm::vec2(0);
-	glm::vec3 scale = glm::vec3(1);
 
-	Shader* shader = nullptr;
-	Mesh* mesh = nullptr;
 	Texture* texture = nullptr;
-};
+	Mesh* mesh = nullptr;
 
+	/// Input vars
+	bool isHeld = false;
+	bool release = false;
+
+	float timer = 0.0f;
+};

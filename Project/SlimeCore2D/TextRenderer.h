@@ -13,10 +13,9 @@ public:
 	TextRenderer();
 	~TextRenderer();
 
-    void RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
+	void RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
 
 private:
 
 	Shader* shader = nullptr;
 };
-
