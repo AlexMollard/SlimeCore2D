@@ -16,12 +16,17 @@ public:
 
 	void Update();
 
+	GLFWwindow* GetWindow();
+
 	glm::vec2 GetMousePos();
 	glm::vec2 GetDeltaMouse();
+	
 	glm::vec2 GetWindowSize();
 	glm::vec2 GetAspectRatio();
 	bool GetMouseDown(int button);
 
+	bool GetFocus();
+	void SetFocus(bool focus);
 private:
 	static InputManager* instance;
 
@@ -35,8 +40,10 @@ private:
 	int winWidth = 0;
 	int winHeight = 0;
 
-	double aspectX = 32;
-	double aspectY = 18;
+	double aspectX = 64;
+	double aspectY = 36;
+
+	bool IsWindowFocused = true;
 
 	glm::vec2 deltaMouse = glm::vec2();
 };

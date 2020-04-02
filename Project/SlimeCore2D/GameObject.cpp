@@ -28,7 +28,7 @@ void GameObject::Draw()
 
 void GameObject::Update(float deltaTime)
 {
-	boundingBox.UpdateQuadBoundingBox(position, scale);
+
 }
 
 void GameObject::Create(glm::vec2 pos, glm::vec3 color, glm::vec2 scale, int id)
@@ -103,7 +103,6 @@ void GameObject::SetScale(glm::vec2 newScale)
 
 	model[0] *= scale[0];
 	model[1] *= scale[1];
-	//model[2] *= scale[2];	/// This line might break stuff??
 }
 
 void GameObject::SetID(int id)
@@ -135,8 +134,18 @@ void GameObject::UpdateInteraction(float deltaTime)
 
 	if (isHeld)
 	{
-		SetVelocity(glm::vec2(0));
-		SetPos(inputManager->GetMousePos().x, inputManager->GetMousePos().y);
+		if (!inputManager->GetMouseDown(0))
+			isHeld = false;
+
+		if (isKinematic)
+		{
+			SetPos(inputManager->GetMousePos());
+		}
+		else
+		{
+			glm::vec2 forceToMouse = glm::normalize(inputManager->GetMousePos() - GetPos());
+			ApplyForce(forceToMouse);
+		}
 	}
 
 	if (boundingBox.GetMouseColliding())
@@ -146,12 +155,6 @@ void GameObject::UpdateInteraction(float deltaTime)
 
 	if (release && !isHeld)
 		OnRelease();
-
-	if (timer > 0.0f)
-	{
-		timer -= deltaTime;
-		AddVelocity(-inputManager->GetDeltaMouse() * glm::vec2(2));
-	}
 }
 
 
@@ -176,5 +179,4 @@ void GameObject::OnPress()
 void GameObject::OnRelease()
 {
 	release = false;
-	timer = 0.075f;
 }

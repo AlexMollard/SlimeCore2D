@@ -40,8 +40,6 @@ public:
 	void OnRelease();
 
 protected:
-	int ID = -404;
-
 	glm::vec3 color = glm::vec3(1);
 	glm::vec3 defaultColor = glm::vec3(1);
 	glm::vec2 spawnPoint = glm::vec2(0);
@@ -52,6 +50,4 @@ protected:
 	/// Input vars
 	bool isHeld = false;
 	bool release = false;
-
-	float timer = 0.0f;
 };

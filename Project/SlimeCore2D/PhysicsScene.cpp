@@ -1,6 +1,8 @@
 #include "PhysicsScene.h"
 #include <iostream>
+#include <tuple>
 #include <sstream>
+#include <unordered_map>
 
 PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, -10.0f))
 {
@@ -19,6 +21,9 @@ void PhysicsScene::addActor(RigidBody* actor, std::string name, bool isKinematic
 	}
 	actor->name = name;
 	actor->SetKinematic(isKinematic);
+	if (isKinematic)
+		actor->SetMass(999999999999999.99f);
+
 	actors.push_back(actor);
 }
 
@@ -52,10 +57,12 @@ void PhysicsScene::update(float dt) {
 		accumulatedTime -= timeStep;
 	}
 
+
+	static std::unordered_map<int, int> collisions;
+
 	for (int i = 0; i < actors.size(); i++)
 	{
 		RigidBody* object = actors[i];
-
 		for (int y = i + 1; y < actors.size(); y++)
 		{
 			RigidBody* other = actors[y];
@@ -63,7 +70,7 @@ void PhysicsScene::update(float dt) {
 			if (other->GetKinematic() && object->GetKinematic())
 				continue;
 
-			if (std::find(object->collided.begin(), object->collided.end(), other) != object->collided.end())
+			if (collisions[other->ID] == object->ID)
 				continue;
 
 			// using function pointers
@@ -73,22 +80,18 @@ void PhysicsScene::update(float dt) {
 			if (collisionFunctionPtr != nullptr)
 			{
 				auto result = collisionFunctionPtr(object, other);
-				if (glm::length(result) > 0.00001)
+				if (glm::length(result) > 0.001)
 				{
+					collisions.emplace(object->ID, other->ID);
 					other->SetNormal(result);
 
 					other->ApplyOffSetToActor(object, result);
 					other->resolveCollision(object);
-
-					other->collided.push_back(object);
 				}
 			}
 		}
 	}
-	for (int i = 0; i < actors.size(); i++)
-	{
-		actors[i]->collided.clear();
-	}
+	collisions.clear();
 }
 
 void PhysicsScene::Debug()

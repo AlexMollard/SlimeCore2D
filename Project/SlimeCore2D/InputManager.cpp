@@ -1,8 +1,14 @@
 #include "InputManager.h"
+#include "Debug.h"
 #include <iostream>
+#include <string>
+
+void window_focus_callback(GLFWwindow* window, int focused);
+
 InputManager::InputManager()
 {
 	window = glfwGetCurrentContext();
+	glfwSetWindowFocusCallback(window, window_focus_callback);
 }
 
 InputManager::~InputManager()
@@ -49,4 +55,24 @@ glm::vec2 InputManager::GetAspectRatio()
 bool InputManager::GetMouseDown(int button)
 {
 	return (glfwGetMouseButton(window, button));
+}
+
+GLFWwindow* InputManager::GetWindow()
+{
+	return window;
+}
+
+bool InputManager::GetFocus()
+{
+	return IsWindowFocused;
+}
+
+void InputManager::SetFocus(bool focus)
+{
+	IsWindowFocused = focus;
+}
+
+void window_focus_callback(GLFWwindow* window, int focused)
+{
+		InputManager::GetInstance()->SetFocus(focused);
 }

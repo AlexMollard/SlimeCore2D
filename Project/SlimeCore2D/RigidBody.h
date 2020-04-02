@@ -54,13 +54,13 @@ public:
 
 	BoundingBox* GetBoundingBox();
 
-	std::vector<RigidBody*> collided;
-
 	glm::vec2 position = glm::vec2(0);
 	glm::vec2 scale = glm::vec2(1);
 
 	bool isKinematic = false;
+	int ID = -404;
 protected:
+
 	ObjectType type = ObjectType::Quad;
 
 	BoundingBox boundingBox;

@@ -86,21 +86,8 @@ ObjectType RigidBody::GetType()
 
 void RigidBody::fixedUpdate(glm::vec2 gravity, float timeStep)
 {
-	if (GetKinematic())
-	{
-		SetVelocity(glm::vec2(0));
-		return;
-	}
-
-	//ApplyDrag(timeStep);
 	ApplyForce(gravity * timeStep);
 	position += velocity * timeStep;
-
-	if (velocity.x < -0.05f && velocity.x > 0.05f)
-		velocity.x = 0.0f;
-
-	if (velocity.y < -0.05f && velocity.y > 0.05f)
-		velocity.y = 0.0f;
 
 	SetPos(position);
 }
