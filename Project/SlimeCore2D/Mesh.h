@@ -11,11 +11,15 @@ public:
 
 	void CreateQuad();
 	void CreateCircle();
+	void CreateLine();
+
 
 	virtual void draw();
 
 	std::string GetName() { return name; };
 protected:
+	void CreateMesh();
+
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
 	std::vector<unsigned int> indices;
@@ -26,4 +30,7 @@ protected:
 
 	std::string name;
 	bool hasIBO = false;
+
+
+	bool isLine = false;
 };

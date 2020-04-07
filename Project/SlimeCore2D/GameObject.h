@@ -24,9 +24,6 @@ public:
 	void SetColor(glm::vec3 newColor);
 	void SetColor(float r, float g, float b);
 
-	glm::vec2 GetScale();
-	void SetScale(glm::vec2 newScale);
-
 	void SetID(int id);
 	int GetID();
 
@@ -34,6 +31,8 @@ public:
 	void SetTexture(Texture* tex);
 
 	void UpdateInteraction(float deltaTime);
+
+	void SetRotate(float rotation);
 
 	void OnHover();
 	void OnPress();

@@ -166,6 +166,7 @@
     <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="Circle.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="Line.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="Quad.cpp" />
     <ClCompile Include="Debug.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Circle.h" />
     <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Line.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="Quad.h" />
     <ClInclude Include="Debug.h" />

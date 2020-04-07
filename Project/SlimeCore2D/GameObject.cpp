@@ -1,5 +1,7 @@
 #include "GameObject.h"
 #include <string>
+#include "gtc/quaternion.hpp"
+
 GameObject::GameObject(Mesh* mesh)
 {
 	this->mesh = mesh;
@@ -92,17 +94,29 @@ void GameObject::SetColor(float r, float g, float b)
 	SetColor(glm::vec3(r, g, b));
 }
 
-glm::vec2 GameObject::GetScale()
+void GameObject::SetRotate(float rotation)
 {
-	return scale;
-}
+	this->rotation = rotation;
+	float updatedRotation = rotation * 3.141592f / 180.0f;
 
-void GameObject::SetScale(glm::vec2 newScale)
-{
-	scale = newScale;
 
-	model[0] *= scale[0];
-	model[1] *= scale[1];
+	float sin = glm::sin(updatedRotation);
+	float cos = glm::cos(updatedRotation);
+
+	float tx = 0;
+	float ty = 1;
+	normal.x = (cos * tx) - (sin * ty);
+	normal.y = (sin * tx) + (cos * ty);
+	
+	glm::mat4 tempModel(1);
+
+	tempModel = glm::rotate(tempModel, updatedRotation, glm::vec3(0,0,1));
+	
+	tempModel[0] *= scale[0];
+	tempModel[1] *= scale[1];
+
+	model = tempModel;
+	SetPos(position);
 }
 
 void GameObject::SetID(int id)
@@ -131,12 +145,12 @@ void GameObject::UpdateInteraction(float deltaTime)
 	{
 		Respawn();
 	}
-
+	
 	if (isHeld)
 	{
 		if (!inputManager->GetMouseDown(0))
 			isHeld = false;
-
+	
 		if (isKinematic)
 		{
 			SetPos(inputManager->GetMousePos());
@@ -147,12 +161,12 @@ void GameObject::UpdateInteraction(float deltaTime)
 			ApplyForce(forceToMouse);
 		}
 	}
-
+	
 	if (boundingBox.GetMouseColliding())
 		OnHover();
 	else
 		SetColor(defaultColor);
-
+	
 	if (release && !isHeld)
 		OnRelease();
 }

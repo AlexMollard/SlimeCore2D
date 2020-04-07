@@ -7,7 +7,7 @@
 
 #include <functional>
 #include <algorithm>
-using Collision_Function = std::function<glm::vec2(const RigidBody * rbOne, const RigidBody * rbTwo)>;
+using Collision_Function = std::function<glm::vec2(RigidBody * rbOne, RigidBody * rbTwo)>;
 
 class PhysicsScene
 {
@@ -29,7 +29,7 @@ public:
 	void setTimeStep(const float timeStep) { this->timeStep = timeStep; }
 	float getTimeStep() const { return timeStep; }
 	
-	static const Collision_Function collisionFunctions[];
+	static Collision_Function collisionFunctions[];
 
 protected:
 	TextRenderer* tex = nullptr;

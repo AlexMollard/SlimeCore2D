@@ -40,8 +40,8 @@ private:
 	int winWidth = 0;
 	int winHeight = 0;
 
-	double aspectX = 64;
-	double aspectY = 36;
+	double aspectX = 32;
+	double aspectY = 18;
 
 	bool IsWindowFocused = true;
 

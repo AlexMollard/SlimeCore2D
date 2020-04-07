@@ -54,6 +54,20 @@ void RigidBody::ApplyOffSetToActor(RigidBody* obj, glm::vec2 overlap)
 	return;
 }
 
+
+glm::vec2 RigidBody::GetScale()
+{
+	return scale;
+}
+
+void RigidBody::SetScale(glm::vec2 newScale)
+{
+	scale = newScale;
+
+	model[0] *= scale[0];
+	model[1] *= scale[1];
+}
+
 bool RigidBody::GetIsColliding(RigidBody* other)
 {
 	return (GetBoundingBox()->GetIsColliding(*other->GetBoundingBox()));

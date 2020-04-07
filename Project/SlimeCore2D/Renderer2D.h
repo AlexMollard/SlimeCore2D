@@ -24,7 +24,7 @@ public:
 	Shader* GetBasicShader();
 
 private:
-	glm::mat4 orthoMatrix = glm::ortho<float>(-64, 64, -36, 36, -1, 1);
+	glm::mat4 orthoMatrix = glm::ortho<float>(-32, 32, -18, 18, -1, 1);
 
 	Shader* currentShader = nullptr;
 	Texture* currentTexture = nullptr;

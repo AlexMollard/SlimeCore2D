@@ -44,7 +44,7 @@ public:
 
 	bool GetIsColliding(RigidBody* other);
 
-	void SetNormal(glm::vec2 newNormal);
+	virtual void SetNormal(glm::vec2 newNormal);
 	glm::vec2 GetNormal();
 
 	void SetType(ObjectType newType);
@@ -54,12 +54,15 @@ public:
 
 	BoundingBox* GetBoundingBox();
 
-	glm::vec2 position = glm::vec2(0);
-	glm::vec2 scale = glm::vec2(1);
+	glm::vec2 GetScale();
+	void SetScale(glm::vec2 newScale);
 
 	bool isKinematic = false;
 	int ID = -404;
 protected:
+	glm::vec2 position = glm::vec2(0);
+	glm::vec2 scale = glm::vec2(1);
+	glm::vec2 normal = glm::vec2(1);
 
 	ObjectType type = ObjectType::Quad;
 
@@ -68,8 +71,8 @@ protected:
 	InputManager* inputManager = InputManager::GetInstance();
 
 	glm::vec2 velocity = glm::vec2(0);
-	glm::vec2 normal = glm::vec2(1);
 	glm::mat4 model = glm::mat4(1);
+	float rotation = 0.0f;
 
 	float drag = 5.0f;
 	float mass = 1.0f;

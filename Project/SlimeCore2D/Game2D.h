@@ -17,5 +17,6 @@ private:
 	ObjectManager* objectManager = nullptr;
 	InputManager* inputManager = InputManager::GetInstance();
 	PhysicsScene* physicsScene = nullptr;
+	GameObject* line = nullptr;
 	float timer = 0.0f;
 };

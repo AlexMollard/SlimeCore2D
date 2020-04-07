@@ -2,6 +2,7 @@
 #include "Renderer2D.h"
 #include "Quad.h"
 #include "Circle.h"
+#include "Line.h"
 
 class ObjectManager
 {
@@ -11,7 +12,8 @@ public:
 
 	GameObject* CreateGameObject(glm::vec2 pos, glm::vec2 size, glm::vec3 color);
 	GameObject* CreateQuad(glm::vec2 pos, glm::vec2 size, glm::vec3 color);
-	GameObject* CreateCircle(glm::vec2 pos, glm::vec2 diameter, glm::vec3 color);
+	GameObject* CreateCircle(glm::vec2 pos, float diameter, glm::vec3 color);
+	GameObject* CreateLine(float distance, float width,float rotation, glm::vec3 color);
 
 	void Update(float deltaTime);
 

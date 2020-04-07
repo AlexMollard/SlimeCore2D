@@ -56,10 +56,7 @@ void PhysicsScene::update(float dt) {
 		}
 		accumulatedTime -= timeStep;
 	}
-
-
-	static std::unordered_map<int, int> collisions;
-
+	
 	for (int i = 0; i < actors.size(); i++)
 	{
 		RigidBody* object = actors[i];
@@ -69,10 +66,7 @@ void PhysicsScene::update(float dt) {
 
 			if (other->GetKinematic() && object->GetKinematic())
 				continue;
-
-			if (collisions[other->ID] == object->ID)
-				continue;
-
+			
 			// using function pointers
 			int functionIdx = (int(object->GetType()) * int(ObjectType::ShapeCount)) + int(other->GetType());
 			Collision_Function collisionFunctionPtr = collisionFunctions[functionIdx];
@@ -80,10 +74,10 @@ void PhysicsScene::update(float dt) {
 			if (collisionFunctionPtr != nullptr)
 			{
 				auto result = collisionFunctionPtr(object, other);
-				if (glm::length(result) > 0.001)
+				if (glm::length(result) > 0.01)
 				{
-					collisions.emplace(object->ID, other->ID);
-					other->SetNormal(result);
+					if (other->GetType() != ObjectType::Line)
+						other->SetNormal(result);
 
 					other->ApplyOffSetToActor(object, result);
 					other->resolveCollision(object);
@@ -91,7 +85,6 @@ void PhysicsScene::update(float dt) {
 			}
 		}
 	}
-	collisions.clear();
 }
 
 void PhysicsScene::Debug()
@@ -115,7 +108,7 @@ void PhysicsScene::Debug()
 	}
 }
 
-const Collision_Function PhysicsScene::collisionFunctions[] =
+Collision_Function PhysicsScene::collisionFunctions[] =
 {
 	CollisionManager::CircleVsCircle, CollisionManager::CircleVsQuad, CollisionManager::CircleVsLine,
 	CollisionManager::QuadVsCircle, CollisionManager::QuadVsQuad, CollisionManager::QuadVsLine,
