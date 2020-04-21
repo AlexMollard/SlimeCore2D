@@ -15,6 +15,7 @@ public:
 private:
 	Renderer2D* renderer = nullptr;
 	ObjectManager* objectManager = nullptr;
+	MeshManager* meshManager = nullptr;
 	InputManager* inputManager = InputManager::GetInstance();
 	PhysicsScene* physicsScene = nullptr;
 	GameObject* line = nullptr;

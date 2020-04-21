@@ -3,7 +3,7 @@
 class Line : public GameObject
 {
 public:
-	Line(Mesh* mesh);
+	Line();
 	~Line();
 
 	void Update(float deltaTime);

@@ -1,6 +1,6 @@
 #include "Quad.h"
 
-Quad::Quad(Mesh* mesh) : GameObject(mesh)
+Quad::Quad() : GameObject()
 {
 	type = ObjectType::Quad;
 }

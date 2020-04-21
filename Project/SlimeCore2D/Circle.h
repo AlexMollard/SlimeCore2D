@@ -3,7 +3,7 @@
 class Circle : public GameObject
 {
 public:
-	Circle(Mesh* mesh);
+	Circle();
 	~Circle();
 
 	void Update(float deltaTime);

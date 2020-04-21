@@ -13,6 +13,7 @@ public:
 	void CreateCircle();
 	void CreateLine();
 
+	int GetIndicesCount();
 
 	virtual void draw();
 

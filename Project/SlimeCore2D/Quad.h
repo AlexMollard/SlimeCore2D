@@ -4,7 +4,7 @@
 class Quad : public GameObject
 {
 public:
-	Quad(Mesh* mesh);
+	Quad();
 	~Quad();
 
 	void Update(float deltaTime);

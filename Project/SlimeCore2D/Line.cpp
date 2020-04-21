@@ -1,6 +1,6 @@
 #include "Line.h"
 
-Line::Line(Mesh* mesh) : GameObject(mesh)
+Line::Line() : GameObject()
 {
 	type = ObjectType::Line;
 }

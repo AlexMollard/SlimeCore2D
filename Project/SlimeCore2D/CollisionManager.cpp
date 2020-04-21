@@ -138,7 +138,7 @@ glm::vec2 CollisionManager::QuadVsLine(RigidBody* rbOne, RigidBody* rbTwo)
 	
 	float radius = fmaxf(fabsf(dot_extents), fabsf(dot_extents_neg_x));
 	
-	static Circle projection = Circle(nullptr);
+	static Circle projection = Circle();
 	projection.SetPos(rbOne->GetPos());
 	projection.SetMass(rbOne->GetMass());
 	projection.SetScale(glm::vec2(radius));

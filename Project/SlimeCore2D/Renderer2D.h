@@ -5,17 +5,17 @@
 #include "TextRenderer.h"
 #include "Texture.h"
 #include <vector>
+#include "MeshManager.h"
 
 class Renderer2D
 {
 public:
-	Renderer2D();
+	Renderer2D(MeshManager* meshManager);
 	~Renderer2D();
 
 	void AddObject(GameObject* newObject);
 
 	Texture* LoadTexture(std::string dir);
-	Shader* GetShaderFromtype(ObjectType type);
 
 	void Draw();
 
@@ -25,6 +25,7 @@ public:
 
 private:
 	glm::mat4 orthoMatrix = glm::ortho<float>(-32, 32, -18, 18, -1, 1);
+	glm::vec3 currentColor = glm::vec3(-404);
 
 	Shader* currentShader = nullptr;
 	Texture* currentTexture = nullptr;
@@ -35,6 +36,6 @@ private:
 	std::vector<Shader*> shaderPool;
 
 	Shader* basicShader = nullptr;
-	Mesh* quad = nullptr;
-	Mesh* circle = nullptr;
+
+	MeshManager* meshManager = nullptr;
 };

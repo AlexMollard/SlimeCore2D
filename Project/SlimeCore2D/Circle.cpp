@@ -1,6 +1,6 @@
 #include "Circle.h"
 
-Circle::Circle(Mesh* mesh) : GameObject(mesh) 
+Circle::Circle() : GameObject() 
 {
 	type = ObjectType::Circle;
 }

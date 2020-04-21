@@ -15,6 +15,8 @@ Mesh::~Mesh()
 
 void Mesh::CreateQuad()
 {
+	name = "Quad";
+
 	glm::vec3 topLeft = glm::vec3(-0.5f, 0.5f, 0.0f);
 	glm::vec3 min = glm::vec3(0.5f, 0.5f, 0.0f);
 	glm::vec3 max = glm::vec3(-0.5f, -0.5f, 0.0f);
@@ -45,6 +47,8 @@ void Mesh::CreateQuad()
 
 void Mesh::CreateCircle()
 {
+	name = "Circle";
+
 	float radius = 0.5f;
 	int sectors = 32;
 
@@ -88,6 +92,8 @@ void Mesh::CreateCircle()
 
 void Mesh::CreateLine()
 {
+	name = "line";
+
 	isLine = true;
 
 	glm::vec3 topLeft = glm::vec3(-0.5f, 0.01f, 0.0f);
@@ -117,6 +123,11 @@ void Mesh::CreateLine()
 
 	CreateMesh();
 
+}
+
+int Mesh::GetIndicesCount()
+{
+	return indices.size();
 }
 
 void Mesh::draw()

@@ -25,10 +25,22 @@ void Debug::PrintLog(std::string message)
 
 void Debug::PrintCreate(std::string message)
 {
-	std::cout << GREEN << "Created: " << RESET << message << std::endl;
+	static int createTotal = 0;
+	createTotal++;
+
+	if (createTotal < 9)
+	{
+		std::cout << GREEN << "Created: " << RESET << message << std::endl;
+	}
 }
 
 void Debug::PrintDelete(std::string message)
 {
-	std::cout << PURPLE << "Deleted: " << RESET << message << std::endl;
+	static int deleteTotal = 0;
+	deleteTotal++;
+
+	if (deleteTotal < 9)
+	{
+		std::cout << PURPLE << "Deleted: " << RESET << message << std::endl;
+	}
 }

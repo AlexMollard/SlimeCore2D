@@ -25,7 +25,7 @@ ObjectManager::~ObjectManager()
 
 GameObject* ObjectManager::CreateGameObject(glm::vec2 pos, glm::vec2 size, glm::vec3 color)
 {
-	GameObject* go = new GameObject(renderer->GetQuadMesh());
+	GameObject* go = new GameObject();
 	go->Create(pos, color, size, objects.size());
 
 	renderer->AddObject(go);
@@ -36,7 +36,7 @@ GameObject* ObjectManager::CreateGameObject(glm::vec2 pos, glm::vec2 size, glm::
 
 GameObject* ObjectManager::CreateQuad(glm::vec2 pos, glm::vec2 size, glm::vec3 color)
 {
-	Quad* go = new Quad(renderer->GetQuadMesh());
+	Quad* go = new Quad();
 	go->Create(pos, color, size, objects.size());
 
 	renderer->AddObject(go);
@@ -47,7 +47,7 @@ GameObject* ObjectManager::CreateQuad(glm::vec2 pos, glm::vec2 size, glm::vec3 c
 
 GameObject* ObjectManager::CreateCircle(glm::vec2 pos, float diameter, glm::vec3 color)
 {
-	Circle* go = new Circle(renderer->GetCircleMesh());
+	Circle* go = new Circle();
 	go->Create(pos, color, glm::vec2(diameter), objects.size());
 
 	renderer->AddObject(go);
@@ -58,7 +58,7 @@ GameObject* ObjectManager::CreateCircle(glm::vec2 pos, float diameter, glm::vec3
 
 GameObject* ObjectManager::CreateLine(float distance, float width,float rotation, glm::vec3 color)
 {
-	Line* go = new Line(renderer->GetQuadMesh());
+	Line* go = new Line();
 
 	go->Create(glm::vec2(0), color, glm::vec2(1000, width), objects.size());
 	go->SetRotate(rotation);

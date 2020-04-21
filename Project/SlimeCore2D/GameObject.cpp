@@ -2,9 +2,8 @@
 #include <string>
 #include "gtc/quaternion.hpp"
 
-GameObject::GameObject(Mesh* mesh)
+GameObject::GameObject()
 {
-	this->mesh = mesh;
 }
 
 GameObject::~GameObject()
@@ -92,6 +91,16 @@ void GameObject::SetColor(glm::vec3 newColor)
 void GameObject::SetColor(float r, float g, float b)
 {
 	SetColor(glm::vec3(r, g, b));
+}
+
+void GameObject::SetShader(Shader* newShader)
+{
+	shader = newShader;
+}
+
+Shader* GameObject::GetShader()
+{
+	return shader;
 }
 
 void GameObject::SetRotate(float rotation)

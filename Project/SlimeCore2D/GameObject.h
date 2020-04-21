@@ -7,7 +7,7 @@
 class GameObject : public RigidBody
 {
 public:
-	GameObject(Mesh* mesh);
+	GameObject();
 	virtual ~GameObject();
 
 	void Draw();
@@ -23,6 +23,10 @@ public:
 	glm::vec3 GetColor();
 	void SetColor(glm::vec3 newColor);
 	void SetColor(float r, float g, float b);
+
+	void SetShader(Shader* newShader);
+	Shader* GetShader();
+
 
 	void SetID(int id);
 	int GetID();
@@ -45,6 +49,7 @@ protected:
 
 	Texture* texture = nullptr;
 	Mesh* mesh = nullptr;
+	Shader* shader = nullptr;
 
 	/// Input vars
 	bool isHeld = false;
