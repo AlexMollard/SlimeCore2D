@@ -45,6 +45,18 @@ GameObject* ObjectManager::CreateQuad(glm::vec2 pos, glm::vec2 size, glm::vec3 c
 	return go;
 }
 
+GameObject* ObjectManager::CreateQuad(glm::vec2 pos, glm::vec2 size, Texture* tex)
+{
+	Quad* go = new Quad();
+	go->Create(pos, glm::vec3(1), size, objects.size());
+	go->SetTexture(tex);
+
+	renderer->AddObject(go);
+	objects.push_back(go);
+
+	return go;
+}
+
 GameObject* ObjectManager::CreateCircle(glm::vec2 pos, float diameter, glm::vec3 color)
 {
 	Circle* go = new Circle();

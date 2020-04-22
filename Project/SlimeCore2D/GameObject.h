@@ -10,7 +10,6 @@ public:
 	GameObject();
 	virtual ~GameObject();
 
-	void Draw();
 	virtual void Update(float deltaTime);
 	virtual void Create(glm::vec2 pos, glm::vec3 color, glm::vec2 scale, int id);
 

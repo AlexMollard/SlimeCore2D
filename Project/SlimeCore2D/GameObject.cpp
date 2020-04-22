@@ -22,11 +22,6 @@ GameObject::~GameObject()
 	}
 }
 
-void GameObject::Draw()
-{
-	mesh->draw();
-}
-
 void GameObject::Update(float deltaTime)
 {
 

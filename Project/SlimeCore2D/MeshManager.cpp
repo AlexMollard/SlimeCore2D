@@ -22,12 +22,6 @@ void MeshManager::Draw(GameObject* object)
 {
 	if (object->GetType() == ObjectType::Quad || object->GetType() == ObjectType::Line)
 	{
-		if (currentMesh == quad)
-		{
-			glDrawElements(GL_TRIANGLES, quad->GetIndicesCount(), GL_UNSIGNED_INT, 0);
-			return;
-		}
-
 		quad->draw();
 		currentMesh = quad;
 		return;
@@ -35,11 +29,6 @@ void MeshManager::Draw(GameObject* object)
 
 	if (object->GetType() == ObjectType::Circle)
 	{
-		if (currentMesh == circle)
-		{
-			glDrawElements(GL_TRIANGLES, circle->GetIndicesCount(), GL_UNSIGNED_INT, 0);
-			return;
-		}
 
 		circle->draw();
 		currentMesh = circle;
