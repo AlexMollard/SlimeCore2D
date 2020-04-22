@@ -2,6 +2,7 @@
 #include "glm.hpp"
 #include "glew.h"
 #include "glfw3.h"
+#include "Keycode.h"
 
 class InputManager
 {
@@ -25,6 +26,11 @@ public:
 	glm::vec2 GetAspectRatio();
 	bool GetMouseDown(int button);
 
+	static bool GetKeyPress(Keycode key);
+
+	static void SetScroll(float newScroll);
+	static float GetScroll();
+
 	bool GetFocus();
 	void SetFocus(bool focus);
 private:
@@ -44,6 +50,8 @@ private:
 	double aspectY = 18;
 
 	bool IsWindowFocused = true;
+
+	static float scroll;
 
 	glm::vec2 deltaMouse = glm::vec2();
 };

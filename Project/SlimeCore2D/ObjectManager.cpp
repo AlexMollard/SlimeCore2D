@@ -93,3 +93,8 @@ void ObjectManager::Update(float deltaTime)
 		objects[i]->Update(deltaTime);
 	}
 }
+
+GameObject* ObjectManager::Get(int index)
+{
+	return objects[index];
+}

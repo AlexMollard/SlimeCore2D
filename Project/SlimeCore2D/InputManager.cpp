@@ -4,17 +4,22 @@
 #include <string>
 
 void window_focus_callback(GLFWwindow* window, int focused);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+float InputManager::scroll;
 
 InputManager::InputManager()
 {
+
 	window = glfwGetCurrentContext();
 	glfwSetWindowFocusCallback(window, window_focus_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 }
 
 InputManager::~InputManager()
 {
 }
 
+// Most of this is broken because of the camera changing aspect ratio and position
 void InputManager::Update()
 {
 	deltaMouse = glm::vec2((float)mouseXPos, (float)mouseYPos);
@@ -30,6 +35,7 @@ void InputManager::Update()
 	mouseYPos = -mouseYPos;
 
 	deltaMouse -= glm::vec2((float)mouseXPos, (float)mouseYPos);
+	InputManager::scroll = 0.0f;
 }
 
 glm::vec2 InputManager::GetMousePos()
@@ -74,5 +80,31 @@ void InputManager::SetFocus(bool focus)
 
 void window_focus_callback(GLFWwindow* window, int focused)
 {
-		InputManager::GetInstance()->SetFocus(focused);
+	InputManager::GetInstance()->SetFocus(focused);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	InputManager::SetScroll(yoffset);
+}
+
+bool InputManager::GetKeyPress(Keycode key)
+{
+	int state = glfwGetKey(GetInstance()->window, (int)key);
+	if (state == GLFW_PRESS)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void InputManager::SetScroll(float newScroll)
+{
+	scroll = newScroll;
+}
+
+float InputManager::GetScroll()
+{
+	return InputManager::scroll;
 }

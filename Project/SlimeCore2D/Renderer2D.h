@@ -1,10 +1,9 @@
 #pragma once
 #include "Quad.h"
-#include "gtc/matrix_transform.hpp"
-#include "Mesh.h"
 #include "Texture.h"
 #include <vector>
 #include "MeshManager.h"
+#include "Camera.h"
 
 class Renderer2D
 {
@@ -31,7 +30,6 @@ public:
 	static void Flush();
 
 private:
-	glm::mat4 orthoMatrix = glm::ortho<float>(-32, 32, -18, 18, -1, 1);
 	glm::vec3 currentColor = glm::vec3(-404);
 
 	Shader* currentShader = nullptr;
@@ -42,6 +40,6 @@ private:
 	std::vector<Shader*> shaderPool;
 
 	Shader* basicShader = nullptr;
-
+	Camera* camera = nullptr;
 	MeshManager* meshManager = nullptr;
 };

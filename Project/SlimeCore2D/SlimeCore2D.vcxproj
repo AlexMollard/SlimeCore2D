@@ -164,6 +164,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BoundingBox.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Circle.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Line.cpp" />
@@ -187,8 +188,10 @@
   <ItemGroup>
     <ClInclude Include="..\Dependencies\glText\gltext.h" />
     <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Circle.h" />
     <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Keycode.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="MeshManager.h" />
     <ClInclude Include="ObjectManager.h" />

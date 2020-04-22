@@ -18,6 +18,8 @@ public:
 
 	void Update(float deltaTime);
 
+	GameObject* Get(int index);
+
 protected:
 	Renderer2D* renderer = nullptr;
 	std::vector<GameObject*> objects;

@@ -42,6 +42,8 @@ Renderer2D::Renderer2D(MeshManager* meshManager)
 
 	basicShader = new Shader("Basic Shader", "..\\Shaders\\BasicVertex.shader", "..\\Shaders\\BasicFragment.shader");
 
+	camera = new Camera(32, 18, -1, 1);
+
 	basicShader->Use();
 
 	auto loc = glGetUniformLocation(basicShader->GetID(), "Textures");
@@ -66,6 +68,9 @@ Renderer2D::~Renderer2D()
 
 	delete basicShader;
 	basicShader = nullptr;
+
+	delete camera;
+	camera = nullptr;
 }
 
 void Renderer2D::AddObject(GameObject* newObject)
@@ -95,10 +100,14 @@ Texture* Renderer2D::LoadTexture(std::string dir)
 
 void Renderer2D::Draw()
 {
+	camera->Update();
+
 	basicShader->Use();
-	basicShader->setMat4("OrthoMatrix", orthoMatrix);
+	
+	basicShader->setMat4("OrthoMatrix", camera->GetTransform());
 	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,0.0f)));
 	BeginBatch();
+
 
 	for (int i = 0; i < objectPool.size(); i++)
 	{

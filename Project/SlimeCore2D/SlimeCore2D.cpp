@@ -11,8 +11,8 @@ int main()
 
 	while (!app->Window_shouldClose())
 	{
-		app->Update_Window();
 		inputManager->Update();
+		app->Update_Window();
 
 		game->Update(app->GetDeltaTime());
 		game->Draw();

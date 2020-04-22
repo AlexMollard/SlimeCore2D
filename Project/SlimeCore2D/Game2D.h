@@ -23,14 +23,6 @@ private:
 	Texture* grass = nullptr;
 	Texture* water = nullptr;
 
-	//Ledges
-	Texture* bottomLeft = nullptr;
-	Texture* bottomCenter = nullptr;
-	Texture* bottomRight = nullptr;
-
-	Texture* centerLeft = nullptr;
-	Texture* centerRight = nullptr;
-
 
 	float timer = 0.0f;
 };
