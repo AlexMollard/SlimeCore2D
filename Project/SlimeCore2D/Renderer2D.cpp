@@ -117,7 +117,7 @@ void Renderer2D::Draw()
 		}
 		else if (objectPool[i]->GetType() == ObjectType::Quad && objectPool[i]->GetTexture() != nullptr)
 		{
-			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), objectPool[i]->GetTexture(), objectPool[i]->GetFrame());
+			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f }, objectPool[i]->GetTexture(), objectPool[i]->GetFrame());
 		}
 		else if (objectPool[i]->GetType() == ObjectType::Circle)
 		{
@@ -175,7 +175,7 @@ void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color)
 	data.indexCount += 6;
 }
 
-void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, Texture* texture, int frame)
+void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame)
 {
 	if (data.indexCount >= maxIndexCount || data.textureSlotIndex > maxTextures)
 	{
@@ -183,8 +183,6 @@ void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, Texture* texture, 
 		Flush();
 		BeginBatch();
 	}
-
-	constexpr glm::vec4 color = { 1.0f,1.0f ,1.0f ,1.0f };
 
 	float textureIndex = 0.0f;
 	for (uint32_t i = 1; i < data.textureSlotIndex; i++)

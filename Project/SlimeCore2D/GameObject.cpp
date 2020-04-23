@@ -141,7 +141,12 @@ Texture* GameObject::GetTexture()
 void GameObject::SetTexture(Texture* tex)
 {
 	texture = tex;
-	SetTextureWidth(texture->GetWidth());
+
+	if (texture != nullptr)
+	{
+		SetScale(glm::vec2(spriteWidth, texture->GetHeight()) / glm::vec2(spriteWidth));
+		SetTextureWidth(texture->GetWidth());
+	}
 }
 
 void GameObject::UpdateInteraction(float deltaTime)
@@ -262,4 +267,23 @@ void GameObject::SetFrameRate(float frameRate)
 float GameObject::GetFrameRate()
 {
 	return frameRate;
+}
+
+void GameObject::UpdateSpriteTimer(float deltaTime)
+{
+	if (hasAnimation)
+	{
+		frameRateTimer += deltaTime;
+
+		if (frameRateTimer > frameRate)
+		{
+			frameRateTimer = 0;
+			AdvanceFrame();
+		}
+	}
+}
+
+bool GameObject::GetIsPlayer()
+{
+	return isPlayer;
 }

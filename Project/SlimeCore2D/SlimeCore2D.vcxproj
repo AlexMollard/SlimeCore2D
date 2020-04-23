@@ -168,8 +168,10 @@
     <ClCompile Include="Circle.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Line.cpp" />
+    <ClCompile Include="MapGenerator.cpp" />
     <ClCompile Include="MeshManager.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Quad.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Game2D.cpp" />
@@ -193,8 +195,10 @@
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Keycode.h" />
     <ClInclude Include="Line.h" />
+    <ClInclude Include="MapGenerator.h" />
     <ClInclude Include="MeshManager.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Quad.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Game2D.h" />

@@ -27,18 +27,6 @@ void Camera::CameraMoveMent(float deltaTime)
 
 	float moveSpeed = speed * deltaTime;
 
-	if (InputManager::GetKeyPress(Keycode::W))
-		position += glm::vec2(0.0f, moveSpeed);
-
-	if (InputManager::GetKeyPress(Keycode::S))
-		position += glm::vec2(0.0f, -moveSpeed);
-
-	if (InputManager::GetKeyPress(Keycode::A))
-		position += glm::vec2(-moveSpeed, 0.0f);
-
-	if (InputManager::GetKeyPress(Keycode::D))
-		position += glm::vec2(moveSpeed, 0.0f);
-
 	if (InputManager::GetScroll() > 0)
 		SetFOV(fieldOfView - moveSpeed);
 

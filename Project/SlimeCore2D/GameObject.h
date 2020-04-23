@@ -59,10 +59,16 @@ public:
 	void SetFrameRate(float frameRate);
 	float GetFrameRate();
 
+	void UpdateSpriteTimer(float deltaTime);
+
+	bool GetIsPlayer();
+
 protected:
 	glm::vec3 color = glm::vec3(1);
 	glm::vec3 defaultColor = glm::vec3(1);
 	glm::vec2 spawnPoint = glm::vec2(0);
+
+	bool isPlayer = false;
 
 	Texture* texture = nullptr;
 	Mesh* mesh = nullptr;

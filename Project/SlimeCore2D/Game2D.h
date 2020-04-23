@@ -2,12 +2,16 @@
 #include "ObjectManager.h"
 #include "PhysicsScene.h"
 #include "Debug.h"
+#include "MapGenerator.h"
+#include "Player.h"
 
 class Game2D
 {
 public:
 	Game2D();
 	~Game2D();
+
+	void Init();
 
 	void Update(float deltaTime);
 	void Draw();
@@ -19,14 +23,9 @@ private:
 	InputManager* inputManager = InputManager::GetInstance();
 	PhysicsScene* physicsScene = nullptr;
 	Camera* camera = nullptr;
-	GameObject* line = nullptr;
+	MapGenerator* map = nullptr;
 
-	Texture* grass = nullptr;
-	Texture* water = nullptr;
-	Texture* player_Idle = nullptr;
-	Texture* player_Run = nullptr;
-
-	GameObject* player = nullptr;
+	Player* player = nullptr;
 
 	float timer = 0.0f;
 };

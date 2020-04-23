@@ -13,6 +13,8 @@ ObjectManager::~ObjectManager()
 			delete (Circle*)objects[i];
 		else if (objects[i]->GetType() == ObjectType::Line)
 			delete (Line*)objects[i];
+		else if (objects[i]->GetIsPlayer() == true)
+			delete (Player*)objects[i];
 		else
 			delete (Quad*)objects[i];
 
@@ -86,11 +88,23 @@ GameObject* ObjectManager::CreateLine(float distance, float width,float rotation
 	return go;
 }
 
+Player* ObjectManager::CreatePlayer(glm::vec2 pos, glm::vec2 size, glm::vec3 color)
+{
+	Player* go = new Player();
+	go->Create(pos, color, size, objects.size());
+
+	renderer->AddObject(go);
+	objects.push_back(go);
+
+	return go;
+}
+
 void ObjectManager::Update(float deltaTime)
 {
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->Update(deltaTime);
+		objects[i]->UpdateSpriteTimer(deltaTime);
 	}
 }
 
