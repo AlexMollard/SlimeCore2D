@@ -16,32 +16,34 @@ Camera::~Camera()
 {
 }
 
-void Camera::Update()
+void Camera::Update(float deltaTime)
 {
-	CameraMoveMent();
+	CameraMoveMent(deltaTime);
 }
 
-void Camera::CameraMoveMent()
+void Camera::CameraMoveMent(float deltaTime)
 {
-	float moveSpeed = (InputManager::GetKeyPress(Keycode::LEFT_SHIFT)) ? 0.3f : 0.1f;
+	float speed = (InputManager::GetKeyPress(Keycode::LEFT_SHIFT)) ? 10.0f : 4.0f;
+
+	float moveSpeed = speed * deltaTime;
 
 	if (InputManager::GetKeyPress(Keycode::W))
-		position += glm::vec2(0.0f, -moveSpeed);
-
-	if (InputManager::GetKeyPress(Keycode::S))
 		position += glm::vec2(0.0f, moveSpeed);
 
-	if (InputManager::GetKeyPress(Keycode::A))
-		position += glm::vec2(moveSpeed, 0.0f);
+	if (InputManager::GetKeyPress(Keycode::S))
+		position += glm::vec2(0.0f, -moveSpeed);
 
-	if (InputManager::GetKeyPress(Keycode::D))
+	if (InputManager::GetKeyPress(Keycode::A))
 		position += glm::vec2(-moveSpeed, 0.0f);
 
+	if (InputManager::GetKeyPress(Keycode::D))
+		position += glm::vec2(moveSpeed, 0.0f);
+
 	if (InputManager::GetScroll() > 0)
-		SetFOV(fieldOfView - moveSpeed * 0.25f);
+		SetFOV(fieldOfView - moveSpeed);
 
 	if (InputManager::GetScroll() < 0)
-		SetFOV(fieldOfView + moveSpeed * 0.25f);
+		SetFOV(fieldOfView + moveSpeed);
 
 	UpdateTransform();
 }

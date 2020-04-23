@@ -8,8 +8,8 @@ public:
     Camera(float aspectX, float aspectY, float near, float far);
     ~Camera();
 
-    void Update();
-    void CameraMoveMent();
+    void Update(float deltaTime);
+    void CameraMoveMent(float deltaTime);
 
     void SetPosition(glm::vec2 newPos);
     glm::vec2 GetPosition();

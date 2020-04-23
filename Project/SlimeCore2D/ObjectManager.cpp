@@ -98,3 +98,8 @@ GameObject* ObjectManager::Get(int index)
 {
 	return objects[index];
 }
+
+int ObjectManager::Size()
+{
+	return objects.size();
+}

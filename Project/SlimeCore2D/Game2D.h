@@ -18,11 +18,15 @@ private:
 	MeshManager* meshManager = nullptr;
 	InputManager* inputManager = InputManager::GetInstance();
 	PhysicsScene* physicsScene = nullptr;
+	Camera* camera = nullptr;
 	GameObject* line = nullptr;
 
 	Texture* grass = nullptr;
 	Texture* water = nullptr;
+	Texture* player_Idle = nullptr;
+	Texture* player_Run = nullptr;
 
+	GameObject* player = nullptr;
 
 	float timer = 0.0f;
 };

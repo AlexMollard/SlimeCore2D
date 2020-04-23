@@ -141,6 +141,7 @@ Texture* GameObject::GetTexture()
 void GameObject::SetTexture(Texture* tex)
 {
 	texture = tex;
+	SetTextureWidth(texture->GetWidth());
 }
 
 void GameObject::UpdateInteraction(float deltaTime)
@@ -197,4 +198,68 @@ void GameObject::OnPress()
 void GameObject::OnRelease()
 {
 	release = false;
+}
+
+void GameObject::SetFrame(int Frame)
+{
+	frame = Frame;
+}
+
+void GameObject::AdvanceFrame()
+{
+	frame++;
+	
+	if (frame >= TextureWidth / spriteWidth)
+	{
+		frame = 0;
+	}
+
+}
+
+int GameObject::GetFrame()
+{
+	return frame;
+}
+
+int GameObject::GetSpriteWidth()
+{
+	return spriteWidth;
+}
+
+void GameObject::SetSpriteWidth(int newWidth)
+{
+	spriteWidth = newWidth;
+}
+
+int GameObject::GetTextureWidth()
+{
+	return TextureWidth;
+}
+
+void GameObject::SetTextureWidth(int newWidth)
+{
+	TextureWidth = newWidth;
+
+	if (TextureWidth > spriteWidth)
+		hasAnimation = true;
+}
+
+bool GameObject::GetHasAnimation()
+{
+	return hasAnimation;
+}
+
+void GameObject::SetHasAnimation(bool value)
+{
+	hasAnimation = value;
+}
+
+void GameObject::SetFrameRate(float frameRate)
+{
+	this->frameRate = frameRate;
+}
+
+float GameObject::GetFrameRate()
+{
+	return frameRate;
 }

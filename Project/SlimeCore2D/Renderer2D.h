@@ -8,7 +8,7 @@
 class Renderer2D
 {
 public:
-	Renderer2D(MeshManager* meshManager);
+	Renderer2D(MeshManager* meshManager, Camera* camera);
 	~Renderer2D();
 
 	static void Init();
@@ -22,12 +22,15 @@ public:
  
 	Shader* GetBasicShader();
 
+	static void setActiveRegion(Texture* texture, int regionIndex);
+
 	static void DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color);
-	static void DrawQuad(glm::vec2 position, glm::vec2 size, uint32_t textureID);
+	static void DrawQuad(glm::vec2 position, glm::vec2 size, Texture* texture, int frame = 0);
 
 	static void BeginBatch();
 	static void EndBatch();
 	static void Flush();
+
 
 private:
 	glm::vec3 currentColor = glm::vec3(-404);
@@ -42,4 +45,6 @@ private:
 	Shader* basicShader = nullptr;
 	Camera* camera = nullptr;
 	MeshManager* meshManager = nullptr;
+
+	static std::vector<glm::vec2> UVs;
 };

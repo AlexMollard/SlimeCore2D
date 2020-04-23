@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <array>
 
+std::vector<glm::vec2> Renderer2D::UVs;
+
+
 static const size_t maxQuadCount = 2000;
 static const size_t maxVertexCount = maxQuadCount * 4;
 static const size_t maxIndexCount = maxQuadCount * 6;
@@ -36,13 +39,13 @@ struct RendererData
 static RendererData data;
 
 
-Renderer2D::Renderer2D(MeshManager* meshManager)
+Renderer2D::Renderer2D(MeshManager* meshManager, Camera* camera)
 {
 	this->meshManager = meshManager;
 
 	basicShader = new Shader("Basic Shader", "..\\Shaders\\BasicVertex.shader", "..\\Shaders\\BasicFragment.shader");
 
-	camera = new Camera(32, 18, -1, 1);
+	this->camera = camera;
 
 	basicShader->Use();
 
@@ -100,14 +103,11 @@ Texture* Renderer2D::LoadTexture(std::string dir)
 
 void Renderer2D::Draw()
 {
-	camera->Update();
-
 	basicShader->Use();
 	
 	basicShader->setMat4("OrthoMatrix", camera->GetTransform());
 	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,0.0f)));
 	BeginBatch();
-
 
 	for (int i = 0; i < objectPool.size(); i++)
 	{
@@ -117,7 +117,7 @@ void Renderer2D::Draw()
 		}
 		else if (objectPool[i]->GetType() == ObjectType::Quad && objectPool[i]->GetTexture() != nullptr)
 		{
-			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), objectPool[i]->GetTexture()->GetID());
+			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), objectPool[i]->GetTexture(), objectPool[i]->GetFrame());
 		}
 		else if (objectPool[i]->GetType() == ObjectType::Circle)
 		{
@@ -126,7 +126,7 @@ void Renderer2D::Draw()
 			basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 		}
 	}
-	
+
 	EndBatch();
 	Flush();
 }
@@ -175,7 +175,7 @@ void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color)
 	data.indexCount += 6;
 }
 
-void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, uint32_t textureID)
+void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, Texture* texture, int frame)
 {
 	if (data.indexCount >= maxIndexCount || data.textureSlotIndex > maxTextures)
 	{
@@ -189,7 +189,7 @@ void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, uint32_t textureID
 	float textureIndex = 0.0f;
 	for (uint32_t i = 1; i < data.textureSlotIndex; i++)
 	{
-		if (data.textureSlots[i] == textureID)
+		if (data.textureSlots[i] == texture->GetID())
 		{
 			textureIndex = (float)i;
 			break;
@@ -199,36 +199,58 @@ void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, uint32_t textureID
 	if (textureIndex == 0.0f)
 	{
 		textureIndex = (float)data.textureSlotIndex;
-		data.textureSlots[data.textureSlotIndex] = textureID;
+		data.textureSlots[data.textureSlotIndex] = texture->GetID();
 		data.textureSlotIndex++;
 	}
 
+	setActiveRegion(texture, frame);
 
 	data.quadBufferPtr->position = { position.x - size.x / 2, position.y - size.y / 2, 0.0f };
 	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = { 0.0f,0.0f };
+	data.quadBufferPtr->texCoords = UVs[0];
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
 	data.quadBufferPtr->position = { position.x + size.x / 2,position.y - size.y / 2, 0.0f };
 	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = { 1.0f,0.0f };
+	data.quadBufferPtr->texCoords = UVs[1];
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
 	data.quadBufferPtr->position = { position.x + size.x / 2,position.y + size.y / 2, 0.0f };
 	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = { 1.0f,1.0f };
+	data.quadBufferPtr->texCoords = UVs[2];
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
 	data.quadBufferPtr->position = { position.x - size.x / 2,position.y + size.y / 2, 0.0f };
 	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = { 0.0f,1.0f };
+	data.quadBufferPtr->texCoords = UVs[3];
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
 	data.indexCount += 6;
+}
+
+void Renderer2D::setActiveRegion(Texture* texture, int regionIndex)
+{
+	UVs.clear();
+
+	//					  (int) textureSize / spriteWidth;
+	int numberOfRegions = texture->GetWidth() / 16;
+
+	float uv_x = (regionIndex % numberOfRegions) / (float)numberOfRegions;
+	float uv_y = (regionIndex / (float)numberOfRegions) * (float)numberOfRegions;
+
+	glm::vec2 uv_down_left = glm::vec2(uv_x, uv_y);
+	glm::vec2 uv_down_right = glm::vec2(uv_x + 1.0f / numberOfRegions, uv_y);
+	glm::vec2 uv_up_right = glm::vec2(uv_x + 1.0f / numberOfRegions, (uv_y + 1.0f));
+	glm::vec2 uv_up_left = glm::vec2(uv_x, (uv_y + 1.0f));
+
+	UVs.push_back(uv_down_left);
+	UVs.push_back(uv_down_right);
+	UVs.push_back(uv_up_right);
+	UVs.push_back(uv_up_left);
 }
 
 void Renderer2D::Init()

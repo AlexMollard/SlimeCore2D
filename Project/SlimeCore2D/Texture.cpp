@@ -17,7 +17,6 @@ Texture::Texture(std::string dir)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// Load Image and generate mipmaps
-	int width, height, nrChannels;
 	unsigned char* data = stbi_load(dir.c_str(), &width, &height, &nrChannels, 0);
 
 	if (data)
@@ -58,7 +57,6 @@ void Texture::load(std::string dir)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Load Image and generate mipmaps
-	int width, height, nrChannels;
 	unsigned char* data = stbi_load(dir.c_str(), &width, &height, &nrChannels, 0);
 
 	if (data)
@@ -70,4 +68,14 @@ void Texture::load(std::string dir)
 		printf("Failed to load texture: %c\n", dir.c_str());
 	}
 	stbi_image_free(data);
+}
+
+int Texture::GetWidth()
+{
+	return width;
+}
+
+int Texture::GetHeight()
+{
+	return height;
 }

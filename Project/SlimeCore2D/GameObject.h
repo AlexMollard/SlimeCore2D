@@ -41,6 +41,24 @@ public:
 	void OnPress();
 	void OnRelease();
 
+
+	// Sprite Stuff (Probably should be in own class)
+	void SetFrame(int Frame);
+	void AdvanceFrame();
+	int GetFrame();
+
+	int GetSpriteWidth();
+	void SetSpriteWidth(int newWidth);
+
+	int GetTextureWidth();
+	void SetTextureWidth(int newWidth); 
+
+	bool GetHasAnimation();
+	void SetHasAnimation(bool value);
+
+	void SetFrameRate(float frameRate);
+	float GetFrameRate();
+
 protected:
 	glm::vec3 color = glm::vec3(1);
 	glm::vec3 defaultColor = glm::vec3(1);
@@ -53,4 +71,12 @@ protected:
 	/// Input vars
 	bool isHeld = false;
 	bool release = false;
+
+	// Sprite Stuff
+	int frame = 0;
+	int spriteWidth = 16;
+	int TextureWidth = 16;
+	float frameRate = 0.5f;
+	float frameRateTimer = 0.0f;
+	bool hasAnimation = false;
 };

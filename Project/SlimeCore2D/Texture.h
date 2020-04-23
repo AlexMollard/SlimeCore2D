@@ -16,6 +16,10 @@ public:
 	unsigned int GetID() { return textureID; };
 	void SetID(unsigned int newID) { textureID = newID; };
 
+	int GetWidth();
+	int GetHeight();
+
 protected:
 	unsigned int textureID = 0;
+	int width, height, nrChannels;
 };
