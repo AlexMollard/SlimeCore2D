@@ -53,13 +53,16 @@ public:
 	glm::mat4 GetModel();
 
 	BoundingBox* GetBoundingBox();
+	void SetBoundingBox(glm::vec2 offset, glm::vec2 scale);
 
 	glm::vec2 GetScale();
 	void SetScale(glm::vec2 newScale);
 
 	bool isKinematic = false;
 	int ID = -404;
+	bool useBoundingBox = false;
 protected:
+
 	glm::vec3 position = glm::vec3(0);
 	glm::vec2 scale = glm::vec2(1);
 	glm::vec2 normal = glm::vec2(1);

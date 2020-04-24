@@ -47,3 +47,13 @@ glm::vec2& BoundingBox::GetMin()
 {
 	return min;
 }
+
+glm::vec2 BoundingBox::GetPos(glm::vec3 objectPos)
+{
+	return objectPos + glm::vec3(offset, 0);
+}
+
+glm::vec2 BoundingBox::GetScale()
+{
+	return scale;
+}

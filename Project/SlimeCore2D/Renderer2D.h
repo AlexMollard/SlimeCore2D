@@ -42,8 +42,8 @@ private:
 	std::vector<Texture*> texturePool;
 	std::vector<Shader*> shaderPool;
 
-	Shader* basicShader = nullptr;
-	Camera* camera = nullptr;
+	static Shader* basicShader;
+	static Camera* camera;
 	MeshManager* meshManager = nullptr;
 
 	static std::vector<glm::vec2> UVs;

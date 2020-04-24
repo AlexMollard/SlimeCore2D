@@ -18,7 +18,14 @@ public:
 	glm::vec2& GetMax();
 	glm::vec2& GetMin();
 
+	
+	glm::vec2 GetPos(glm::vec3 objectPos);
+	glm::vec2 GetScale();
+
+	glm::vec2 offset = glm::vec2(0);
+	glm::vec2 scale = glm::vec2(0);
 private:
+
 	InputManager* inputManager = InputManager::GetInstance();
 
 	glm::vec2 max = glm::vec2(0);

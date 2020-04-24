@@ -3,8 +3,9 @@
 #include <tuple>
 #include <sstream>
 #include <unordered_map>
+#include "Renderer2D.h"
 
-PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, -10.0f))
+PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, 0))
 {
 	tex = new TextRenderer();
 }
@@ -45,6 +46,7 @@ void PhysicsScene::removeActor(RigidBody* actor)
 }
 
 void PhysicsScene::update(float dt) {
+
 	// update physics at a fixed time step
 	static float accumulatedTime = 0.0f;
 	accumulatedTime += dt;
@@ -56,7 +58,8 @@ void PhysicsScene::update(float dt) {
 		}
 		accumulatedTime -= timeStep;
 	}
-	
+
+
 	for (int i = 0; i < actors.size(); i++)
 	{
 		RigidBody* object = actors[i];
@@ -67,6 +70,7 @@ void PhysicsScene::update(float dt) {
 			if (other->GetKinematic() && object->GetKinematic())
 				continue;
 			
+
 			// using function pointers
 			int functionIdx = (int(object->GetType()) * int(ObjectType::ShapeCount)) + int(other->GetType());
 			Collision_Function collisionFunctionPtr = collisionFunctions[functionIdx];
@@ -85,27 +89,20 @@ void PhysicsScene::update(float dt) {
 			}
 		}
 	}
+
 }
 
 void PhysicsScene::Debug()
 {
-	std::cout.precision(2);
+	Renderer2D::BeginBatch();
 
 	for (int i = 0; i < actors.size(); i++)
 	{
-		if (actors[i]->GetKinematic())
-			continue;
-
-		std::ostringstream ss;
-		ss << actors[i]->GetVelocity().x;
-		std::string x(ss.str());
-
-		ss << actors[i]->GetVelocity().y;
-		std::string y(ss.str());
-
-		std::string text = std::string(actors[i]->name + " Velocity: (" + x + ", " + y + ")");
-		tex->RenderText(text, 50, 20 * i + 50, 1, glm::vec3(1));
+		Renderer2D::DrawQuad(glm::vec3(actors[i]->GetPos().x, actors[i]->GetPos().y, -0.8f), actors[i]->GetScale(), glm::vec4(1, 0, 0, 1));
 	}
+
+	Renderer2D::EndBatch();
+	Renderer2D::Flush;
 }
 
 Collision_Function PhysicsScene::collisionFunctions[] =

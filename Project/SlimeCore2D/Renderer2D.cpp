@@ -3,6 +3,8 @@
 #include <array>
 
 std::vector<glm::vec2> Renderer2D::UVs;
+Camera* Renderer2D::camera;
+Shader* Renderer2D::basicShader;
 
 
 static const size_t maxQuadCount = 2000;
@@ -103,10 +105,6 @@ Texture* Renderer2D::LoadTexture(std::string dir)
 
 void Renderer2D::Draw()
 {
-	basicShader->Use();
-	
-	basicShader->setMat4("OrthoMatrix", camera->GetTransform());
-	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,0.0f)));
 	BeginBatch();
 
 	for (int i = 0; i < objectPool.size(); i++)
@@ -327,6 +325,10 @@ void Renderer2D::ShutDown()
 void Renderer2D::BeginBatch()
 {
 	data.quadBufferPtr = data.quadBuffer;
+	basicShader->Use();
+
+	basicShader->setMat4("OrthoMatrix", camera->GetTransform());
+	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 }
 
 void Renderer2D::EndBatch()

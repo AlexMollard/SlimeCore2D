@@ -30,6 +30,8 @@ void Player::Init(Camera* cam)
 
 	player_Run_Right = new Texture("..\\Textures\\Knight_Run_Right.png");
 	player_Run_Left = new Texture("..\\Textures\\Knight_Run_Left.png");
+	 
+	SetBoundingBox(glm::vec2(0, -0.75f),glm::vec2(0.75f, 0.25f));
 }
 
 void Player::Update(float deltaTime)
@@ -40,19 +42,17 @@ void Player::Update(float deltaTime)
 	static bool right = true;
 
 	if (InputManager::GetKeyPress(Keycode::A))
-	{
 		right = false;
-		SetTexture(player_Run_Left);
-	}
 
 	if (InputManager::GetKeyPress(Keycode::D))
-	{
 		right = true;
-		SetTexture(player_Run_Right);
-	}
 
 	if (InputManager::GetKeyPress(Keycode::D) || InputManager::GetKeyPress(Keycode::A) || InputManager::GetKeyPress(Keycode::W) || InputManager::GetKeyPress(Keycode::S))
 	{
+		if (right)
+			SetTexture(player_Run_Right);
+		else
+			SetTexture(player_Run_Left);
 		SetFrameRate(0.1f);
 	}
 	else

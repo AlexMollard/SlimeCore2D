@@ -1,5 +1,7 @@
 #pragma once
 #include "ObjectManager.h"
+#include "PhysicsScene.h"
+
 class MapGenerator
 {
 public:
@@ -29,7 +31,7 @@ public:
 		GameObject* object = nullptr;
 	};
 
-	MapGenerator(ObjectManager* objectManager, int mapSize);
+	MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, int mapSize);
 	~MapGenerator();
 
 	void Generate();
@@ -54,6 +56,7 @@ public:
 
 private:
 	ObjectManager* objManager;
+	PhysicsScene* pScene;
 
 	int mapSize = 0;
 
@@ -82,6 +85,6 @@ private:
 
 	Texture* bottom_Left = nullptr;
 	Texture* bottom_Center = nullptr;
+	Texture* bottom_Center_2 = nullptr;
 	Texture* bottom_Right = nullptr;
 };
-

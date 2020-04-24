@@ -119,6 +119,13 @@ BoundingBox* RigidBody::GetBoundingBox()
 	return &boundingBox;
 }
 
+void RigidBody::SetBoundingBox(glm::vec2 offset, glm::vec2 scale)
+{
+	boundingBox.offset = offset;
+	boundingBox.scale = scale;
+	useBoundingBox = true;
+}
+
 void RigidBody::resolveCollision(RigidBody* actor2)
 {
 	if (normal == glm::vec2(0))

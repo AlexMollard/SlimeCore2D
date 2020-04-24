@@ -2,12 +2,12 @@
 #include "gtc/noise.hpp"
 #include <time.h>
 
-MapGenerator::MapGenerator(ObjectManager* objectManager, int mapSize)
+MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, int mapSize)
 {
 	objManager = objectManager;
 	CreateTextures();
 	this->mapSize = mapSize;
-	
+	this->pScene = pScene;
 	// Create Cells
 	cells = new Cell * [mapSize];
 	for (int i = 0; i < mapSize; i++)
@@ -200,13 +200,14 @@ void MapGenerator::Generate()
 	{
 		for (int y = 0; y < mapSize; y++)
 		{
+			if (GetTotalGroundSurrounding(cells[x][y]) == 0 && cells[x][y].cellType == type::Wall)
+			{
+				cells[x][y].cellType = type::Water;
+			}
+
 			if (cells[x][y].cellType == type::Wall)
 			{
-				if (GetTotalGroundSurrounding(cells[x][y]) == 0)
-				{
-					cells[x][y].cellType = type::Water;
-				}
-
+				pScene->addActor(cells[x][y].object, "wall", true);
 				SetTileSprite(x, y);
 
 				cells[x][y].object->SetColor(glm::vec3(1));
@@ -362,6 +363,7 @@ void MapGenerator::CreateTextures()
 
 	bottom_Left = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Left.png");
 	bottom_Center = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Center.png");
+	bottom_Center_2 = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Center_2.png");
 	bottom_Right = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Right.png");
 }
 
@@ -405,6 +407,8 @@ void MapGenerator::DeleteTextures()
 	bottom_Left = nullptr;
 	delete bottom_Center;
 	bottom_Center = nullptr;
+	delete bottom_Center_2;
+	bottom_Center_2 = nullptr;
 	delete bottom_Right;
 	bottom_Right = nullptr;
 }
@@ -467,7 +471,7 @@ Texture* MapGenerator::SetWall(bool up, bool right, bool down, bool left, bool f
 		return middle_Right;
 	}
 
-	return bottom_Center;
+	return (rand() % 2 == 1) ? bottom_Center : bottom_Center_2;
 
 }
 
