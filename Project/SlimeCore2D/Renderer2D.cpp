@@ -40,6 +40,14 @@ struct RendererData
 
 static RendererData data;
 
+static glm::vec2 basicUVS[4] =
+{
+	glm::vec2(0.0f,0.0f),
+	glm::vec2(1.0f,0.0f),
+	glm::vec2(1.0f,1.0f),
+	glm::vec2(0.0f,1.0f)
+};
+
 
 Renderer2D::Renderer2D(MeshManager* meshManager, Camera* camera)
 {
@@ -149,29 +157,22 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color)
 
 	float textureIndex = 0.0f;
 
-	data.quadBufferPtr->position = { position.x - size.x / 2, position.y - size.y / 2, position.z };
-	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = { 0.0f,0.0f };
-	data.quadBufferPtr->texIndex = textureIndex;
-	data.quadBufferPtr++;
+	glm::vec3 positions[4] =
+	{
+		glm::vec3(position.x - size.x / 2, position.y - size.y / 2, position.z),
+		glm::vec3(position.x + size.x / 2,position.y - size.y / 2, position.z),
+		glm::vec3(position.x + size.x / 2,position.y + size.y / 2, position.z),
+		glm::vec3(position.x - size.x / 2,position.y + size.y / 2, position.z)
+	};
 
-	data.quadBufferPtr->position = { position.x + size.x / 2,position.y - size.y / 2, position.z };
-	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = { 1.0f,0.0f };
-	data.quadBufferPtr->texIndex = textureIndex;
-	data.quadBufferPtr++;
-
-	data.quadBufferPtr->position = { position.x + size.x / 2,position.y + size.y / 2, position.z };
-	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = { 1.0f,1.0f };
-	data.quadBufferPtr->texIndex = textureIndex;
-	data.quadBufferPtr++;
-
-	data.quadBufferPtr->position = { position.x - size.x / 2,position.y + size.y / 2, position.z };
-	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = { 0.0f,1.0f };
-	data.quadBufferPtr->texIndex = textureIndex;
-	data.quadBufferPtr++;
+	for (int i = 0; i < 4; i++)
+	{
+		data.quadBufferPtr->position = positions[i];
+		data.quadBufferPtr->color = color;
+		data.quadBufferPtr->texCoords = basicUVS[i];
+		data.quadBufferPtr->texIndex = textureIndex;
+		data.quadBufferPtr++;
+	}
 
 	data.indexCount += 6;
 }
@@ -202,31 +203,35 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, T
 		data.textureSlotIndex++;
 	}
 
-	setActiveRegion(texture, frame);
+	static bool useBasicUVS = false;
 
-	data.quadBufferPtr->position = { position.x - size.x / 2, position.y - size.y / 2, position.z };
-	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = UVs[0];
-	data.quadBufferPtr->texIndex = textureIndex;
-	data.quadBufferPtr++;
+	if (texture->GetWidth() == 16)
+	{
+		useBasicUVS = true;
+	}
+	else
+	{
+		useBasicUVS = false;
+		setActiveRegion(texture, frame);
+	}
 
-	data.quadBufferPtr->position = { position.x + size.x / 2,position.y - size.y / 2, position.z };
-	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = UVs[1];
-	data.quadBufferPtr->texIndex = textureIndex;
-	data.quadBufferPtr++;
 
-	data.quadBufferPtr->position = { position.x + size.x / 2,position.y + size.y / 2, position.z };
-	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = UVs[2];
-	data.quadBufferPtr->texIndex = textureIndex;
-	data.quadBufferPtr++;
+	glm::vec3 positions[4] =
+	{
+		glm::vec3(position.x - size.x / 2, position.y - size.y / 2, position.z),
+		glm::vec3(position.x + size.x / 2,position.y - size.y / 2, position.z),
+		glm::vec3(position.x + size.x / 2,position.y + size.y / 2, position.z),
+		glm::vec3(position.x - size.x / 2,position.y + size.y / 2, position.z)
+	};
 
-	data.quadBufferPtr->position = { position.x - size.x / 2,position.y + size.y / 2, position.z};
-	data.quadBufferPtr->color = color;
-	data.quadBufferPtr->texCoords = UVs[3];
-	data.quadBufferPtr->texIndex = textureIndex;
-	data.quadBufferPtr++;
+	for (int i = 0; i < 4; i++)
+	{
+		data.quadBufferPtr->position = positions[i];
+		data.quadBufferPtr->color = color;
+		data.quadBufferPtr->texCoords = (useBasicUVS) ? basicUVS[i] : UVs[i];
+		data.quadBufferPtr->texIndex = textureIndex;
+		data.quadBufferPtr++;
+	}
 
 	data.indexCount += 6;
 }
