@@ -5,8 +5,8 @@ class MapGenerator
 public:
 	enum class type
 	{
-		None,
-		Center,
+		Water,
+		Ground,
 		TopLeft,
 		TopCenter,
 		TopRight,
@@ -18,38 +18,50 @@ public:
 		InnerBottomRight,
 		BottomLeft,
 		BottomCenter,
-		BottomRight
+		BottomRight,
+		Wall
 	};
 	struct Cell
 	{
 		glm::vec2 position = glm::vec2(0);
-		type cellType = type::None;
-		type preCellType = type::None;
+		type cellType = type::Water;
+		type preCellType = type::Water;
 		GameObject* object = nullptr;
 	};
 
-	MapGenerator(ObjectManager* objectManager);
+	MapGenerator(ObjectManager* objectManager, int mapSize);
 	~MapGenerator();
 
-	void Generate(int mapSize);
+	void Generate();
+	void SetCellTypeToPreCellType();
+	void ResetCells();
+	void EatWater(int landAroundMin);
+
+	void SetTileSprite(int x, int y);
 
 	type SetType(int x, int y);
 
 	void CreateTextures();
 	void DeleteTextures();
 
+	Texture* SetWall(bool up, bool right, bool down, bool left, bool floorAbove, bool floorBelow, bool floorRight, bool floorLeft);
+
 	int GetTotalGroundSurrounding(Cell& cell);
 
 	Texture* GetTexture(type tileType);
 
+	bool testing = false;
+
 private:
 	ObjectManager* objManager;
 
-	int mapSize = 10;
+	int mapSize = 0;
 
 	Cell** cells;
 
 	// Textures
+	Texture* water = nullptr;
+
 	Texture* center_0 = nullptr;
 	Texture* center_1 = nullptr;
 	Texture* center_2 = nullptr;

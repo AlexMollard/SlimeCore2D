@@ -22,5 +22,5 @@ void main()
 	TexCoord = aTexCoord;
 	TexCoord.y = -1 * TexCoord.y;
 
-	gl_Position = OrthoMatrix * Model * vec4(-aPos.xy, 0.0, 1.0);
+	gl_Position = OrthoMatrix * Model * vec4(-aPos.xyz, 1.0);
 }

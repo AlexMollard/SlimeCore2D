@@ -4,10 +4,10 @@ Game2D::Game2D()
 {
 	Init();
 
-	player = objectManager->CreatePlayer(glm::vec2(0, 0), glm::vec2(1));
-	player->Init(camera);
+	map->Generate();
 
-	map->Generate(50);
+	player = objectManager->CreatePlayer(glm::vec3(0, 0, -0.5f), glm::vec2(1));
+	player->Init(camera);
 }
 
 Game2D::~Game2D()
@@ -32,13 +32,12 @@ void Game2D::Init()
 	renderer = new Renderer2D(meshManager, camera);
 	objectManager = new ObjectManager(renderer);
 	physicsScene = new PhysicsScene();
-	map = new MapGenerator(objectManager);
+	map = new MapGenerator(objectManager,75);
 }
 
 void Game2D::Update(float deltaTime)
 {
 	camera->Update(deltaTime);
-
 	objectManager->Update(deltaTime);
 }
 

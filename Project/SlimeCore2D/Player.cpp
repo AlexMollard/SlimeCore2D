@@ -34,7 +34,6 @@ void Player::Init(Camera* cam)
 
 void Player::Update(float deltaTime)
 {
-	camera->SetPosition(position);
 	
 	playerMovement(deltaTime);
 
@@ -65,6 +64,8 @@ void Player::Update(float deltaTime)
 
 		SetFrameRate(0.15f);
 	}
+	
+	camera->SetPosition(position);
 }
 
 void Player::playerMovement(float deltaTime)
@@ -73,17 +74,19 @@ void Player::playerMovement(float deltaTime)
 
 	float moveSpeed = speed * deltaTime;
 
+	glm::vec3 movePos = GetPos();
+
 	if (InputManager::GetKeyPress(Keycode::W))
-		position += glm::vec2(0.0f, moveSpeed);
+		movePos += glm::vec3(0.0f, moveSpeed, 0);
 
 	if (InputManager::GetKeyPress(Keycode::S))
-		position += glm::vec2(0.0f, -moveSpeed);
+		movePos += glm::vec3(0.0f, -moveSpeed, 0);
 
 	if (InputManager::GetKeyPress(Keycode::A))
-		position += glm::vec2(-moveSpeed, 0.0f);
+		movePos += glm::vec3(-moveSpeed, 0.0f, 0);
 
 	if (InputManager::GetKeyPress(Keycode::D))
-		position += glm::vec2(moveSpeed, 0.0f);
+		movePos += glm::vec3(moveSpeed, 0.0f, 0);
 
-	SetPos(position);
+	SetPos(movePos);
 }

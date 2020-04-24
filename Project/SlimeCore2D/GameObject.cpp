@@ -27,7 +27,7 @@ void GameObject::Update(float deltaTime)
 
 }
 
-void GameObject::Create(glm::vec2 pos, glm::vec3 color, glm::vec2 scale, int id)
+void GameObject::Create(glm::vec3 pos, glm::vec3 color, glm::vec2 scale, int id)
 {
 	SetPos(pos);
 	SetSpawn(pos);
@@ -68,7 +68,7 @@ void GameObject::Respawn()
 	SetPos(spawnPoint);
 }
 
-void GameObject::SetSpawn(glm::vec2 newSpawn)
+void GameObject::SetSpawn(glm::vec3 newSpawn)
 {
 	spawnPoint = newSpawn;
 }
@@ -163,11 +163,11 @@ void GameObject::UpdateInteraction(float deltaTime)
 	
 		if (isKinematic)
 		{
-			SetPos(inputManager->GetMousePos());
+			SetPos(glm::vec3(inputManager->GetMousePos(),0));
 		}
 		else
 		{
-			glm::vec2 forceToMouse = glm::normalize(inputManager->GetMousePos() - GetPos());
+			glm::vec2 forceToMouse = glm::normalize(inputManager->GetMousePos() - glm::vec2(GetPos()));
 			ApplyForce(forceToMouse);
 		}
 	}
@@ -286,4 +286,14 @@ void GameObject::UpdateSpriteTimer(float deltaTime)
 bool GameObject::GetIsPlayer()
 {
 	return isPlayer;
+}
+
+bool GameObject::GetRender()
+{
+	return render;
+}
+
+void GameObject::SetRender(bool value)
+{
+	render = value;
 }

@@ -33,7 +33,7 @@ glm::vec2 CollisionManager::CircleVsLine(RigidBody* circle, RigidBody* line)
 {
 	Line* l = dynamic_cast<Line*>(line);
 
-	float position_dot_normal = glm::dot(circle->GetPos(), l->GetNormal());
+	float position_dot_normal = glm::dot(glm::vec2(circle->GetPos()), l->GetNormal());
 
 	float distance = position_dot_normal - (-l->GetDistance() + (circle->GetScale().x * 0.5f));
 
@@ -45,12 +45,12 @@ glm::vec2 CollisionManager::CircleVsLine(RigidBody* circle, RigidBody* line)
 
 glm::vec2 CollisionManager::QuadVsCircle(RigidBody* rbOne, RigidBody* rbTwo)
 {
-	glm::vec2 one_Min = rbOne->GetPos() - (rbOne->GetScale() * 0.5f);
-	glm::vec2 one_Max = rbOne->GetPos() + (rbOne->GetScale() * 0.5f);
+	glm::vec3 one_Min = rbOne->GetPos() - glm::vec3((rbOne->GetScale() * 0.5f),1);
+	glm::vec3 one_Max = rbOne->GetPos() + glm::vec3((rbOne->GetScale() * 0.5f),1);
 
-	glm::vec2 clamped_centre = glm::clamp(rbTwo->GetPos(), one_Min, one_Max);
+	glm::vec3 clamped_centre = glm::clamp(rbTwo->GetPos(), one_Min, one_Max);
 
-	glm::vec2 displacement = clamped_centre - rbTwo->GetPos();
+	glm::vec3 displacement = clamped_centre - rbTwo->GetPos();
 
 	float overlap = (rbTwo->GetScale().x * 0.5f) - glm::length(displacement);
 
@@ -70,10 +70,13 @@ glm::vec2 CollisionManager::QuadVsQuad(RigidBody* rbOne, RigidBody* rbTwo)
 	glm::vec2 overlapVector = { 0,0 };
 	float overlap = 999999999999.0f;
 
-	glm::vec2 one_Min = rbOne->GetPos() - (rbOne->GetScale() * 0.5f);
-	glm::vec2 one_Max = rbOne->GetPos() + (rbOne->GetScale() * 0.5f);
-	glm::vec2 two_Min = rbTwo->GetPos() - (rbTwo->GetScale() * 0.5f);
-	glm::vec2 two_Max = rbTwo->GetPos() + (rbTwo->GetScale() * 0.5f);
+	glm::vec2 posOne = rbOne->GetPos();
+	glm::vec2 posTwo = rbTwo->GetPos();
+
+	glm::vec2 one_Min = posOne - (rbOne->GetScale() * 0.5f);
+	glm::vec2 one_Max = posOne + (rbOne->GetScale() * 0.5f);
+	glm::vec2 two_Min = posTwo - (rbTwo->GetScale() * 0.5f);
+	glm::vec2 two_Max = posTwo + (rbTwo->GetScale() * 0.5f);
 
 	if (one_Max.x > two_Min.x)
 	{

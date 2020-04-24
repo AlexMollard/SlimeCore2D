@@ -111,6 +111,9 @@ void Renderer2D::Draw()
 
 	for (int i = 0; i < objectPool.size(); i++)
 	{
+		if (objectPool[i]->GetRender() == false)
+			continue;
+
 		if (objectPool[i]->GetType() == ObjectType::Quad && objectPool[i]->GetTexture() == nullptr)
 		{
 			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f });
@@ -137,7 +140,7 @@ Shader* Renderer2D::GetBasicShader()
 	return basicShader;
 }
 
-void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color)
+void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color)
 {
 	if (data.indexCount >= maxIndexCount)
 	{
@@ -148,25 +151,25 @@ void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color)
 
 	float textureIndex = 0.0f;
 
-	data.quadBufferPtr->position = { position.x - size.x / 2, position.y - size.y / 2, 0.0f };
+	data.quadBufferPtr->position = { position.x - size.x / 2, position.y - size.y / 2, position.z };
 	data.quadBufferPtr->color = color;
 	data.quadBufferPtr->texCoords = { 0.0f,0.0f };
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
-	data.quadBufferPtr->position = { position.x + size.x / 2,position.y - size.y / 2, 0.0f };
+	data.quadBufferPtr->position = { position.x + size.x / 2,position.y - size.y / 2, position.z };
 	data.quadBufferPtr->color = color;
 	data.quadBufferPtr->texCoords = { 1.0f,0.0f };
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
-	data.quadBufferPtr->position = { position.x + size.x / 2,position.y + size.y / 2, 0.0f };
+	data.quadBufferPtr->position = { position.x + size.x / 2,position.y + size.y / 2, position.z };
 	data.quadBufferPtr->color = color;
 	data.quadBufferPtr->texCoords = { 1.0f,1.0f };
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
-	data.quadBufferPtr->position = { position.x - size.x / 2,position.y + size.y / 2, 0.0f };
+	data.quadBufferPtr->position = { position.x - size.x / 2,position.y + size.y / 2, position.z };
 	data.quadBufferPtr->color = color;
 	data.quadBufferPtr->texCoords = { 0.0f,1.0f };
 	data.quadBufferPtr->texIndex = textureIndex;
@@ -175,7 +178,7 @@ void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color)
 	data.indexCount += 6;
 }
 
-void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame)
+void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame)
 {
 	if (data.indexCount >= maxIndexCount || data.textureSlotIndex > maxTextures)
 	{
@@ -203,25 +206,25 @@ void Renderer2D::DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color, T
 
 	setActiveRegion(texture, frame);
 
-	data.quadBufferPtr->position = { position.x - size.x / 2, position.y - size.y / 2, 0.0f };
+	data.quadBufferPtr->position = { position.x - size.x / 2, position.y - size.y / 2, position.z };
 	data.quadBufferPtr->color = color;
 	data.quadBufferPtr->texCoords = UVs[0];
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
-	data.quadBufferPtr->position = { position.x + size.x / 2,position.y - size.y / 2, 0.0f };
+	data.quadBufferPtr->position = { position.x + size.x / 2,position.y - size.y / 2, position.z };
 	data.quadBufferPtr->color = color;
 	data.quadBufferPtr->texCoords = UVs[1];
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
-	data.quadBufferPtr->position = { position.x + size.x / 2,position.y + size.y / 2, 0.0f };
+	data.quadBufferPtr->position = { position.x + size.x / 2,position.y + size.y / 2, position.z };
 	data.quadBufferPtr->color = color;
 	data.quadBufferPtr->texCoords = UVs[2];
 	data.quadBufferPtr->texIndex = textureIndex;
 	data.quadBufferPtr++;
 
-	data.quadBufferPtr->position = { position.x - size.x / 2,position.y + size.y / 2, 0.0f };
+	data.quadBufferPtr->position = { position.x - size.x / 2,position.y + size.y / 2, position.z};
 	data.quadBufferPtr->color = color;
 	data.quadBufferPtr->texCoords = UVs[3];
 	data.quadBufferPtr->texIndex = textureIndex;

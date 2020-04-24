@@ -19,9 +19,9 @@ public:
 
 	glm::vec2 GetVelocity() { return velocity; };
 
-	void SetPos(glm::vec2 newPos);
-	void SetPos(float x, float y);
-	glm::vec2 GetPos();
+	void SetPos(glm::vec3 newPos);
+	void SetPos(float x, float y, float z);
+	glm::vec3 GetPos();
 
 	void SetVelocity(glm::vec2 newVel) { velocity = newVel; };
 	void AddVelocity(glm::vec2 newVel) { velocity += newVel; };
@@ -39,7 +39,7 @@ public:
 	void ApplyForceToActor(RigidBody* obj, glm::vec2 force);
 	void ApplyForce(glm::vec2 force);
 
-	void ApplyOffSetToActor(RigidBody* obj, glm::vec2 overlap);
+	void ApplyOffSetToActor(RigidBody* obj, glm::vec3 overlap);
 	void resolveCollision(RigidBody* actor2);
 
 	bool GetIsColliding(RigidBody* other);
@@ -60,7 +60,7 @@ public:
 	bool isKinematic = false;
 	int ID = -404;
 protected:
-	glm::vec2 position = glm::vec2(0);
+	glm::vec3 position = glm::vec3(0);
 	glm::vec2 scale = glm::vec2(1);
 	glm::vec2 normal = glm::vec2(1);
 

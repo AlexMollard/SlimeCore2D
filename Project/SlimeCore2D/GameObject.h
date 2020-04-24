@@ -11,13 +11,13 @@ public:
 	virtual ~GameObject();
 
 	virtual void Update(float deltaTime);
-	virtual void Create(glm::vec2 pos, glm::vec3 color, glm::vec2 scale, int id);
+	virtual void Create(glm::vec3 pos, glm::vec3 color, glm::vec2 scale, int id);
 
 	Mesh* GetMesh();
 	void SetMesh(Mesh* newMesh);
 
 	void Respawn();
-	void SetSpawn(glm::vec2 newSpawn);
+	void SetSpawn(glm::vec3 newSpawn);
 
 	glm::vec3 GetColor();
 	void SetColor(glm::vec3 newColor);
@@ -63,11 +63,15 @@ public:
 
 	bool GetIsPlayer();
 
+	bool GetRender();
+	void SetRender(bool value);
+
 protected:
 	glm::vec3 color = glm::vec3(1);
 	glm::vec3 defaultColor = glm::vec3(1);
-	glm::vec2 spawnPoint = glm::vec2(0);
+	glm::vec3 spawnPoint = glm::vec3(0);
 
+	bool render = true;
 	bool isPlayer = false;
 
 	Texture* texture = nullptr;

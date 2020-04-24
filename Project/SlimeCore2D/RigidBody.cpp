@@ -1,20 +1,21 @@
 #include "RigidBody.h"
 #include <iostream>
 
-void RigidBody::SetPos(glm::vec2 newPos)
+void RigidBody::SetPos(glm::vec3 newPos)
 {
-	SetPos(newPos.x, newPos.y);
+	SetPos(newPos.x, newPos.y, newPos.z);
 }
 
-void RigidBody::SetPos(float x, float y)
+void RigidBody::SetPos(float x, float y, float z)
 {
 	position.x = x;
 	position.y = y;
+	position.z = z;
 
-	model[3] = glm::vec4(position, 0, 1);
+	model[3] = glm::vec4(position, 1);
 }
 
-glm::vec2 RigidBody::GetPos()
+glm::vec3 RigidBody::GetPos()
 {
 	return position;
 }
@@ -35,7 +36,7 @@ void RigidBody::ApplyForce(glm::vec2 force)
 	velocity += force / mass;
 }
 
-void RigidBody::ApplyOffSetToActor(RigidBody* obj, glm::vec2 overlap)
+void RigidBody::ApplyOffSetToActor(RigidBody* obj, glm::vec3 overlap)
 {
 	if (!(this->GetKinematic() || obj->GetKinematic()))
 	{
@@ -101,7 +102,7 @@ ObjectType RigidBody::GetType()
 void RigidBody::fixedUpdate(glm::vec2 gravity, float timeStep)
 {
 	ApplyForce(gravity * timeStep);
-	position += velocity * timeStep;
+	position += glm::vec3(velocity,0) * timeStep;
 
 	SetPos(position);
 }

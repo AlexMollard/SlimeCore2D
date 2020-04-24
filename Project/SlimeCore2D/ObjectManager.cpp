@@ -25,7 +25,7 @@ ObjectManager::~ObjectManager()
 	renderer = nullptr;
 }
 
-GameObject* ObjectManager::CreateGameObject(glm::vec2 pos, glm::vec2 size, glm::vec3 color)
+GameObject* ObjectManager::CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
 {
 	GameObject* go = new GameObject();
 	go->Create(pos, color, size, objects.size());
@@ -36,7 +36,7 @@ GameObject* ObjectManager::CreateGameObject(glm::vec2 pos, glm::vec2 size, glm::
 	return go;
 }
 
-GameObject* ObjectManager::CreateQuad(glm::vec2 pos, glm::vec2 size, glm::vec3 color)
+GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
 {
 	Quad* go = new Quad();
 	go->Create(pos, color, size, objects.size());
@@ -47,7 +47,7 @@ GameObject* ObjectManager::CreateQuad(glm::vec2 pos, glm::vec2 size, glm::vec3 c
 	return go;
 }
 
-GameObject* ObjectManager::CreateQuad(glm::vec2 pos, glm::vec2 size, Texture* tex)
+GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* tex)
 {
 	Quad* go = new Quad();
 	go->Create(pos, glm::vec3(1), size, objects.size());
@@ -59,7 +59,7 @@ GameObject* ObjectManager::CreateQuad(glm::vec2 pos, glm::vec2 size, Texture* te
 	return go;
 }
 
-GameObject* ObjectManager::CreateCircle(glm::vec2 pos, float diameter, glm::vec3 color)
+GameObject* ObjectManager::CreateCircle(glm::vec3 pos, float diameter, glm::vec3 color)
 {
 	Circle* go = new Circle();
 	go->Create(pos, color, glm::vec2(diameter), objects.size());
@@ -74,7 +74,7 @@ GameObject* ObjectManager::CreateLine(float distance, float width,float rotation
 {
 	Line* go = new Line();
 
-	go->Create(glm::vec2(0), color, glm::vec2(1000, width), objects.size());
+	go->Create(glm::vec3(0), color, glm::vec2(1000, width), objects.size());
 	go->SetRotate(rotation);
 	renderer->AddObject(go);
 	objects.push_back(go);
@@ -83,12 +83,12 @@ GameObject* ObjectManager::CreateLine(float distance, float width,float rotation
 
 	glm::vec2 normal = go->GetNormal();
 	glm::vec2 centre_point = normal * distance;
-	go->SetPos(-centre_point);
+	go->SetPos(glm::vec3(-centre_point,0));
 
 	return go;
 }
 
-Player* ObjectManager::CreatePlayer(glm::vec2 pos, glm::vec2 size, glm::vec3 color)
+Player* ObjectManager::CreatePlayer(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
 {
 	Player* go = new Player();
 	go->Create(pos, color, size, objects.size());
