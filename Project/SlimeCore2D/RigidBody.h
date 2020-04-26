@@ -58,6 +58,9 @@ public:
 	glm::vec2 GetScale();
 	void SetScale(glm::vec2 newScale);
 
+	void MoveObject(glm::vec2 newPos);	// WORKING ON THIS
+
+
 	bool isKinematic = false;
 	int ID = -404;
 	bool useBoundingBox = false;

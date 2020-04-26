@@ -126,7 +126,7 @@ void Renderer2D::Draw()
 		}
 		else if (objectPool[i]->GetType() == ObjectType::Quad && objectPool[i]->GetTexture() != nullptr)
 		{
-			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f }, objectPool[i]->GetTexture(), objectPool[i]->GetFrame());
+			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f }, objectPool[i]->GetTexture(), objectPool[i]->GetFrame(), objectPool[i]->GetSpriteWidth());
 		}
 		else if (objectPool[i]->GetType() == ObjectType::Circle)
 		{
@@ -177,9 +177,9 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color)
 	data.indexCount += 6;
 }
 
-void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame)
+void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame, int spriteWidth)
 {
-	if (data.indexCount >= maxIndexCount || data.textureSlotIndex > maxTextures)
+	if (data.indexCount >= maxIndexCount || data.textureSlotIndex >= maxTextures)
 	{
 		EndBatch();
 		Flush();
@@ -212,7 +212,7 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, T
 	else
 	{
 		useBasicUVS = false;
-		setActiveRegion(texture, frame);
+		setActiveRegion(texture, frame, spriteWidth);
 	}
 
 
@@ -236,12 +236,12 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, T
 	data.indexCount += 6;
 }
 
-void Renderer2D::setActiveRegion(Texture* texture, int regionIndex)
+void Renderer2D::setActiveRegion(Texture* texture, int regionIndex, int spriteWidth)
 {
 	UVs.clear();
 
 	//					  (int) textureSize / spriteWidth;
-	int numberOfRegions = texture->GetWidth() / 16;
+	int numberOfRegions = texture->GetWidth() / spriteWidth;
 
 	float uv_x = (regionIndex % numberOfRegions) / (float)numberOfRegions;
 	float uv_y = (regionIndex / (float)numberOfRegions) * (float)numberOfRegions;

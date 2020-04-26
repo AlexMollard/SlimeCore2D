@@ -9,6 +9,8 @@ Game2D::Game2D()
 	player = objectManager->CreatePlayer(glm::vec3(0, 0, -0.5f), glm::vec2(1));
 	player->Init(camera);
 	physicsScene->addActor(player, "player");
+
+	cloudManager->Init(35);
 }
 
 Game2D::~Game2D()
@@ -24,16 +26,20 @@ Game2D::~Game2D()
 
 	delete map;
 	map = nullptr;
+
+	delete cloudManager;
+	cloudManager = nullptr;
 }
 
 void Game2D::Init()
 {
-	camera = new Camera(-32, -18, -1, 1);
+	camera = new Camera(-16, -9, -1, 1);
 	meshManager = new MeshManager();
 	renderer = new Renderer2D(meshManager, camera);
 	objectManager = new ObjectManager(renderer);
 	physicsScene = new PhysicsScene();
 	map = new MapGenerator(objectManager,physicsScene,75);
+	cloudManager = new CloudManager(renderer);
 }
 
 void Game2D::Update(float deltaTime)
@@ -42,7 +48,7 @@ void Game2D::Update(float deltaTime)
 	
 	physicsScene->update(deltaTime);
 	objectManager->Update(deltaTime);
-
+	cloudManager->Update(deltaTime);
 }
 
 void Game2D::Draw()

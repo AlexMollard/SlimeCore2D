@@ -144,7 +144,11 @@ void GameObject::SetTexture(Texture* tex)
 
 	if (texture != nullptr)
 	{
-		SetScale(glm::vec2(spriteWidth, texture->GetHeight()) / glm::vec2(spriteWidth));
+		if (!hasAnimation)
+			SetScale(glm::vec2(texture->GetWidth() / 16, texture->GetHeight() / 16));
+		else
+			SetScale(glm::vec2(spriteWidth, texture->GetHeight()) / glm::vec2(spriteWidth));
+		
 		SetTextureWidth(texture->GetWidth());
 	}
 }
@@ -234,6 +238,8 @@ int GameObject::GetSpriteWidth()
 void GameObject::SetSpriteWidth(int newWidth)
 {
 	spriteWidth = newWidth;
+	if (TextureWidth > spriteWidth)
+		hasAnimation = true;
 }
 
 int GameObject::GetTextureWidth()

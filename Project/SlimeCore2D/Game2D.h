@@ -4,7 +4,7 @@
 #include "Debug.h"
 #include "MapGenerator.h"
 #include "Player.h"
-
+#include "CloudManager.h"
 class Game2D
 {
 public:
@@ -24,6 +24,7 @@ private:
 	PhysicsScene* physicsScene = nullptr;
 	Camera* camera = nullptr;
 	MapGenerator* map = nullptr;
+	CloudManager* cloudManager = nullptr;
 
 	Player* player = nullptr;
 

@@ -22,10 +22,10 @@ public:
  
 	Shader* GetBasicShader();
 
-	static void setActiveRegion(Texture* texture, int regionIndex);
+	static void setActiveRegion(Texture* texture, int regionIndex, int spriteWidth);
 
 	static void DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color);
-	static void DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame = 0);
+	static void DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame = 0, int spriteWidth = 16);
 
 	static void BeginBatch();
 	static void EndBatch();
