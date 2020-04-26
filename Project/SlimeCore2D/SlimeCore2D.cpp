@@ -1,13 +1,13 @@
 #include "Window.h"
 #include "Game2D.h"
 
-InputManager* InputManager::instance = 0;
+Input* Input::instance = 0;
 
 int main()
 {
 	Window* app = new Window(1536, 852, (char*)"SlimeCore2D");
 	Game2D* game = new Game2D();
-	InputManager* inputManager = InputManager::GetInstance();
+	Input* inputManager = Input::GetInstance();
 
 	while (!app->Window_shouldClose())
 	{
@@ -24,7 +24,7 @@ int main()
 	delete game;
 	game = nullptr;
 
-	delete InputManager::GetInstance();
+	delete Input::GetInstance();
 
 	return 0;
 }

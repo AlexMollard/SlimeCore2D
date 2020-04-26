@@ -2,7 +2,7 @@
 
 Cloud::Cloud(Texture* cloud, Texture* shadow, float size, glm::vec2 startPos)
 {
-	speed = (rand() % 3) + 1;
+	speed = (rand() % 10) * 0.1f + 1;
 
 	cloudObject = new GameObject();
 	cloudObject->SetPos({ startPos, -0.95f });

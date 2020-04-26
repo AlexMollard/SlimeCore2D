@@ -11,6 +11,5 @@ Quad::~Quad()
 
 void Quad::Update(float deltaTime)
 {
-	//boundingBox.UpdateQuadBoundingBox(position, scale);
-	//UpdateInteraction(deltaTime);
+	GameObject::Update(deltaTime);
 }

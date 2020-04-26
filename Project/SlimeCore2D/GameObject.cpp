@@ -24,7 +24,14 @@ GameObject::~GameObject()
 
 void GameObject::Update(float deltaTime)
 {
-
+	if (glm::distance(Input::GetMouseToWorldPos(), glm::vec2(GetPos())) < 5)
+	{
+		SetColor(0, 0, 1);
+	}
+	else
+	{
+		SetColor(1, 1, 1);
+	}
 }
 
 void GameObject::Create(glm::vec3 pos, glm::vec3 color, glm::vec2 scale, int id)

@@ -1,6 +1,6 @@
 #pragma once
 #include "Cloud.h"
-#define CLOUD_TEXTURE_TOTAL 1
+#define CLOUD_TEXTURE_TOTAL 3
 #include "Renderer2D.h"
 class CloudManager
 {

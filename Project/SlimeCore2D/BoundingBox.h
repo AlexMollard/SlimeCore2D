@@ -26,7 +26,7 @@ public:
 	glm::vec2 scale = glm::vec2(0);
 private:
 
-	InputManager* inputManager = InputManager::GetInstance();
+	Input* inputManager = Input::GetInstance();
 
 	glm::vec2 max = glm::vec2(0);
 	glm::vec2 min = glm::vec2(0);

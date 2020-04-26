@@ -25,29 +25,31 @@ void Player::Init(Camera* cam)
 	type = ObjectType::Quad;
 	camera = cam;
 
-	player_Idle_Right = new Texture("..\\Textures\\Knight_Idle_Right.png");
-	player_Idle_Left = new Texture("..\\Textures\\Knight_Idle_Left.png");
+	player_Idle_Right = new Texture("..\\Textures\\Player\\Knight_Idle_Right.png");
+	player_Idle_Left = new Texture("..\\Textures\\Player\\Knight_Idle_Left.png");
 
-	player_Run_Right = new Texture("..\\Textures\\Knight_Run_Right.png");
-	player_Run_Left = new Texture("..\\Textures\\Knight_Run_Left.png");
+	player_Run_Right = new Texture("..\\Textures\\Player\\Knight_Run_Right.png");
+	player_Run_Left = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
 	 
 	SetBoundingBox(glm::vec2(0, -0.75f),glm::vec2(0.75f, 0.25f));
+	SetTexture(player_Idle_Right);
 }
 
 void Player::Update(float deltaTime)
 {
-	
+	glm::vec2 mousePos = Input::GetMousePos();
+
 	playerMovement(deltaTime);
 
 	static bool right = true;
 
-	if (InputManager::GetKeyPress(Keycode::A))
+	if (mousePos.x < 0)
 		right = false;
 
-	if (InputManager::GetKeyPress(Keycode::D))
+	if (mousePos.x >= 0)
 		right = true;
 
-	if (InputManager::GetKeyPress(Keycode::D) || InputManager::GetKeyPress(Keycode::A) || InputManager::GetKeyPress(Keycode::W) || InputManager::GetKeyPress(Keycode::S))
+	if (Input::GetKeyPress(Keycode::D) || Input::GetKeyPress(Keycode::A) || Input::GetKeyPress(Keycode::W) || Input::GetKeyPress(Keycode::S))
 	{
 		if (right)
 			SetTexture(player_Run_Right);
@@ -70,22 +72,22 @@ void Player::Update(float deltaTime)
 
 void Player::playerMovement(float deltaTime)
 {
-	float speed = (InputManager::GetKeyPress(Keycode::LEFT_SHIFT)) ? 10.0f : 4.0f;
+	float speed = (Input::GetKeyPress(Keycode::LEFT_SHIFT)) ? 10.0f : 4.0f;
 
 	float moveSpeed = speed * deltaTime;
 
 	glm::vec3 movePos = GetPos();
 
-	if (InputManager::GetKeyPress(Keycode::W))
+	if (Input::GetKeyPress(Keycode::W))
 		movePos += glm::vec3(0.0f, moveSpeed, 0);
 
-	if (InputManager::GetKeyPress(Keycode::S))
+	if (Input::GetKeyPress(Keycode::S))
 		movePos += glm::vec3(0.0f, -moveSpeed, 0);
 
-	if (InputManager::GetKeyPress(Keycode::A))
+	if (Input::GetKeyPress(Keycode::A))
 		movePos += glm::vec3(-moveSpeed, 0.0f, 0);
 
-	if (InputManager::GetKeyPress(Keycode::D))
+	if (Input::GetKeyPress(Keycode::D))
 		movePos += glm::vec3(moveSpeed, 0.0f, 0);
 
 	SetPos(movePos);

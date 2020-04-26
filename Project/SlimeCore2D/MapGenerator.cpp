@@ -355,7 +355,7 @@ void MapGenerator::SetTreeTiles(int forestCount)
 					{
 						cells[x][y].object->SetColor(glm::vec3(0.8f,0.8f, 0.8f));
 
-						if (rand() % 10 > 5)
+						if (rand() % 10 > 8)
 						{
 							if (trees.size() > 0)
 							{
@@ -476,7 +476,7 @@ void MapGenerator::CreateTextures()
 	bottom_Center_2 = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Center_2.png");
 	bottom_Right = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Right.png");
 
-	tree_0 = new Texture("..\\Textures\\tree_0.png");
+	tree_0 = new Texture("..\\Textures\\Trees\\tree_0.png");
 }
 
 void MapGenerator::DeleteTextures()

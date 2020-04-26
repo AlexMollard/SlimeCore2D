@@ -6,10 +6,10 @@ Game2D::Game2D()
 
 	map->Generate();
 
-	player = objectManager->CreatePlayer(glm::vec3(0, 0, -0.5f), glm::vec2(1));
+	player = objectManager->CreatePlayer(glm::vec3(0, 0, -0.5f), glm::vec2(1,2));
 	player->Init(camera);
 	physicsScene->addActor(player, "player");
-
+	//testObject = objectManager->CreateQuad({ Input::GetMouseToWorldPos() , -0.99f }, glm::vec2(1), glm::vec3(1, 1, 1));
 	cloudManager->Init(35);
 }
 
@@ -40,6 +40,7 @@ void Game2D::Init()
 	physicsScene = new PhysicsScene();
 	map = new MapGenerator(objectManager,physicsScene,75);
 	cloudManager = new CloudManager(renderer);
+	Input::GetInstance()->SetCamera(camera);
 }
 
 void Game2D::Update(float deltaTime)

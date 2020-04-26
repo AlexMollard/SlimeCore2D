@@ -74,7 +74,7 @@ protected:
 
 	BoundingBox boundingBox;
 
-	InputManager* inputManager = InputManager::GetInstance();
+	Input* inputManager = Input::GetInstance();
 
 	glm::vec2 velocity = glm::vec2(0);
 	glm::mat4 model = glm::mat4(1);

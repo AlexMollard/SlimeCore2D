@@ -20,12 +20,12 @@ private:
 	Renderer2D* renderer = nullptr;
 	ObjectManager* objectManager = nullptr;
 	MeshManager* meshManager = nullptr;
-	InputManager* inputManager = InputManager::GetInstance();
+	Input* inputManager = Input::GetInstance();
 	PhysicsScene* physicsScene = nullptr;
 	Camera* camera = nullptr;
 	MapGenerator* map = nullptr;
 	CloudManager* cloudManager = nullptr;
-
+	GameObject* testObject = nullptr;
 	Player* player = nullptr;
 
 	float timer = 0.0f;

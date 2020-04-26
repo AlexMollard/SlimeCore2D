@@ -3,15 +3,16 @@
 #include "glew.h"
 #include "glfw3.h"
 #include "Keycode.h"
+#include "Camera.h"
 
-class InputManager
+class Input
 {
 public:
-	~InputManager();
+	~Input();
 
-	static InputManager* GetInstance() {
+	static Input* GetInstance() {
 		if (!instance)
-			instance = new InputManager;
+			instance = new Input;
 		return instance;
 	};
 
@@ -19,12 +20,14 @@ public:
 
 	GLFWwindow* GetWindow();
 
-	glm::vec2 GetMousePos();
+	static glm::vec2 GetMousePos();
 	glm::vec2 GetDeltaMouse();
 	
 	glm::vec2 GetWindowSize();
 	glm::vec2 GetAspectRatio();
-	bool GetMouseDown(int button);
+	static bool GetMouseDown(int button);
+
+	void SetCamera(Camera* cam);
 
 	static bool GetKeyPress(Keycode key);
 
@@ -33,15 +36,17 @@ public:
 
 	bool GetFocus();
 	void SetFocus(bool focus);
-private:
-	static InputManager* instance;
 
-	InputManager();
+	static glm::vec2 GetMouseToWorldPos();
+private:
+	static Input* instance;
+
+	Input();
 
 	GLFWwindow* window;
 
-	double mouseXPos = 0;
-	double mouseYPos = 0;
+	static double mouseXPos;
+	static double mouseYPos;
 
 	int winWidth = 0;
 	int winHeight = 0;
@@ -52,6 +57,7 @@ private:
 	bool IsWindowFocused = true;
 
 	static float scroll;
-
 	glm::vec2 deltaMouse = glm::vec2();
+
+	Camera* camera = nullptr;
 };
