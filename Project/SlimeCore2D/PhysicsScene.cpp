@@ -73,8 +73,7 @@ void PhysicsScene::update(float dt) {
 
 			if (glm::length(result) > 0.01)
 			{
-				if (other->GetType() != ObjectType::Line)
-					other->SetNormal(result);
+				other->SetNormal(result);
 
 				other->ApplyOffSetToActor(object, glm::vec3(result, 0));
 				other->resolveCollision(object);

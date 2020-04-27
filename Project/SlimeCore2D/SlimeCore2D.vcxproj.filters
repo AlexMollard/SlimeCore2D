@@ -30,13 +30,7 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files\EngineCore</Filter>
     </ClCompile>
-    <ClCompile Include="Circle.cpp">
-      <Filter>Source Files\EngineCore</Filter>
-    </ClCompile>
     <ClCompile Include="CollisionManager.cpp">
-      <Filter>Source Files\EngineCore</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug.cpp">
       <Filter>Source Files\EngineCore</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
@@ -44,18 +38,6 @@
     </ClCompile>
     <ClCompile Include="Game2D.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Source Files\EngineCore</Filter>
-    </ClCompile>
-    <ClCompile Include="Line.cpp">
-      <Filter>Source Files\EngineCore</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files\EngineCore</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshManager.cpp">
-      <Filter>Source Files\EngineCore</Filter>
     </ClCompile>
     <ClCompile Include="ObjectManager.cpp">
       <Filter>Source Files\EngineCore</Filter>
@@ -78,9 +60,6 @@
     <ClCompile Include="SlimeCore2D.cpp">
       <Filter>Source Files\EngineCore</Filter>
     </ClCompile>
-    <ClCompile Include="TextRenderer.cpp">
-      <Filter>Source Files\EngineCore</Filter>
-    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files\EngineCore</Filter>
     </ClCompile>
@@ -99,24 +78,15 @@
     <ClCompile Include="CloudManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Debug.h">
-      <Filter>Header Files\EngineCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Dependencies\glText\gltext.h">
-      <Filter>Header Files\EngineCore</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files\EngineCore</Filter>
-    </ClInclude>
     <ClInclude Include="BoundingBox.h">
       <Filter>Header Files\EngineCore</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Header Files\EngineCore</Filter>
-    </ClInclude>
-    <ClInclude Include="Circle.h">
       <Filter>Header Files\EngineCore</Filter>
     </ClInclude>
     <ClInclude Include="CollisionManager.h">
@@ -125,16 +95,7 @@
     <ClInclude Include="Game2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>Header Files\EngineCore</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshManager.h">
-      <Filter>Header Files\EngineCore</Filter>
-    </ClInclude>
     <ClInclude Include="Keycode.h">
-      <Filter>Header Files\EngineCore</Filter>
-    </ClInclude>
-    <ClInclude Include="Line.h">
       <Filter>Header Files\EngineCore</Filter>
     </ClInclude>
     <ClInclude Include="ObjectManager.h">
@@ -153,9 +114,6 @@
       <Filter>Header Files\EngineCore</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
-      <Filter>Header Files\EngineCore</Filter>
-    </ClInclude>
-    <ClInclude Include="TextRenderer.h">
       <Filter>Header Files\EngineCore</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
@@ -177,6 +135,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CloudManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

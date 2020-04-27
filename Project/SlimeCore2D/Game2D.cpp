@@ -45,7 +45,7 @@ void Game2D::Update(float deltaTime)
 {
 	camera->Update(deltaTime);
 
-	physicsScene->update(deltaTime);
+	//physicsScene->update(deltaTime);
 	objectManager->Update(deltaTime);
 	cloudManager->Update(deltaTime);
 }

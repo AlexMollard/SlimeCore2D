@@ -165,55 +165,42 @@
   <ItemGroup>
     <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Circle.cpp" />
     <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="CloudManager.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
-    <ClCompile Include="Line.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="MapGenerator.cpp" />
-    <ClCompile Include="MeshManager.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Quad.cpp" />
-    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Game2D.cpp" />
     <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="PhysicsScene.cpp" />
     <ClCompile Include="Renderer2D.cpp" />
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SlimeCore2D.cpp" />
-    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Dependencies\glText\gltext.h" />
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Circle.h" />
     <ClInclude Include="Cloud.h" />
     <ClInclude Include="CloudManager.h" />
     <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="Keycode.h" />
-    <ClInclude Include="Line.h" />
     <ClInclude Include="MapGenerator.h" />
-    <ClInclude Include="MeshManager.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Quad.h" />
-    <ClInclude Include="Debug.h" />
     <ClInclude Include="Game2D.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Mesh.h" />
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="Renderer2D.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
