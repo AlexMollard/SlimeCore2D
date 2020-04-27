@@ -8,13 +8,13 @@ Cloud::Cloud(Texture* cloud, Texture* shadow, float size, glm::vec2 startPos)
 	cloudObject->SetPos({ startPos, -0.95f });
 	cloudObject->SetTexture(cloud);
 	cloudObject->SetSpriteWidth(32);
-	cloudObject->SetScale(glm::vec2(2 * size,1 * size));
+	cloudObject->SetScale(glm::vec2(2 * size, 1 * size));
 
 	shadowObject = new GameObject();
 	shadowObject->SetPos({ startPos, -0.95f });
 	shadowObject->SetTexture(shadow);
 	shadowObject->SetSpriteWidth(32);
-	shadowObject->SetScale(glm::vec2(2 * size,1 * size));
+	shadowObject->SetScale(glm::vec2(2 * size, 1 * size));
 }
 
 Cloud::~Cloud()

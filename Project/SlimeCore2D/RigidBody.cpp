@@ -55,7 +55,6 @@ void RigidBody::ApplyOffSetToActor(RigidBody* obj, glm::vec3 overlap)
 	return;
 }
 
-
 glm::vec2 RigidBody::GetScale()
 {
 	return scale;
@@ -89,20 +88,10 @@ glm::mat4 RigidBody::GetModel()
 	return model;
 }
 
-void RigidBody::SetType(ObjectType newType)
-{
-	type = newType;
-}
-
-ObjectType RigidBody::GetType()
-{
-	return type;
-}
-
 void RigidBody::fixedUpdate(glm::vec2 gravity, float timeStep)
 {
 	ApplyForce(gravity * timeStep);
-	position += glm::vec3(velocity,0) * timeStep;
+	position += glm::vec3(velocity, 0) * timeStep;
 
 	SetPos(position);
 }

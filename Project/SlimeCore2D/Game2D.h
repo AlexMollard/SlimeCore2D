@@ -1,7 +1,6 @@
 #pragma once
 #include "ObjectManager.h"
 #include "PhysicsScene.h"
-#include "Debug.h"
 #include "MapGenerator.h"
 #include "Player.h"
 #include "CloudManager.h"
@@ -19,7 +18,6 @@ public:
 private:
 	Renderer2D* renderer = nullptr;
 	ObjectManager* objectManager = nullptr;
-	MeshManager* meshManager = nullptr;
 	Input* inputManager = Input::GetInstance();
 	PhysicsScene* physicsScene = nullptr;
 	Camera* camera = nullptr;

@@ -237,7 +237,6 @@ void MapGenerator::Generate()
 				if (texValue == 1)	cells[x][y].object->SetTexture(center_2);
 
 				if (texValue == 2)	cells[x][y].object->SetTexture(center_3);
-
 			}
 		}
 	}
@@ -327,7 +326,7 @@ void MapGenerator::SetStoneTiles(int VainCount)
 void MapGenerator::SetTreeTiles(int forestCount)
 {
 	std::vector<Cell*> forsestMidPoint;
-	
+
 	std::vector<Cell*> trees;
 
 	float maxDistance = 10;
@@ -353,7 +352,7 @@ void MapGenerator::SetTreeTiles(int forestCount)
 				{
 					if (glm::distance(cells[x][y].position, forsestMidPoint[i]->position) < (maxDistance - rand() % 2))
 					{
-						cells[x][y].object->SetColor(glm::vec3(0.8f,0.8f, 0.8f));
+						cells[x][y].object->SetColor(glm::vec3(0.8f, 0.8f, 0.8f));
 
 						if (rand() % 10 > 8)
 						{
@@ -368,7 +367,6 @@ void MapGenerator::SetTreeTiles(int forestCount)
 									}
 									else
 										break;
-
 								}
 
 								if (testing == trees.size())
@@ -388,7 +386,6 @@ void MapGenerator::SetTreeTiles(int forestCount)
 								objManager->CreateQuad(newPos, glm::vec2(1), tree_0)->SetSpriteWidth(32);
 								trees.push_back(&cells[x][y]);
 							}
-							
 						}
 					}
 				}

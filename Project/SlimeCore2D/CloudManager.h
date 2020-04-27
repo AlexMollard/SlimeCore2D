@@ -19,4 +19,3 @@ private:
 	std::vector<Cloud*> clouds;
 	Renderer2D* renderer;
 };
-

@@ -1,11 +1,11 @@
 #include "Renderer2D.h"
 #include <algorithm>
 #include <array>
+#include <iostream>
 
 std::vector<glm::vec2> Renderer2D::UVs;
 Camera* Renderer2D::camera;
 Shader* Renderer2D::basicShader;
-
 
 static const size_t maxQuadCount = 2000;
 static const size_t maxVertexCount = maxQuadCount * 4;
@@ -34,7 +34,7 @@ struct RendererData
 	Vertex* quadBuffer = nullptr;
 	Vertex* quadBufferPtr = nullptr;
 
-	std::array<uint32_t, maxTextures> textureSlots;
+	std::array<uint32_t, maxTextures> textureSlots = {};
 	uint32_t textureSlotIndex = 1;
 };
 
@@ -48,11 +48,8 @@ static glm::vec2 basicUVS[4] =
 	glm::vec2(0.0f,1.0f)
 };
 
-
-Renderer2D::Renderer2D(MeshManager* meshManager, Camera* camera)
+Renderer2D::Renderer2D(Camera* camera)
 {
-	this->meshManager = meshManager;
-
 	basicShader = new Shader("Basic Shader", "..\\Shaders\\BasicVertex.shader", "..\\Shaders\\BasicFragment.shader");
 
 	this->camera = camera;
@@ -71,7 +68,6 @@ Renderer2D::Renderer2D(MeshManager* meshManager, Camera* camera)
 
 Renderer2D::~Renderer2D()
 {
-
 	ShutDown();
 	for (int i = 0; i < texturePool.size(); i++)
 	{
@@ -110,7 +106,6 @@ Texture* Renderer2D::LoadTexture(std::string dir)
 	return tempTex;
 }
 
-
 void Renderer2D::Draw()
 {
 	BeginBatch();
@@ -120,26 +115,19 @@ void Renderer2D::Draw()
 		if (objectPool[i]->GetRender() == false)
 			continue;
 
-		if (objectPool[i]->GetType() == ObjectType::Quad && objectPool[i]->GetTexture() == nullptr)
+		if (objectPool[i]->GetTexture() == nullptr)
 		{
 			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f });
 		}
-		else if (objectPool[i]->GetType() == ObjectType::Quad && objectPool[i]->GetTexture() != nullptr)
+		else if (objectPool[i]->GetTexture() != nullptr)
 		{
 			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f }, objectPool[i]->GetTexture(), objectPool[i]->GetFrame(), objectPool[i]->GetSpriteWidth());
-		}
-		else if (objectPool[i]->GetType() == ObjectType::Circle)
-		{
-			basicShader->setMat4("Model", objectPool[i]->GetModel());
-			meshManager->Draw(objectPool[i]);
-			basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 		}
 	}
 
 	EndBatch();
 	Flush();
 }
-
 
 Shader* Renderer2D::GetBasicShader()
 {
@@ -214,7 +202,6 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, T
 		useBasicUVS = false;
 		setActiveRegion(texture, frame, spriteWidth);
 	}
-
 
 	glm::vec3 positions[4] =
 	{

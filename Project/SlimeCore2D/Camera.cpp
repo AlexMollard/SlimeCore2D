@@ -1,12 +1,12 @@
 #include "Camera.h"
-#include "InputManager.h"
+#include "Input.h"
 
 Camera::Camera(float aspectX, float aspectY, float near, float far)
 {
 	transform = glm::ortho<float>(-aspectX, aspectX, -aspectY, aspectY, near, far);
 	defaultTransform = transform;
 
-	aspectRatio = glm::vec2(aspectX,aspectY);
+	aspectRatio = glm::vec2(aspectX, aspectY);
 	aspectRatioBeforeFieldOfView = aspectRatio;
 	nearPlane = near;
 	farPlane = far;
@@ -56,7 +56,7 @@ void Camera::UpdateTransform()
 {
 	transform = defaultTransform;
 
-	transform = glm::translate(transform, { position , 0.0f});
+	transform = glm::translate(transform, { position , 0.0f });
 }
 
 void Camera::SetAspectRatio(glm::vec2 newAspectRatio)

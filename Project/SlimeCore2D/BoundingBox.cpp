@@ -14,10 +14,6 @@ void BoundingBox::UpdateQuadBoundingBox(glm::vec2 pos, glm::vec2 size)
 	min = glm::vec2(pos.x - (size.x * 0.5f), pos.y - (size.y * 0.5f));
 }
 
-void BoundingBox::UpdateCircleBoundingBox(glm::vec2 pos, glm::vec2 size)
-{
-}
-
 bool BoundingBox::GetIsColliding(BoundingBox& other)
 {
 	bool collisionX = (other.min.x > max.x || other.max.x < min.x);

@@ -2,15 +2,7 @@
 #include "glm.hpp"
 #include <string>
 #include "BoundingBox.h"
-#include "Debug.h"
 #include <vector>
-enum class ObjectType
-{
-	Circle = 0,
-	Quad,
-	Line,
-	ShapeCount
-};
 
 class RigidBody
 {
@@ -47,9 +39,6 @@ public:
 	virtual void SetNormal(glm::vec2 newNormal);
 	glm::vec2 GetNormal();
 
-	void SetType(ObjectType newType);
-	ObjectType GetType();
-
 	glm::mat4 GetModel();
 
 	BoundingBox* GetBoundingBox();
@@ -57,9 +46,6 @@ public:
 
 	glm::vec2 GetScale();
 	void SetScale(glm::vec2 newScale);
-
-	void MoveObject(glm::vec2 newPos);	// WORKING ON THIS
-
 
 	bool isKinematic = false;
 	int ID = -404;
@@ -70,11 +56,7 @@ protected:
 	glm::vec2 scale = glm::vec2(1);
 	glm::vec2 normal = glm::vec2(1);
 
-	ObjectType type = ObjectType::Quad;
-
 	BoundingBox boundingBox;
-
-	Input* inputManager = Input::GetInstance();
 
 	glm::vec2 velocity = glm::vec2(0);
 	glm::mat4 model = glm::mat4(1);

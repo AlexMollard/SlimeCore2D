@@ -12,9 +12,8 @@ uniform vec3 color;
 
 void main()
 {
-
 	int index = int(TexIndex);
-	
+
 	if (texture(Textures[index], TexCoord).a < 0.01)
 		discard;
 

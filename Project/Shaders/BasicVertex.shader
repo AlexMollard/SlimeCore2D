@@ -13,7 +13,6 @@ out vec4 Color;
 out vec2 TexCoord;
 out float TexIndex;
 
-
 void main()
 {
 	Color = aColor;

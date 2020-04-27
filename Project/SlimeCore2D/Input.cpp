@@ -1,5 +1,4 @@
-#include "InputManager.h"
-#include "Debug.h"
+#include "Input.h"
 #include <iostream>
 #include <string>
 
@@ -89,7 +88,7 @@ void Input::SetFocus(bool focus)
 
 glm::vec2 Input::GetMouseToWorldPos()
 {
-	return GetInstance()->camera->GetPosition() + (glm::vec2(mouseXPos,mouseYPos));
+	return GetInstance()->camera->GetPosition() + (glm::vec2(mouseXPos, mouseYPos));
 }
 
 void window_focus_callback(GLFWwindow* window, int focused)

@@ -19,4 +19,3 @@ private:
 	Texture* player_Run_Left = nullptr;
 	Texture* player_Run_Right = nullptr;
 };
-

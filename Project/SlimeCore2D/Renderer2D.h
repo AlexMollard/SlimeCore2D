@@ -2,13 +2,12 @@
 #include "Quad.h"
 #include "Texture.h"
 #include <vector>
-#include "MeshManager.h"
 #include "Camera.h"
 
 class Renderer2D
 {
 public:
-	Renderer2D(MeshManager* meshManager, Camera* camera);
+	Renderer2D(Camera* camera);
 	~Renderer2D();
 
 	static void Init();
@@ -19,7 +18,7 @@ public:
 	Texture* LoadTexture(std::string dir);
 
 	void Draw();
- 
+
 	Shader* GetBasicShader();
 
 	static void setActiveRegion(Texture* texture, int regionIndex, int spriteWidth);
@@ -30,7 +29,6 @@ public:
 	static void BeginBatch();
 	static void EndBatch();
 	static void Flush();
-
 
 private:
 	glm::vec3 currentColor = glm::vec3(-404);
@@ -44,7 +42,6 @@ private:
 
 	static Shader* basicShader;
 	static Camera* camera;
-	MeshManager* meshManager = nullptr;
 
 	static std::vector<glm::vec2> UVs;
 };

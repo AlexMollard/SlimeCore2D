@@ -21,5 +21,7 @@ public:
 
 protected:
 	unsigned int textureID = 0;
-	int width, height, nrChannels;
+	int width = 0;
+	int height = 0; 
+	int nrChannels = 4;
 };

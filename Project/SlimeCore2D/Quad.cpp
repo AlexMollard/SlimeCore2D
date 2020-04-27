@@ -2,7 +2,6 @@
 
 Quad::Quad() : GameObject()
 {
-	type = ObjectType::Quad;
 }
 
 Quad::~Quad()

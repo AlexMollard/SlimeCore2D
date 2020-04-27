@@ -7,7 +7,7 @@
 
 PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, 0))
 {
-	tex = new TextRenderer();
+
 }
 
 void PhysicsScene::addActor(RigidBody* actor, std::string name, bool isKinematic)
@@ -46,7 +46,6 @@ void PhysicsScene::removeActor(RigidBody* actor)
 }
 
 void PhysicsScene::update(float dt) {
-
 	// update physics at a fixed time step
 	static float accumulatedTime = 0.0f;
 	accumulatedTime += dt;
@@ -59,7 +58,6 @@ void PhysicsScene::update(float dt) {
 		accumulatedTime -= timeStep;
 	}
 
-
 	for (int i = 0; i < actors.size(); i++)
 	{
 		RigidBody* object = actors[i];
@@ -69,27 +67,21 @@ void PhysicsScene::update(float dt) {
 
 			if (other->GetKinematic() && object->GetKinematic())
 				continue;
-			
 
-			// using function pointers
-			int functionIdx = (int(object->GetType()) * int(ObjectType::ShapeCount)) + int(other->GetType());
-			Collision_Function collisionFunctionPtr = collisionFunctions[functionIdx];
+			auto result = CollisionManager::QuadVsQuad(object, other);
 
-			if (collisionFunctionPtr != nullptr)
+
+			if (glm::length(result) > 0.01)
 			{
-				auto result = collisionFunctionPtr(object, other);
-				if (glm::length(result) > 0.01)
-				{
-					if (other->GetType() != ObjectType::Line)
-						other->SetNormal(result);
+				if (other->GetType() != ObjectType::Line)
+					other->SetNormal(result);
 
-					other->ApplyOffSetToActor(object, glm::vec3(result,0));
-					other->resolveCollision(object);
-				}
+				other->ApplyOffSetToActor(object, glm::vec3(result, 0));
+				other->resolveCollision(object);
 			}
+
 		}
 	}
-
 }
 
 void PhysicsScene::Debug()
@@ -106,10 +98,3 @@ void PhysicsScene::Debug()
 	Renderer2D::EndBatch();
 	Renderer2D::Flush;
 }
-
-Collision_Function PhysicsScene::collisionFunctions[] =
-{
-	CollisionManager::CircleVsCircle, CollisionManager::CircleVsQuad, CollisionManager::CircleVsLine,
-	CollisionManager::QuadVsCircle, CollisionManager::QuadVsQuad, CollisionManager::QuadVsLine,
-	CollisionManager::LineVsCircle, CollisionManager::LineVsQuad, CollisionManager::LineVsLine
-};

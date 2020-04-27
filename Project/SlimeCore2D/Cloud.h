@@ -19,4 +19,3 @@ private:
 	GameObject* cloudObject = nullptr;
 	GameObject* shadowObject = nullptr;
 };
-

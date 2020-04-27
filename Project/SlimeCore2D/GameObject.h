@@ -1,6 +1,5 @@
 #pragma once
 #include "RigidBody.h"
-#include "Mesh.h"
 #include "Shader.h"
 #include "Texture.h"
 
@@ -13,9 +12,6 @@ public:
 	virtual void Update(float deltaTime);
 	virtual void Create(glm::vec3 pos, glm::vec3 color, glm::vec2 scale, int id);
 
-	Mesh* GetMesh();
-	void SetMesh(Mesh* newMesh);
-
 	void Respawn();
 	void SetSpawn(glm::vec3 newSpawn);
 
@@ -26,21 +22,13 @@ public:
 	void SetShader(Shader* newShader);
 	Shader* GetShader();
 
-
 	void SetID(int id);
 	int GetID();
 
 	Texture* GetTexture();
 	void SetTexture(Texture* tex);
 
-	void UpdateInteraction(float deltaTime);
-
 	void SetRotate(float rotation);
-
-	void OnHover();
-	void OnPress();
-	void OnRelease();
-
 
 	// Sprite Stuff (Probably should be in own class)
 	void SetFrame(int Frame);
@@ -51,7 +39,7 @@ public:
 	void SetSpriteWidth(int newWidth);
 
 	int GetTextureWidth();
-	void SetTextureWidth(int newWidth); 
+	void SetTextureWidth(int newWidth);
 
 	bool GetHasAnimation();
 	void SetHasAnimation(bool value);
@@ -75,7 +63,6 @@ protected:
 	bool isPlayer = false;
 
 	Texture* texture = nullptr;
-	Mesh* mesh = nullptr;
 	Shader* shader = nullptr;
 
 	/// Input vars

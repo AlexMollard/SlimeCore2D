@@ -22,7 +22,7 @@ public:
 
 	static glm::vec2 GetMousePos();
 	glm::vec2 GetDeltaMouse();
-	
+
 	glm::vec2 GetWindowSize();
 	glm::vec2 GetAspectRatio();
 	static bool GetMouseDown(int button);

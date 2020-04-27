@@ -22,7 +22,6 @@ Player::~Player()
 void Player::Init(Camera* cam)
 {
 	isPlayer = true;
-	type = ObjectType::Quad;
 	camera = cam;
 
 	player_Idle_Right = new Texture("..\\Textures\\Player\\Knight_Idle_Right.png");
@@ -30,8 +29,8 @@ void Player::Init(Camera* cam)
 
 	player_Run_Right = new Texture("..\\Textures\\Player\\Knight_Run_Right.png");
 	player_Run_Left = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
-	 
-	SetBoundingBox(glm::vec2(0, -0.75f),glm::vec2(0.75f, 0.25f));
+
+	SetBoundingBox(glm::vec2(0, -0.75f), glm::vec2(0.75f, 0.25f));
 	SetTexture(player_Idle_Right);
 }
 
@@ -66,7 +65,7 @@ void Player::Update(float deltaTime)
 
 		SetFrameRate(0.15f);
 	}
-	
+
 	camera->SetPosition(position);
 }
 

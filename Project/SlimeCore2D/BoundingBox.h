@@ -1,6 +1,6 @@
 #pragma once
 #include "glm.hpp"
-#include "InputManager.h"
+#include "Input.h"
 
 class BoundingBox
 {
@@ -9,16 +9,14 @@ public:
 	~BoundingBox();
 
 	void UpdateQuadBoundingBox(glm::vec2 pos, glm::vec2 size);
-	void UpdateCircleBoundingBox(glm::vec2 pos, glm::vec2 size);
 
 	bool GetIsColliding(BoundingBox& other);
-	
+
 	bool GetMouseColliding();
 
 	glm::vec2& GetMax();
 	glm::vec2& GetMin();
 
-	
 	glm::vec2 GetPos(glm::vec3 objectPos);
 	glm::vec2 GetScale();
 
