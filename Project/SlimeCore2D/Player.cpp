@@ -1,5 +1,5 @@
 #include "Player.h"
-#include <iostream>
+
 Player::Player() : Quad()
 {
 }
@@ -19,8 +19,9 @@ Player::~Player()
 	player_Run_Left = nullptr;
 }
 
-void Player::Init(Camera* cam)
+void Player::Init(Camera* cam, Cell** cells)
 {
+	this->cells = cells;
 	isPlayer = true;
 	camera = cam;
 
@@ -30,7 +31,7 @@ void Player::Init(Camera* cam)
 	player_Run_Right = new Texture("..\\Textures\\Player\\Knight_Run_Right.png");
 	player_Run_Left = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
 
-	SetBoundingBox(glm::vec2(0, -0.5f), glm::vec2(1, 0.5f));
+	SetBoundingBox(glm::vec2(0, -0.75f), glm::vec2(1, 0.5f));
 	SetTexture(player_Idle_Right);
 }
 
@@ -66,7 +67,6 @@ void Player::Update(float deltaTime)
 		SetFrameRate(0.15f);
 	}
 
-	camera->SetPosition(position);
 
 	UpdateSpriteTimer(deltaTime);
 	UpdateSurroundingTiles();
@@ -102,34 +102,29 @@ void Player::UpdateSurroundingTiles()
 	// I have taken 1 from the players Y position as the current player sprite is 32px high
 
 	// Top Left
-	surroundingTiles[0] = map->GetAllCells()[((int)position.x - 1) + MAPSIZE][((int)position.y) + MAPSIZE].object;
+	surroundingTiles[0] = cells[((int)position.x - 1) + MAPSIZE][((int)position.y) + MAPSIZE].object;
 
 	// Top
-	surroundingTiles[1] = map->GetAllCells()[((int)position.x) + MAPSIZE][((int)position.y) + MAPSIZE].object;
+	surroundingTiles[1] = cells[((int)position.x) + MAPSIZE][((int)position.y) + MAPSIZE].object;
 
 	// Top Right
-	surroundingTiles[2] = map->GetAllCells()[((int)position.x + 1) + MAPSIZE][((int)position.y) + MAPSIZE].object;
+	surroundingTiles[2] = cells[((int)position.x + 1) + MAPSIZE][((int)position.y) + MAPSIZE].object;
 
 	// Left
-	surroundingTiles[3] = map->GetAllCells()[((int)position.x - 1) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
+	surroundingTiles[3] = cells[((int)position.x - 1) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
 
 	// Center
-	surroundingTiles[4] = map->GetAllCells()[((int)position.x) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
+	surroundingTiles[4] = cells[((int)position.x) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
 
 	// Right
-	surroundingTiles[5] = map->GetAllCells()[((int)position.x + 1) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
+	surroundingTiles[5] = cells[((int)position.x + 1) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
 
 	// Bottom left
-	surroundingTiles[6] = map->GetAllCells()[((int)position.x - 1) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
+	surroundingTiles[6] = cells[((int)position.x - 1) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
 
 	// Bottom
-	surroundingTiles[7] = map->GetAllCells()[((int)position.x) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
+	surroundingTiles[7] = cells[((int)position.x) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
 
 	// Bottom Right
-	surroundingTiles[8] = map->GetAllCells()[((int)position.x + 1) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
-}
-
-void Player::SetMap(MapGenerator* map)
-{
-	this->map = map;
+	surroundingTiles[8] = cells[((int)position.x + 1) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "Quad.h"
 #include "Camera.h"
-#include "MapGenerator.h"
+#include "Cell.h"
 
 class Player : public Quad
 {
@@ -9,14 +9,12 @@ public:
 	Player();
 	~Player();
 
-	void Init(Camera* cam);
+	void Init(Camera* cam, Cell** cells);
 
 	void Update(float deltaTime);
 	void playerMovement(float deltaTime);
 
 	void UpdateSurroundingTiles();
-
-	void SetMap(MapGenerator* map);
 private:
 	Camera* camera = nullptr;
 
@@ -25,5 +23,5 @@ private:
 	Texture* player_Run_Left = nullptr;
 	Texture* player_Run_Right = nullptr;
 
-	MapGenerator* map;
+	Cell** cells;
 };

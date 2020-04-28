@@ -8,16 +8,10 @@ Game2D::Game2D()
 
 	player = new Player();
 	player->Create(glm::vec3(0, 0, -0.5f), glm::vec3(1), glm::vec2(1, 2),404);
+	player->Init(camera, map->GetAllCells());
 
 	renderer->AddObject(player);
-
-
-	player->Init(camera);
 	physicsScene->addActor(player, "player");
-
-	player->SetMap(map);
-
-	//testObject = objectManager->CreateQuad({ Input::GetMouseToWorldPos() , -0.99f }, glm::vec2(1), glm::vec3(1, 1, 1));
 
 	cloudManager->Init(35);
 }
@@ -55,8 +49,9 @@ void Game2D::Update(float deltaTime)
 {
 	camera->Update(deltaTime);
 	player->Update(deltaTime);
-	physicsScene->update(deltaTime);
 	cloudManager->Update(deltaTime);
+	physicsScene->update(deltaTime);
+	camera->SetPosition(player->GetPos());
 }
 
 void Game2D::Draw()
