@@ -9,9 +9,6 @@ ObjectManager::~ObjectManager()
 {
 	for (int i = 0; i < objects.size(); i++)
 	{
-		if (objects[i]->GetIsPlayer() == true)
-			delete (Player*)objects[i];
-		else
 			delete (Quad*)objects[i];
 
 		objects[i] = nullptr;
@@ -48,17 +45,6 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* te
 	Quad* go = new Quad();
 	go->Create(pos, glm::vec3(1), size, objects.size());
 	go->SetTexture(tex);
-
-	renderer->AddObject(go);
-	objects.push_back(go);
-
-	return go;
-}
-
-Player* ObjectManager::CreatePlayer(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
-{
-	Player* go = new Player();
-	go->Create(pos, color, size, objects.size());
 
 	renderer->AddObject(go);
 	objects.push_back(go);

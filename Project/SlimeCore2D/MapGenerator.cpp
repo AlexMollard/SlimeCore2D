@@ -394,7 +394,7 @@ void MapGenerator::SetTreeTiles(int forestCount)
 	}
 }
 
-MapGenerator::type MapGenerator::SetType(int x, int y)
+type MapGenerator::SetType(int x, int y)
 {
 	int size = mapSize;
 
@@ -643,50 +643,55 @@ int MapGenerator::GetTotalGroundSurrounding(Cell& cell)
 	return totalGroundTiles;
 }
 
+Cell** MapGenerator::GetAllCells()
+{
+	return cells;
+}
+
 Texture* MapGenerator::GetTexture(type tileType)
 {
 	switch (tileType)
 	{
-	case MapGenerator::type::Water:
+	case type::Water:
 		return nullptr;
 		break;
-	case MapGenerator::type::Ground:
+	case type::Ground:
 		return center_0;
 		break;
-	case MapGenerator::type::TopLeft:
+	case type::TopLeft:
 		return top_Left;
 		break;
-	case MapGenerator::type::TopCenter:
+	case type::TopCenter:
 		return top_Center;
 		break;
-	case MapGenerator::type::TopRight:
+	case type::TopRight:
 		return top_Right;
 		break;
-	case MapGenerator::type::InnerTopLeft:
+	case type::InnerTopLeft:
 		return inner_Top_Left;
 		break;
-	case MapGenerator::type::InnerTopRight:
+	case type::InnerTopRight:
 		return inner_Top_Right;
 		break;
-	case MapGenerator::type::MiddleLeft:
+	case type::MiddleLeft:
 		return middle_Left;
 		break;
-	case MapGenerator::type::MiddleRight:
+	case type::MiddleRight:
 		return middle_Right;
 		break;
-	case MapGenerator::type::InnerBottomLeft:
+	case type::InnerBottomLeft:
 		return inner_Bottom_Left;
 		break;
-	case MapGenerator::type::InnerBottomRight:
+	case type::InnerBottomRight:
 		return inner_Bottom_Right;
 		break;
-	case MapGenerator::type::BottomLeft:
+	case type::BottomLeft:
 		return bottom_Left;
 		break;
-	case MapGenerator::type::BottomCenter:
+	case type::BottomCenter:
 		return bottom_Center;
 		break;
-	case MapGenerator::type::BottomRight:
+	case type::BottomRight:
 		return bottom_Right;
 		break;
 	default:

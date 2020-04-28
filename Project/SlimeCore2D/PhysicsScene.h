@@ -31,4 +31,5 @@ protected:
 	glm::vec2 gravity;
 	float timeStep = 0.01f;
 	std::vector<RigidBody*> actors;
+	std::vector<RigidBody*> dynamicActors;
 };

@@ -186,6 +186,7 @@
   <ItemGroup>
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Cell.h" />
     <ClInclude Include="Cloud.h" />
     <ClInclude Include="CloudManager.h" />
     <ClInclude Include="CollisionManager.h" />

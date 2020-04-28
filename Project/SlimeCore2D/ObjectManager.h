@@ -1,6 +1,5 @@
 #pragma once
 #include "Renderer2D.h"
-#include "Player.h"
 
 class ObjectManager
 {
@@ -11,7 +10,6 @@ public:
 	GameObject* CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::vec3 color);
 	GameObject* CreateQuad(glm::vec3 pos, glm::vec2 size = glm::vec2(1), glm::vec3 color = glm::vec3(1));
 	GameObject* CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* tex);
-	Player* CreatePlayer(glm::vec3 pos, glm::vec2 size = glm::vec2(1), glm::vec3 color = glm::vec3(1));
 
 	void Update(float deltaTime);
 

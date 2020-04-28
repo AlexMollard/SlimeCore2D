@@ -1,44 +1,10 @@
 #pragma once
 #include "ObjectManager.h"
 #include "PhysicsScene.h"
-
+#include "Cell.h"
 class MapGenerator
 {
 public:
-	enum class type
-	{
-		Water,
-		Ground,
-		TopLeft,
-		TopCenter,
-		TopRight,
-		InnerTopLeft,
-		InnerTopRight,
-		MiddleLeft,
-		MiddleRight,
-		InnerBottomLeft,
-		InnerBottomRight,
-		BottomLeft,
-		BottomCenter,
-		BottomRight,
-		Wall,
-		Stone,
-		Tree
-	};
-
-	struct Cell
-	{
-		glm::vec2 position = glm::vec2(0);
-		type cellType = type::Water;
-		type preCellType = type::Water;
-		GameObject* object = nullptr;
-	};
-
-	struct Tree
-	{
-		glm::vec2 position = glm::vec2(0);
-		GameObject* object = nullptr;
-	};
 
 	MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, int mapSize);
 	~MapGenerator();
@@ -59,6 +25,8 @@ public:
 	void DeleteTextures();
 
 	int GetTotalGroundSurrounding(Cell& cell);
+
+	Cell** GetAllCells();
 private:
 	ObjectManager* objManager;
 	PhysicsScene* pScene;

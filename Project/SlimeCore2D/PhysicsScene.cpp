@@ -22,8 +22,11 @@ void PhysicsScene::addActor(RigidBody* actor, std::string name, bool isKinematic
 	}
 	actor->name = name;
 	actor->SetKinematic(isKinematic);
+
 	if (isKinematic)
 		actor->SetMass(999999999999999.99f);
+	else
+		dynamicActors.push_back(actor);
 
 	actors.push_back(actor);
 }
@@ -58,14 +61,18 @@ void PhysicsScene::update(float dt) {
 		accumulatedTime -= timeStep;
 	}
 
-	for (int i = 0; i < actors.size(); i++)
+	for (int i = 0; i < dynamicActors.size(); i++)
 	{
-		RigidBody* object = actors[i];
-		for (int y = i + 1; y < actors.size(); y++)
-		{
-			RigidBody* other = actors[y];
+		RigidBody* object = dynamicActors[i];
 
-			if (other->GetKinematic() && object->GetKinematic())
+		for (int y = 0; y < 9; y++)
+		{
+			RigidBody* other = object->GetSurroundTile(y);
+
+			if (other == nullptr)
+				continue;
+
+			if (other->GetKinematic() == false)
 				continue;
 
 			auto result = CollisionManager::QuadVsQuad(object, other);

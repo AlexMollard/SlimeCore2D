@@ -1,6 +1,8 @@
 #pragma once
 #include "Quad.h"
 #include "Camera.h"
+#include "MapGenerator.h"
+
 class Player : public Quad
 {
 public:
@@ -11,6 +13,10 @@ public:
 
 	void Update(float deltaTime);
 	void playerMovement(float deltaTime);
+
+	void UpdateSurroundingTiles();
+
+	void SetMap(MapGenerator* map);
 private:
 	Camera* camera = nullptr;
 
@@ -18,4 +24,6 @@ private:
 	Texture* player_Idle_Right = nullptr;
 	Texture* player_Run_Left = nullptr;
 	Texture* player_Run_Right = nullptr;
+
+	MapGenerator* map;
 };

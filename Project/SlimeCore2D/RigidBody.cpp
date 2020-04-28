@@ -68,6 +68,11 @@ void RigidBody::SetScale(glm::vec2 newScale)
 	model[1] *= scale[1];
 }
 
+RigidBody* RigidBody::GetSurroundTile(int index)
+{
+	return surroundingTiles[index];
+}
+
 bool RigidBody::GetIsColliding(RigidBody* other)
 {
 	return (GetBoundingBox()->GetIsColliding(*other->GetBoundingBox()));

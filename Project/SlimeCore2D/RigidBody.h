@@ -47,6 +47,8 @@ public:
 	glm::vec2 GetScale();
 	void SetScale(glm::vec2 newScale);
 
+	RigidBody* GetSurroundTile(int index);
+
 	bool isKinematic = false;
 	int ID = -404;
 	bool useBoundingBox = false;
@@ -57,6 +59,8 @@ protected:
 	glm::vec2 normal = glm::vec2(1);
 
 	BoundingBox boundingBox;
+
+	RigidBody* surroundingTiles[9];
 
 	glm::vec2 velocity = glm::vec2(0);
 	glm::mat4 model = glm::mat4(1);
