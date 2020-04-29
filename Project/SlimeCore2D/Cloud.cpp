@@ -5,7 +5,7 @@ Cloud::Cloud(Texture* cloud, Texture* shadow, float size, glm::vec2 startPos)
 	speed = (rand() % 10) * 0.1f + 1;
 
 	cloudObject = new GameObject();
-	cloudObject->SetPos({ startPos, -0.95f });
+	cloudObject->SetPos({ startPos, -0.75f });
 	cloudObject->SetTexture(cloud);
 	cloudObject->SetSpriteWidth(32);
 	cloudObject->SetScale(glm::vec2(2 * size, 1 * size));
@@ -34,7 +34,7 @@ void Cloud::Update(float deltaTime)
 
 	if (position.x > 75)
 	{
-		position = glm::vec3(-75, rand() % 100 - 50, -0.95f);
+		position = glm::vec3(-75, rand() % 100 - 50, -0.75f);
 		speed = (rand() % 3) + 1;
 	}
 

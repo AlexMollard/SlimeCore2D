@@ -157,10 +157,10 @@
     <None Include="..\Shaders\BasicFragment.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Shaders\TextVertex.shader">
+    <None Include="..\Shaders\UIFragment.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Shaders\TextFragment.shader">
+    <None Include="..\Shaders\UIVertex.shader">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

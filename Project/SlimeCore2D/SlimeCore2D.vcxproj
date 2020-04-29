@@ -210,8 +210,8 @@
   <ItemGroup>
     <None Include="..\Shaders\BasicFragment.shader" />
     <None Include="..\Shaders\BasicVertex.shader" />
-    <None Include="..\Shaders\TextFragment.shader" />
-    <None Include="..\Shaders\TextVertex.shader" />
+    <None Include="..\Shaders\UIFragment.shader" />
+    <None Include="..\Shaders\UIVertex.shader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

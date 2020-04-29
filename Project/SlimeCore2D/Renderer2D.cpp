@@ -6,6 +6,7 @@
 std::vector<glm::vec2> Renderer2D::UVs;
 Camera* Renderer2D::camera;
 Shader* Renderer2D::basicShader;
+Shader* Renderer2D::UIShader;
 
 static const size_t maxQuadCount = 2000;
 static const size_t maxVertexCount = maxQuadCount * 4;
@@ -51,6 +52,9 @@ static glm::vec2 basicUVS[4] =
 Renderer2D::Renderer2D(Camera* camera)
 {
 	basicShader = new Shader("Basic Shader", "..\\Shaders\\BasicVertex.shader", "..\\Shaders\\BasicFragment.shader");
+	UIShader = new Shader("Basic Shader", "..\\Shaders\\UIVertex.shader", "..\\Shaders\\UIFragment.shader");
+	texturePool.push_back(new Texture("..\\Textures\\hotbar_background.png"));
+	texturePool.push_back(new Texture("..\\Textures\\hotbar_slot.png"));
 
 	this->camera = camera;
 
@@ -77,6 +81,9 @@ Renderer2D::~Renderer2D()
 
 	delete basicShader;
 	basicShader = nullptr;
+
+	delete UIShader;
+	UIShader = nullptr;
 
 	delete camera;
 	camera = nullptr;
@@ -110,6 +117,12 @@ void Renderer2D::Draw()
 {
 	BeginBatch();
 
+	basicShader->Use();
+
+	basicShader->setMat4("OrthoMatrix", camera->GetTransform());
+	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+
+
 	glm::vec2 camPos = camera->GetPosition();
 
 	float distanceFromCenter = -camera->GetAspectRatio().x + 6;
@@ -136,11 +149,65 @@ void Renderer2D::Draw()
 
 	EndBatch();
 	Flush();
+	DrawUI();
+
+}
+
+void Renderer2D::DrawUI()
+{
+	BeginBatch();
+
+	basicShader->Use();
+
+	basicShader->setMat4("OrthoMatrix", UIMatrix);
+	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+
+	// True: glm::vec3(0.8f)
+	// False: glm::vec3(0.05f)
+	static int testingINT = 0;
+	static int testingdeltaFake = 0;
+
+	glm::vec3 lit = glm::vec3(1);
+	glm::vec3 unLit = glm::vec3(0.05f);
+	glm::vec3 red = glm::vec3(1,0.2f,0.2f);
+	glm::vec3 blue = glm::vec3(0.2f,0.2f,1);
+
+	DrawUIQuad(glm::vec2(-5, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 0) ? lit :(testingINT == 1) ? red : (testingINT == 5) ? blue : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(-3, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 1) ? lit : (testingINT == 2) ? red : (testingINT == 0) ? blue :  unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(-1, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 2) ? lit : (testingINT == 3) ? red : (testingINT == 1) ? blue : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(1, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 3) ? lit : (testingINT == 4) ? red : (testingINT == 2) ? blue : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(3, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 4) ? lit : (testingINT == 5) ? red : (testingINT == 3) ? blue : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(5, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 5) ? lit : (testingINT == 0) ? red : (testingINT == 4) ? blue : unLit, texturePool[1]);
+
+	testingdeltaFake+=4;
+	if (testingdeltaFake > 100)
+	{
+	testingINT++;
+	testingdeltaFake = 0;
+	}
+
+
+	if (testingINT > 5)
+		testingINT = 0;
+
+
+	DrawUIQuad(glm::vec2(0, -7.80f), 10, glm::vec2(texturePool[0]->GetWidth() / 16, texturePool[0]->GetHeight() / 16) * 0.5f, glm::vec3(1), texturePool[0]);
+
+	EndBatch();
+	Flush();
 }
 
 Shader* Renderer2D::GetBasicShader()
 {
 	return basicShader;
+}
+
+void Renderer2D::DrawUIQuad(glm::vec2 pos, int layer, glm::vec2 size, glm::vec3 color, Texture* texture)
+{
+	if (texture == nullptr)
+		DrawQuad(glm::vec3(pos.x, pos.y, 2 + layer * 0.01f), size, { color,1.0f });
+	else
+		DrawQuad(glm::vec3(pos.x, pos.y, 2 + layer * 0.01f), size, { color,1.0f }, texture,0,texture->GetWidth());
 }
 
 void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color)
@@ -326,10 +393,6 @@ void Renderer2D::ShutDown()
 void Renderer2D::BeginBatch()
 {
 	data.quadBufferPtr = data.quadBuffer;
-	basicShader->Use();
-
-	basicShader->setMat4("OrthoMatrix", camera->GetTransform());
-	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 }
 
 void Renderer2D::EndBatch()

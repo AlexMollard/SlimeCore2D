@@ -18,8 +18,11 @@ public:
 	Texture* LoadTexture(std::string dir);
 
 	void Draw();
+	void DrawUI();
 
 	Shader* GetBasicShader();
+
+	static void DrawUIQuad(glm::vec2 pos = glm::vec2(0), int layer = 1, glm::vec2 size = glm::vec2(1), glm::vec3 color = glm::vec3(1), Texture* texture = nullptr);
 
 	static void setActiveRegion(Texture* texture, int regionIndex, int spriteWidth);
 
@@ -32,7 +35,7 @@ public:
 
 private:
 	glm::vec3 currentColor = glm::vec3(-404);
-
+	glm::mat4 UIMatrix = glm::ortho<float>(16, -16, 9, -9, 2, 4);
 	Shader* currentShader = nullptr;
 	Texture* currentTexture = nullptr;
 
@@ -41,6 +44,7 @@ private:
 	std::vector<Shader*> shaderPool;
 
 	static Shader* basicShader;
+	static Shader* UIShader;
 	static Camera* camera;
 
 	static std::vector<glm::vec2> UVs;

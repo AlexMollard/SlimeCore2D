@@ -63,4 +63,5 @@ void Game2D::Update(float deltaTime)
 void Game2D::Draw()
 {
 	renderer->Draw();
+	//renderer->DrawUI();
 }
