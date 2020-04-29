@@ -10,7 +10,7 @@ Shader* Renderer2D::basicShader;
 static const size_t maxQuadCount = 2000;
 static const size_t maxVertexCount = maxQuadCount * 4;
 static const size_t maxIndexCount = maxQuadCount * 6;
-static const size_t maxTextures = 21;
+static const size_t maxTextures = 31;
 
 struct Vertex
 {
@@ -110,10 +110,19 @@ void Renderer2D::Draw()
 {
 	BeginBatch();
 
+	glm::vec2 camPos = camera->GetPosition();
+
+	float distanceFromCenter = -camera->GetAspectRatio().x + 6;
+
 	for (int i = 0; i < objectPool.size(); i++)
 	{
 		if (objectPool[i]->GetRender() == false)
 			continue;
+
+		if (glm::distance(camPos, glm::vec2(objectPool[i]->GetPos())) > distanceFromCenter)
+		{
+			continue;
+		}
 
 		if (objectPool[i]->GetTexture() == nullptr)
 		{

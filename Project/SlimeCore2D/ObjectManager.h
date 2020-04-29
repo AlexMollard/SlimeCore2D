@@ -12,6 +12,7 @@ public:
 	GameObject* CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* tex);
 
 	void Update(float deltaTime);
+	void UpdateFrames(float deltaTime);
 
 	GameObject* Get(int index);
 	int Size();

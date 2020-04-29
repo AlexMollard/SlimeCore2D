@@ -7,7 +7,6 @@
 
 PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, 0))
 {
-
 }
 
 void PhysicsScene::addActor(RigidBody* actor, std::string name, bool isKinematic)
@@ -77,7 +76,6 @@ void PhysicsScene::update(float dt) {
 
 			auto result = CollisionManager::QuadVsQuad(object, other);
 
-
 			if (glm::length(result) > 0.01)
 			{
 				other->SetNormal(result);
@@ -85,7 +83,6 @@ void PhysicsScene::update(float dt) {
 				other->ApplyOffSetToActor(object, glm::vec3(result, 0));
 				other->resolveCollision(object);
 			}
-
 		}
 	}
 }

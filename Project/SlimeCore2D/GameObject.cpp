@@ -112,7 +112,7 @@ void GameObject::SetTexture(Texture* tex)
 
 		SetTextureWidth(texture->GetWidth());
 	}
-} 
+}
 
 void GameObject::SetFrame(int Frame)
 {

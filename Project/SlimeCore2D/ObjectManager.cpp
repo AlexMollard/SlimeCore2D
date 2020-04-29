@@ -9,7 +9,7 @@ ObjectManager::~ObjectManager()
 {
 	for (int i = 0; i < objects.size(); i++)
 	{
-			delete (Quad*)objects[i];
+		delete (Quad*)objects[i];
 
 		objects[i] = nullptr;
 	}
@@ -57,6 +57,13 @@ void ObjectManager::Update(float deltaTime)
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->Update(deltaTime);
+	}
+}
+
+void ObjectManager::UpdateFrames(float deltaTime)
+{
+	for (int i = 0; i < objects.size(); i++)
+	{
 		objects[i]->UpdateSpriteTimer(deltaTime);
 	}
 }

@@ -6,7 +6,7 @@ class MapGenerator
 {
 public:
 
-	MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, int mapSize);
+	MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene,Camera* cam, int mapSize);
 	~MapGenerator();
 
 	void Generate();
@@ -24,6 +24,8 @@ public:
 	void CreateTextures();
 	void DeleteTextures();
 
+	void Update(float deltaTime);
+
 	int GetTotalGroundSurrounding(Cell& cell);
 
 	Cell** GetAllCells();
@@ -33,7 +35,11 @@ private:
 
 	int mapSize = 0;
 
+	Camera* camera = nullptr;
+
 	Cell** cells;
+	std::vector<Cell*> treeCell;
+	std::vector<GameObject*> trees;
 
 	// Textures
 	Texture* water = nullptr;
@@ -71,4 +77,5 @@ private:
 
 	// Trees
 	Texture* tree_0 = nullptr;
+	Texture* tree_0_Shadow = nullptr;
 };

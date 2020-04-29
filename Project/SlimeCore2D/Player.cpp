@@ -17,9 +17,12 @@ Player::~Player()
 
 	delete player_Run_Left;
 	player_Run_Left = nullptr;
+
+	delete player_Shadow;
+	player_Shadow = nullptr;
 }
 
-void Player::Init(Camera* cam, Cell** cells)
+void Player::Init(Camera* cam, Cell** cells, GameObject* shadow)
 {
 	this->cells = cells;
 	isPlayer = true;
@@ -31,8 +34,15 @@ void Player::Init(Camera* cam, Cell** cells)
 	player_Run_Right = new Texture("..\\Textures\\Player\\Knight_Run_Right.png");
 	player_Run_Left = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
 
+	player_Shadow = new Texture("..\\Textures\\Player\\player_shadow.png");
+
 	SetBoundingBox(glm::vec2(0, -0.75f), glm::vec2(1, 0.5f));
 	SetTexture(player_Idle_Right);
+
+	shadow->SetTexture(player_Shadow);
+	shadow->SetParent(this);
+	shadow->UpdatePos();
+	shadow->SetScale(glm::vec2(1,2));
 }
 
 void Player::Update(float deltaTime)
@@ -66,7 +76,6 @@ void Player::Update(float deltaTime)
 
 		SetFrameRate(0.15f);
 	}
-
 
 	UpdateSpriteTimer(deltaTime);
 	UpdateSurroundingTiles();
@@ -127,4 +136,9 @@ void Player::UpdateSurroundingTiles()
 
 	// Bottom Right
 	surroundingTiles[8] = cells[((int)position.x + 1) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
+}
+
+void Player::SetAllCells(Cell** cells)
+{
+	this->cells = cells;
 }

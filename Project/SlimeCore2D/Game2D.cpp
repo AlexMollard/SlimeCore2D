@@ -4,12 +4,16 @@ Game2D::Game2D()
 {
 	Init();
 
-	map->Generate();
+	GameObject* shadow = objectManager->CreateQuad(glm::vec3(0, 0, 0.3), glm::vec2(1,2),nullptr);
+	shadow->SetHasAnimation(false);
 
 	player = new Player();
-	player->Create(glm::vec3(0, 0, -0.5f), glm::vec3(1), glm::vec2(1, 2),404);
-	player->Init(camera, map->GetAllCells());
+	player->Create(glm::vec3(0, 0, -0.5f), glm::vec3(1), glm::vec2(1, 2), 404);
+	player->Init(camera, map->GetAllCells(), shadow);
 
+	map->Generate();
+
+	player->SetAllCells(map->GetAllCells());
 	renderer->AddObject(player);
 	physicsScene->addActor(player, "player");
 
@@ -40,7 +44,7 @@ void Game2D::Init()
 	renderer = new Renderer2D(camera);
 	objectManager = new ObjectManager(renderer);
 	physicsScene = new PhysicsScene();
-	map = new MapGenerator(objectManager, physicsScene, 75);
+	map = new MapGenerator(objectManager, physicsScene,camera, 75);
 	cloudManager = new CloudManager(renderer);
 	Input::GetInstance()->SetCamera(camera);
 }
@@ -51,7 +55,9 @@ void Game2D::Update(float deltaTime)
 	player->Update(deltaTime);
 	cloudManager->Update(deltaTime);
 	physicsScene->update(deltaTime);
+	objectManager->UpdateFrames(deltaTime);
 	camera->SetPosition(player->GetPos());
+	map->Update(deltaTime);
 }
 
 void Game2D::Draw()

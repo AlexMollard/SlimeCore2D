@@ -2,12 +2,13 @@
 #include "gtc/noise.hpp"
 #include <time.h>
 
-MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, int mapSize)
+MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene,Camera* cam, int mapSize)
 {
 	objManager = objectManager;
 	CreateTextures();
 	this->mapSize = mapSize;
 	this->pScene = pScene;
+	camera = cam;
 
 	// Create Cells
 	cells = new Cell * [mapSize];
@@ -327,8 +328,6 @@ void MapGenerator::SetTreeTiles(int forestCount)
 {
 	std::vector<Cell*> forsestMidPoint;
 
-	std::vector<Cell*> trees;
-
 	float maxDistance = 10;
 	for (int i = 0; i < forestCount; i++)
 	{
@@ -356,12 +355,12 @@ void MapGenerator::SetTreeTiles(int forestCount)
 
 						if (rand() % 10 > 8)
 						{
-							if (trees.size() > 0)
+							if (treeCell.size() > 0)
 							{
 								int testing = 0;
-								for (int q = 0; q < trees.size(); q++)
+								for (int q = 0; q < treeCell.size(); q++)
 								{
-									if (glm::distance(cells[x][y].position, trees[q]->position) > 2)
+									if (glm::distance(cells[x][y].position, treeCell[q]->position) > 3)
 									{
 										testing++;
 									}
@@ -369,13 +368,20 @@ void MapGenerator::SetTreeTiles(int forestCount)
 										break;
 								}
 
-								if (testing == trees.size())
+								if (testing == treeCell.size())
 								{
 									glm::vec3 newPos = cells[x][y].object->GetPos();
 									newPos = glm::vec3(newPos.x, newPos.y + 1.5f, -0.25f + (y * 0.001f));
 
-									objManager->CreateQuad(newPos, glm::vec2(1), tree_0)->SetSpriteWidth(32);
-									trees.push_back(&cells[x][y]);
+									GameObject* tempTree = objManager->CreateQuad(newPos, glm::vec2(1), tree_0);
+									tempTree->SetSpriteWidth(32);
+									GameObject* shadow = objManager->CreateQuad(glm::vec3(0,0,0.2f), glm::vec2(1), tree_0_Shadow);
+									shadow->SetParent(tempTree);
+									shadow->UpdatePos();
+									shadow->SetSpriteWidth(32);
+
+									treeCell.push_back(&cells[x][y]);
+									trees.push_back(tempTree);
 								}
 							}
 							else
@@ -383,8 +389,15 @@ void MapGenerator::SetTreeTiles(int forestCount)
 								glm::vec3 newPos = cells[x][y].object->GetPos();
 								newPos = glm::vec3(newPos.x, newPos.y + 1.5f, -0.25f + (y * 0.001f));
 
-								objManager->CreateQuad(newPos, glm::vec2(1), tree_0)->SetSpriteWidth(32);
-								trees.push_back(&cells[x][y]);
+								GameObject* tempTree = objManager->CreateQuad(newPos, glm::vec2(1), tree_0);
+								tempTree->SetSpriteWidth(32);
+								GameObject* shadow = objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), tree_0_Shadow);
+								shadow->SetParent(tempTree);
+								shadow->UpdatePos();
+								shadow->SetSpriteWidth(32);
+
+								treeCell.push_back(&cells[x][y]);
+								trees.push_back(tempTree);
 							}
 						}
 					}
@@ -474,6 +487,7 @@ void MapGenerator::CreateTextures()
 	bottom_Right = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Right.png");
 
 	tree_0 = new Texture("..\\Textures\\Trees\\tree_0.png");
+	tree_0_Shadow = new Texture("..\\Textures\\Trees\\tree_0_shadow.png");
 }
 
 void MapGenerator::DeleteTextures()
@@ -532,6 +546,24 @@ void MapGenerator::DeleteTextures()
 
 	delete tree_0;
 	tree_0 = nullptr;
+	delete tree_0_Shadow;
+	tree_0_Shadow = nullptr;
+}
+
+void MapGenerator::Update(float deltaTime)
+{
+	for (int i = 0; i < trees.size(); i++)
+	{
+			glm::vec3 newPos = trees[i]->GetPos();
+		if (trees[i]->GetPos().y - 1 > camera->GetPosition().y)
+		{
+			trees[i]->SetPos(newPos.x, newPos.y, -0.24f);
+		}
+		else
+		{
+			trees[i]->SetPos(newPos.x, newPos.y, -0.6f);
+		}
+	}
 }
 
 Texture* MapGenerator::SetWall(bool up, bool right, bool down, bool left, bool floorAbove, bool floorBelow, bool floorRight, bool floorLeft)

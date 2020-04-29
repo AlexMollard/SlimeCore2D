@@ -8,11 +8,21 @@ void RigidBody::SetPos(glm::vec3 newPos)
 
 void RigidBody::SetPos(float x, float y, float z)
 {
-	position.x = x;
-	position.y = y;
-	position.z = z;
+	localPosition.x = x;
+	localPosition.y = y;
+	localPosition.z = z;
 
-	model[3] = glm::vec4(position, 1);
+
+
+	position = (parent == nullptr) ? localPosition : localPosition + parent->GetPos();
+
+	if (children.size() > 0)
+	{
+		for (int i = 0; i < children.size(); i++)
+		{
+			children[i]->UpdatePos();
+		}
+	}
 }
 
 glm::vec3 RigidBody::GetPos()
@@ -66,6 +76,37 @@ void RigidBody::SetScale(glm::vec2 newScale)
 
 	model[0] *= scale[0];
 	model[1] *= scale[1];
+}
+
+RigidBody* RigidBody::GetParent()
+{
+	return parent;
+}
+
+void RigidBody::SetParent(RigidBody* newParent)
+{
+	newParent->AddChild(this);
+	parent = newParent;
+}
+
+RigidBody* RigidBody::GetChild(int index)
+{
+	if (index < 0 || index > children.size())
+	{
+		std::cout << "Child dosent exist" << std::endl;
+		return nullptr;
+	}
+	return children[index];
+}
+
+void RigidBody::AddChild(RigidBody* newChild)
+{
+	children.push_back(newChild);
+}
+
+void RigidBody::UpdatePos()
+{
+	position = localPosition + parent->GetPos();
 }
 
 RigidBody* RigidBody::GetSurroundTile(int index)

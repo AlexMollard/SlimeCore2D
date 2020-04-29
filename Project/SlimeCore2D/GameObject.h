@@ -54,6 +54,7 @@ public:
 	bool GetRender();
 	void SetRender(bool value);
 
+
 protected:
 	glm::vec3 color = glm::vec3(1);
 	glm::vec3 defaultColor = glm::vec3(1);
@@ -65,9 +66,6 @@ protected:
 	Texture* texture = nullptr;
 	Shader* shader = nullptr;
 
-	/// Input vars
-	bool isHeld = false;
-	bool release = false;
 
 	// Sprite Stuff
 	int frame = 0;

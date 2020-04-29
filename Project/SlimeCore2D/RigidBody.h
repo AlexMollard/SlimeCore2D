@@ -44,21 +44,35 @@ public:
 	BoundingBox* GetBoundingBox();
 	void SetBoundingBox(glm::vec2 offset, glm::vec2 scale);
 
+
 	glm::vec2 GetScale();
 	void SetScale(glm::vec2 newScale);
 
+	RigidBody* GetParent();
+	void SetParent(RigidBody* newParent);
+
+	RigidBody* GetChild(int index);
+	void AddChild(RigidBody* newChild);
+
+	void UpdatePos();
+
 	RigidBody* GetSurroundTile(int index);
 
+	// Make these private
 	bool isKinematic = false;
 	int ID = -404;
 	bool useBoundingBox = false;
 protected:
 
 	glm::vec3 position = glm::vec3(0);
+	glm::vec3 localPosition = glm::vec3(0);
 	glm::vec2 scale = glm::vec2(1);
 	glm::vec2 normal = glm::vec2(1);
 
 	BoundingBox boundingBox;
+
+	RigidBody* parent = nullptr;
+	std::vector<RigidBody*> children;
 
 	RigidBody* surroundingTiles[9];
 

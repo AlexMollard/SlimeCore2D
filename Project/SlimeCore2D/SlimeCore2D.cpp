@@ -16,6 +16,7 @@ int main()
 
 		game->Update(app->GetDeltaTime());
 		game->Draw();
+		//std::cout << "DeltaTime: " << app->GetDeltaTime() << "ms" << std::endl;
 	}
 
 	delete app;

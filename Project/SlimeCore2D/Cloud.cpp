@@ -11,10 +11,12 @@ Cloud::Cloud(Texture* cloud, Texture* shadow, float size, glm::vec2 startPos)
 	cloudObject->SetScale(glm::vec2(2 * size, 1 * size));
 
 	shadowObject = new GameObject();
-	shadowObject->SetPos({ startPos, -0.95f });
+	shadowObject->SetPos(0, -4.0f, 0.01);
 	shadowObject->SetTexture(shadow);
 	shadowObject->SetSpriteWidth(32);
 	shadowObject->SetScale(glm::vec2(2 * size, 1 * size));
+
+	shadowObject->SetParent(cloudObject);
 }
 
 Cloud::~Cloud()
@@ -37,7 +39,6 @@ void Cloud::Update(float deltaTime)
 	}
 
 	cloudObject->SetPos(position.x + (deltaTime * speed), position.y, position.z);
-	shadowObject->SetPos(position.x + (deltaTime * speed), position.y - 4.0f, position.z + 0.01f);
 }
 
 float Cloud::GetSpeed()
