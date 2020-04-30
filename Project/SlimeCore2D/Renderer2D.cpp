@@ -67,6 +67,13 @@ Renderer2D::Renderer2D(Camera* camera)
 
 	glUniform1iv(loc, maxTextures, samplers);
 
+
+	UIShader->Use();
+
+	loc = glGetUniformLocation(UIShader->GetID(), "Textures");
+
+	glUniform1iv(loc, maxTextures, samplers);
+
 	Init();
 }
 
@@ -102,6 +109,26 @@ void Renderer2D::AddObject(GameObject* newObject)
 	GameObject* go = newObject;
 	go->SetID(objectPool.size());
 	go->SetShader(basicShader);
+	 
+	if (objectPool.size() > 0)
+	{
+		if (objectPool.back()->GetPos().z <= go->GetPos().z)
+		{
+			objectPool.push_back(go);
+			return;
+		}
+
+		for (int i = 0; i < objectPool.size(); i++)
+		{
+			if (objectPool[i]->GetPos().z >= go->GetPos().z)
+			{
+ 				objectPool.insert(objectPool.begin() + i, go);
+				return;
+			}
+		}
+
+	}
+	else
 	objectPool.push_back(go);
 }
 
@@ -157,10 +184,10 @@ void Renderer2D::DrawUI()
 {
 	BeginBatch();
 
-	basicShader->Use();
+	UIShader->Use();
 
-	basicShader->setMat4("OrthoMatrix", UIMatrix);
-	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	UIShader->setMat4("OrthoMatrix", UIMatrix);
+	UIShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 
 	// True: glm::vec3(0.8f)
 	// False: glm::vec3(0.05f)

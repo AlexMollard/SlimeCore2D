@@ -82,7 +82,7 @@
       <Filter>Source Files\EngineCore</Filter>
     </ClCompile>
     <ClCompile Include="Sprite.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\EngineCore</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -147,7 +147,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Sprite.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\EngineCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

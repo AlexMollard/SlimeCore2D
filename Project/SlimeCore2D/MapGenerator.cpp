@@ -247,6 +247,9 @@ void MapGenerator::Generate()
 
 	// Assign Tree Tiles
 	SetTreeTiles(5);
+
+	// Assign sprout Tiles
+	SetGrass();
 }
 
 void MapGenerator::SetCellTypeToPreCellType()
@@ -463,6 +466,12 @@ void MapGenerator::CreateTextures()
 	center_2 = new Texture("..\\Textures\\Grass\\floor_2.png");
 	center_3 = new Texture("..\\Textures\\Grass\\floor_3.png");
 
+	sprout_0 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_0.png");
+	sprout_1 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_1.png");
+	sprout_2 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_2.png");
+	sprout_3 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_3.png");
+	sprout_4 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_4.png");
+
 	stone_0 = new Texture("..\\Textures\\Stone\\Stone_0.png");
 	stone_1 = new Texture("..\\Textures\\Stone\\Stone_1.png");
 	stone_2 = new Texture("..\\Textures\\Stone\\Stone_2.png");
@@ -503,6 +512,17 @@ void MapGenerator::DeleteTextures()
 	center_2 = nullptr;
 	delete center_3;
 	center_3 = nullptr;
+
+	delete sprout_0;
+	sprout_0 = nullptr;
+	delete sprout_1;
+	sprout_1 = nullptr;
+	delete sprout_2;
+	sprout_2 = nullptr;
+	delete sprout_3;
+	sprout_3 = nullptr;
+	delete sprout_4;
+	sprout_4 = nullptr;
 
 	delete stone_0;
 	stone_0 = nullptr;
@@ -548,6 +568,46 @@ void MapGenerator::DeleteTextures()
 	tree_0 = nullptr;
 	delete tree_0_Shadow;
 	tree_0_Shadow = nullptr;
+}
+
+void MapGenerator::SetGrass()
+{
+	for (int x = 0; x < mapSize; x++)
+	{
+		for (int y = 0; y < mapSize; y++)
+		{
+			if (cells[x][y].cellType == type::Ground)
+			{
+				if (rand() % 10 == 1)
+				{
+					glm::vec3 newPos = cells[x][y].object->GetPos();
+					newPos = glm::vec3(newPos.x + ((rand() % 10) - 5) * 0.1f, newPos.y + ((rand() % 10)) * 0.1f, newPos.z - 0.1f);
+					Texture* currentTexture = nullptr;
+
+					switch (rand() % 5)
+					{
+					case 0:
+						currentTexture = sprout_0;
+						break;
+					case 1:
+						currentTexture = sprout_1;
+						break;
+					case 2:
+						currentTexture = sprout_2;
+						break;
+					case 3:
+						currentTexture = sprout_3;
+						break;
+					case 4:
+						currentTexture = sprout_4;
+						break;
+					}
+
+					GameObject* tempSprout = objManager->CreateQuad(newPos, glm::vec2(1), currentTexture);
+				}
+			}
+		}
+	}
 }
 
 void MapGenerator::Update(float deltaTime)

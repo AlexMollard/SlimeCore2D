@@ -24,6 +24,8 @@ public:
 	void CreateTextures();
 	void DeleteTextures();
 
+	void SetGrass();
+
 	void Update(float deltaTime);
 
 	int GetTotalGroundSurrounding(Cell& cell);
@@ -49,6 +51,13 @@ private:
 	Texture* center_1 = nullptr;
 	Texture* center_2 = nullptr;
 	Texture* center_3 = nullptr;
+
+	// Sprouts
+	Texture* sprout_0 = nullptr;
+	Texture* sprout_1 = nullptr;
+	Texture* sprout_2 = nullptr;
+	Texture* sprout_3 = nullptr;
+	Texture* sprout_4 = nullptr;
 
 	// Stone
 	Texture* stone_0 = nullptr;
