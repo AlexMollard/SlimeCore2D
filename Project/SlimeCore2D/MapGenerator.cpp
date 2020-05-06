@@ -648,6 +648,16 @@ Texture* MapGenerator::SetWall(bool up, bool right, bool down, bool left, bool f
 		return inner_Top_Right;
 	}
 
+	if (up && right && !down && !floorBelow && !floorRight)
+	{
+		return bottom_Left;
+	}
+
+	if (up && left && !down && !floorBelow && !floorLeft)
+	{
+		return bottom_Right;
+	}
+
 	if (down && right && !floorAbove && !floorBelow && !floorLeft && !floorRight)
 	{
 		return top_Left;
@@ -658,15 +668,6 @@ Texture* MapGenerator::SetWall(bool up, bool right, bool down, bool left, bool f
 		return top_Right;
 	}
 
-	if (up && right && !down && !floorBelow && !floorRight)
-	{
-		return bottom_Left;
-	}
-
-	if (up && left && !down && !floorBelow && !floorLeft)
-	{
-		return bottom_Right;
-	}
 
 	if (floorBelow && !floorAbove)
 	{

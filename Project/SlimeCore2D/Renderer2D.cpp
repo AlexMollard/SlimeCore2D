@@ -189,33 +189,29 @@ void Renderer2D::DrawUI()
 	UIShader->setMat4("OrthoMatrix", UIMatrix);
 	UIShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 
-	// True: glm::vec3(0.8f)
-	// False: glm::vec3(0.05f)
 	static int testingINT = 0;
-	static int testingdeltaFake = 0;
 
 	glm::vec3 lit = glm::vec3(1);
 	glm::vec3 unLit = glm::vec3(0.05f);
-	glm::vec3 red = glm::vec3(1,0.2f,0.2f);
-	glm::vec3 blue = glm::vec3(0.2f,0.2f,1);
 
-	DrawUIQuad(glm::vec2(-5, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 0) ? lit :(testingINT == 1) ? red : (testingINT == 5) ? blue : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(-3, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 1) ? lit : (testingINT == 2) ? red : (testingINT == 0) ? blue :  unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(-1, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 2) ? lit : (testingINT == 3) ? red : (testingINT == 1) ? blue : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(1, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 3) ? lit : (testingINT == 4) ? red : (testingINT == 2) ? blue : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(3, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 4) ? lit : (testingINT == 5) ? red : (testingINT == 3) ? blue : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(5, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 5) ? lit : (testingINT == 0) ? red : (testingINT == 4) ? blue : unLit, texturePool[1]);
 
-	testingdeltaFake+=4;
-	if (testingdeltaFake > 100)
-	{
-	testingINT++;
-	testingdeltaFake = 0;
-	}
 
+	DrawUIQuad(glm::vec2(-5, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 0) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(-3, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 1) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(-1, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 2) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(1, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f,  (testingINT == 3) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(3, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f,  (testingINT == 4) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(5, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f,  (testingINT == 5) ? lit : unLit, texturePool[1]);
+
+	if (Input::GetScroll() > 0)
+		testingINT++;
+	else if (Input::GetScroll() < 0)
+		testingINT--;
 
 	if (testingINT > 5)
 		testingINT = 0;
+	else if(testingINT < 0)
+		testingINT = 5;
 
 
 	DrawUIQuad(glm::vec2(0, -7.80f), 10, glm::vec2(texturePool[0]->GetWidth() / 16, texturePool[0]->GetHeight() / 16) * 0.5f, glm::vec3(1), texturePool[0]);

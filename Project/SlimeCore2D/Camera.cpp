@@ -27,11 +27,11 @@ void Camera::CameraMoveMent(float deltaTime)
 
 	float moveSpeed = speed * deltaTime;
 
-	if (Input::GetScroll() > 0)
-		SetFOV(fieldOfView - moveSpeed);
-
-	if (Input::GetScroll() < 0)
-		SetFOV(fieldOfView + moveSpeed);
+	//if (Input::GetScroll() > 0)
+	//	SetFOV(fieldOfView - moveSpeed);
+	//
+	//if (Input::GetScroll() < 0)
+	//	SetFOV(fieldOfView + moveSpeed);
 
 	UpdateTransform();
 }
