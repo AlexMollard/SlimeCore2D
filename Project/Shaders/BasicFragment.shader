@@ -10,6 +10,8 @@ uniform sampler2D Textures[31];
 
 uniform vec3 color;
 
+uniform vec4 SunColor;
+
 void main()
 {
 	int index = int(TexIndex);
@@ -17,5 +19,5 @@ void main()
 	if (texture(Textures[index], TexCoord).a < 0.01)
 		discard;
 
-	FragColor = texture(Textures[index], TexCoord) * Color;
+	FragColor = (texture(Textures[index], TexCoord) * Color) * SunColor;
 }

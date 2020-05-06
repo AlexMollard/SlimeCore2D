@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
+#include "Math.h"
 
 std::vector<glm::vec2> Renderer2D::UVs;
 Camera* Renderer2D::camera;
@@ -148,7 +149,7 @@ void Renderer2D::Draw()
 
 	basicShader->setMat4("OrthoMatrix", camera->GetTransform());
 	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-
+	basicShader->setVec4("SunColor", glm::vec4(1.0f));
 
 	glm::vec2 camPos = camera->GetPosition();
 
@@ -158,12 +159,12 @@ void Renderer2D::Draw()
 	{
 		if (objectPool[i]->GetRender() == false)
 			continue;
-
+	
 		if (glm::distance(camPos, glm::vec2(objectPool[i]->GetPos())) > distanceFromCenter)
 		{
 			continue;
 		}
-
+	
 		if (objectPool[i]->GetTexture() == nullptr)
 		{
 			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f });

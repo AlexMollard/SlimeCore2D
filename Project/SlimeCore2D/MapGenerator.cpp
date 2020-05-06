@@ -628,22 +628,22 @@ void MapGenerator::Update(float deltaTime)
 
 Texture* MapGenerator::SetWall(bool up, bool right, bool down, bool left, bool floorAbove, bool floorBelow, bool floorRight, bool floorLeft)
 {
-	if (down && floorAbove && floorRight)
+	if (down && !up && floorAbove && floorRight)
 	{
 		return inner_Bottom_Left;
 	}
 
-	if (down && floorAbove && floorLeft)
+	if (down && !up && floorAbove && floorLeft)
 	{
 		return inner_Bottom_Right;
 	}
 
-	if (up && floorBelow && floorRight)
+	if (up && !down && floorBelow && floorRight)
 	{
 		return inner_Top_Left;
 	}
 
-	if (up && floorBelow && floorLeft)
+	if (up && !down && floorBelow && floorLeft)
 	{
 		return inner_Top_Right;
 	}

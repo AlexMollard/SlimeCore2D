@@ -149,6 +149,9 @@
     <ClInclude Include="Sprite.h">
       <Filter>Header Files\EngineCore</Filter>
     </ClInclude>
+    <ClInclude Include="Math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Shaders\BasicVertex.shader">

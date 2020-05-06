@@ -203,6 +203,7 @@
     <ClInclude Include="Renderer2D.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Math.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Window.h" />
