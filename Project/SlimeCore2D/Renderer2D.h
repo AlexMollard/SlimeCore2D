@@ -30,6 +30,9 @@ public:
 	static void DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color) { DrawQuad(glm::vec3(position, -0.9f), size, color); };
 	static void DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame = 0, int spriteWidth = 16);
 
+	void RemoveQuad(GameObject* object);
+	int GetObjectIndex(GameObject* object);
+
 	static void BeginBatch();
 	static void EndBatch();
 	static void Flush();

@@ -9,7 +9,7 @@ public:
 	MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene,Camera* cam, int mapSize);
 	~MapGenerator();
 
-	void Generate();
+	int** Generate();
 	void SetCellTypeToPreCellType();
 	void EatWater(int landAroundMin);
 
@@ -24,24 +24,37 @@ public:
 	void CreateTextures();
 	void DeleteTextures();
 
+	void RemakeTerrain();
+
 	void SetGrass();
 
 	void Update(float deltaTime);
 
 	int GetTotalGroundSurrounding(Cell& cell);
 
+	void SetResultValues();
+
+
+
 	Cell** GetAllCells();
 private:
+	int mapSize = 0;
+	int seed = rand() % 9999999;
+	int streamWidth = 5;
+	float islandRadius = 10;
+
 	ObjectManager* objManager;
 	PhysicsScene* pScene;
 
-	int mapSize = 0;
 
 	Camera* camera = nullptr;
 
 	Cell** cells;
+	int** results;
 	std::vector<Cell*> treeCell;
 	std::vector<GameObject*> trees;
+	std::vector<GameObject*> treeShadowObjects;
+	std::vector<GameObject*> grassObjects;
 
 	// Textures
 	Texture* water = nullptr;

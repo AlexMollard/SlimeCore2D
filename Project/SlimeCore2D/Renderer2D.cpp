@@ -196,13 +196,16 @@ void Renderer2D::DrawUI()
 	glm::vec3 unLit = glm::vec3(0.05f);
 
 
+	//Slots
+	DrawUIQuad(glm::vec2(-3.35f, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f, (testingINT == 0) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(-2, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f, (testingINT == 1) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(-0.65f, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f, (testingINT == 2) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(0.65f, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f,  (testingINT == 3) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(2, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f,  (testingINT == 4) ? lit : unLit, texturePool[1]);
+	DrawUIQuad(glm::vec2(3.35f, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f,  (testingINT == 5) ? lit : unLit, texturePool[1]);
 
-	DrawUIQuad(glm::vec2(-5, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 0) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(-3, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 1) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(-1, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f, (testingINT == 2) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(1, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f,  (testingINT == 3) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(3, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f,  (testingINT == 4) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(5, -8.1f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.5f,  (testingINT == 5) ? lit : unLit, texturePool[1]);
+
+	DrawUIQuad(glm::vec2(14, 7), 8, glm::vec2(3.5f), glm::vec3(0));
 
 	if (Input::GetScroll() > 0)
 		testingINT++;
@@ -214,8 +217,8 @@ void Renderer2D::DrawUI()
 	else if(testingINT < 0)
 		testingINT = 5;
 
-
-	DrawUIQuad(glm::vec2(0, -7.80f), 10, glm::vec2(texturePool[0]->GetWidth() / 16, texturePool[0]->GetHeight() / 16) * 0.5f, glm::vec3(1), texturePool[0]);
+	// Bar on bottom
+	DrawUIQuad(glm::vec2(0, -8.15f), 10, glm::vec2(texturePool[0]->GetWidth() / 16, texturePool[0]->GetHeight() / 16) * 0.35f, glm::vec3(1), texturePool[0]);
 
 	EndBatch();
 	Flush();
@@ -321,6 +324,24 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, T
 	}
 
 	data.indexCount += 6;
+}
+
+void Renderer2D::RemoveQuad(GameObject* object)
+{
+	objectPool.erase(objectPool.begin() + GetObjectIndex(object));
+
+}
+
+int Renderer2D::GetObjectIndex(GameObject* object)
+{
+	for (int i = 0; i < objectPool.size(); i++)
+	{
+		if (objectPool[i] == object)
+		{
+			return i;
+		}
+	}
+	return -404;
 }
 
 void Renderer2D::setActiveRegion(Texture* texture, int regionIndex, int spriteWidth)

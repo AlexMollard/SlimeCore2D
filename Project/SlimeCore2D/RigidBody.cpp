@@ -12,8 +12,6 @@ void RigidBody::SetPos(float x, float y, float z)
 	localPosition.y = y;
 	localPosition.z = z;
 
-
-
 	position = (parent == nullptr) ? localPosition : localPosition + parent->GetPos();
 
 	if (children.size() > 0)

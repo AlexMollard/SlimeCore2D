@@ -52,6 +52,24 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* te
 	return go;
 }
 
+void ObjectManager::RemoveQuad(GameObject* object)
+{
+	objects.erase(objects.begin() + GetObjectIndex(object));
+	renderer->RemoveQuad(object);
+}
+
+int ObjectManager::GetObjectIndex(GameObject* object)
+{
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (objects[i] == object)
+		{
+			return i;
+		}
+	}
+	return -404;
+}
+
 void ObjectManager::Update(float deltaTime)
 {
 	for (int i = 0; i < objects.size(); i++)

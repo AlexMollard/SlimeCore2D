@@ -106,7 +106,7 @@ void Player::playerMovement(float deltaTime)
 
 void Player::UpdateSurroundingTiles()
 {
-	const int MAPSIZE = 75 * 0.5f;
+	const int MAPSIZE = 100 * 0.5f;
 
 	// I have taken 1 from the players Y position as the current player sprite is 32px high
 

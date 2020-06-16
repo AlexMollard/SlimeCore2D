@@ -34,7 +34,7 @@ void Cloud::Update(float deltaTime)
 
 	if (position.x > 75)
 	{
-		position = glm::vec3(-75, rand() % 100 - 50, -0.75f);
+		position = glm::vec3(-75, rand() % 150 - 75, -0.75f);
 		speed = (rand() % 3) + 1;
 	}
 

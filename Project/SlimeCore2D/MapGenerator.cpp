@@ -1,6 +1,7 @@
 #include "MapGenerator.h"
 #include "gtc/noise.hpp"
 #include <time.h>
+#include <iostream>
 
 MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene,Camera* cam, int mapSize)
 {
@@ -14,6 +15,12 @@ MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene,Ca
 	cells = new Cell * [mapSize];
 	for (int i = 0; i < mapSize; i++)
 		cells[i] = new Cell[mapSize];
+
+
+	// Create endResult
+	results = new int * [mapSize];
+	for (int i = 0; i < mapSize; i++)
+		results[i] = new int[mapSize];
 
 	for (int x = 0; x < mapSize; x++)
 	{
@@ -42,13 +49,10 @@ MapGenerator::~MapGenerator()
 	cells = nullptr;
 }
 
-void MapGenerator::Generate()
+int** MapGenerator::Generate()
 {
-	int seed = rand() % 9999999;
-
-	float islandRadius = 8;
 	int islandSpawnRadius = (mapSize - ((islandRadius * 2) + 2));
-	const int islandCount = 30;
+	const int islandCount = 55;
 
 	glm::vec2 randomPoint[islandCount];
 	randomPoint[0] = glm::vec2(mapSize / 2);
@@ -83,10 +87,10 @@ void MapGenerator::Generate()
 	}
 
 	// Creating Streams/Rivers
-	for (int q = 0; q < 4; q++)
+	for (int q = 0; q < 15; q++)
 	{
 		glm::vec2 tile = glm::vec2((rand() % mapSize), (rand() % mapSize));
-		int streamWidth = 5;
+
 		while (glm::distance(tile, glm::vec2(mapSize / 2)) < streamWidth * 2)
 		{
 			tile = glm::vec2((rand() % mapSize), (rand() % mapSize));
@@ -174,7 +178,7 @@ void MapGenerator::Generate()
 	}
 
 	// Cleaning up island (turning single water cells to ground cells)
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < 12; i++)
 	{
 		EatWater(5);
 	}
@@ -243,13 +247,17 @@ void MapGenerator::Generate()
 	}
 
 	// Assign Stone Tiles
-	SetStoneTiles(10);
+	SetStoneTiles(15);
 
 	// Assign Tree Tiles
-	SetTreeTiles(5);
+	SetTreeTiles(10);
 
 	// Assign sprout Tiles
 	SetGrass();
+
+	SetResultValues();
+
+	return results;
 }
 
 void MapGenerator::SetCellTypeToPreCellType()
@@ -284,17 +292,18 @@ void MapGenerator::SetStoneTiles(int VainCount)
 {
 	std::vector<Cell*> stoneMidPoint;
 	float maxDistance = 5;
+
 	for (int i = 0; i < VainCount; i++)
 	{
 		Cell* currentStone = &cells[rand() % mapSize][rand() % mapSize];
-
+	
 		while (currentStone->cellType != type::Ground)
-		{
+		{ 
 			currentStone = &cells[rand() % mapSize][rand() % mapSize];
 		}
 		stoneMidPoint.push_back(currentStone);
 	}
-
+	
 	// Setting Stone type and Textures
 	for (int x = 0; x < mapSize; x++)
 	{
@@ -304,7 +313,7 @@ void MapGenerator::SetStoneTiles(int VainCount)
 			{
 				for (int i = 0; i < stoneMidPoint.size(); i++)
 				{
-					if (glm::distance(cells[x][y].position, stoneMidPoint[i]->position) < (maxDistance - rand() % 2))
+					if (glm::distance(cells[x][y].position, stoneMidPoint[i]->position) < (maxDistance - rand() % (int)maxDistance))
 					{
 						cells[x][y].cellType = type::Stone;
 					}
@@ -325,6 +334,7 @@ void MapGenerator::SetStoneTiles(int VainCount)
 			}
 		}
 	}
+
 }
 
 void MapGenerator::SetTreeTiles(int forestCount)
@@ -363,7 +373,7 @@ void MapGenerator::SetTreeTiles(int forestCount)
 								int testing = 0;
 								for (int q = 0; q < treeCell.size(); q++)
 								{
-									if (glm::distance(cells[x][y].position, treeCell[q]->position) > 3)
+									if (glm::distance(cells[x][y].position, treeCell[q]->position) > 2)
 									{
 										testing++;
 									}
@@ -383,8 +393,11 @@ void MapGenerator::SetTreeTiles(int forestCount)
 									shadow->UpdatePos();
 									shadow->SetSpriteWidth(32);
 
+									treeShadowObjects.push_back(shadow);
+
 									treeCell.push_back(&cells[x][y]);
 									trees.push_back(tempTree);
+									cells[x][y].cellType = type::Tree;
 								}
 							}
 							else
@@ -399,8 +412,10 @@ void MapGenerator::SetTreeTiles(int forestCount)
 								shadow->UpdatePos();
 								shadow->SetSpriteWidth(32);
 
+								treeShadowObjects.push_back(shadow);
 								treeCell.push_back(&cells[x][y]);
 								trees.push_back(tempTree);
+									cells[x][y].cellType = type::Tree;
 							}
 						}
 					}
@@ -570,6 +585,55 @@ void MapGenerator::DeleteTextures()
 	tree_0_Shadow = nullptr;
 }
 
+void MapGenerator::RemakeTerrain()
+{
+	// Delete the grass and trees
+	for (int i = 0; i < trees.size(); i++)
+	{
+		objManager->RemoveQuad(trees[i]);
+		delete trees[i];
+		trees[i] = nullptr;
+	}
+	trees.clear();
+
+	// Delete the grass and trees
+	for (int i = 0; i < treeShadowObjects.size(); i++)
+	{
+		objManager->RemoveQuad(treeShadowObjects[i]);
+		delete treeShadowObjects[i];
+		treeShadowObjects[i] = nullptr;
+	}
+	treeShadowObjects.clear();
+	treeCell.clear();
+
+	for (int i = 0; i < grassObjects.size(); i++)
+	{
+		objManager->RemoveQuad(grassObjects[i]);
+		delete grassObjects[i];
+		grassObjects[i] = nullptr;
+	}
+	grassObjects.clear();
+
+
+	// Remove rigid bodies from physics scene
+		// Setting all tiles to correct sprites and disabling water from rendering
+	for (int x = 0; x < mapSize; x++)
+	{
+		for (int y = 0; y < mapSize; y++)
+		{
+			if (cells[x][y].cellType == type::Wall)
+			{
+				pScene->removeActor(cells[x][y].object);
+			}
+			cells[x][y].cellType = type::Water;
+			cells[x][y].preCellType = type::Water;
+			cells[x][y].object->SetRender(true);
+		}
+	}
+
+	Generate();
+}
+
 void MapGenerator::SetGrass()
 {
 	for (int x = 0; x < mapSize; x++)
@@ -603,7 +667,7 @@ void MapGenerator::SetGrass()
 						break;
 					}
 
-					GameObject* tempSprout = objManager->CreateQuad(newPos, glm::vec2(1), currentTexture);
+					grassObjects.push_back(objManager->CreateQuad(newPos, glm::vec2(1), currentTexture));
 				}
 			}
 		}
@@ -734,6 +798,68 @@ int MapGenerator::GetTotalGroundSurrounding(Cell& cell)
 	}
 
 	return totalGroundTiles;
+}
+
+void MapGenerator::SetResultValues()
+{
+	for (int x = 0; x < mapSize; x++)
+	{
+		for (int y = 0; y < mapSize; y++)
+		{
+			switch (cells[x][y].cellType)
+			{
+			case type::Water:
+				results[x][y] = 0;
+				break;
+
+			case type::Ground:
+				results[x][y] = 1;
+				break;
+
+			case type::Stone:
+				results[x][y] = 2;
+				break;
+
+			case type::Wall:
+				results[x][y] = 1;
+				break;
+
+			case type::Tree:
+				results[x][y] = 3;
+				break;
+
+			default:
+				results[x][y] = 1;
+				break;
+			}
+		}
+	}
+
+	for (int x = 0; x < mapSize; x++)
+	{
+		for (int y = 0; y < mapSize; y++)
+		{
+			switch (results[x][y])
+			{
+			case 0:
+				std::cout << "\033[34m" << results[x][y] << "\033[0m";
+				break;
+			case 1:
+				std::cout << "\033[92m" << results[x][y] << "\033[0m";
+				break;
+			case 2:
+				std::cout << "\033[90m" << results[x][y] << "\033[0m";
+				break;
+
+			case 3:
+				std::cout << "\033[32m" << results[x][y] << "\033[0m";
+				break;
+			default:
+				break;
+			}
+		}
+		std::cout << std::endl;
+	}
 }
 
 Cell** MapGenerator::GetAllCells()

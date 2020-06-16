@@ -44,7 +44,7 @@ void Game2D::Init()
 	renderer = new Renderer2D(camera);
 	objectManager = new ObjectManager(renderer);
 	physicsScene = new PhysicsScene();
-	map = new MapGenerator(objectManager, physicsScene,camera, 75);
+	map = new MapGenerator(objectManager, physicsScene,camera, 100);
 	cloudManager = new CloudManager(renderer);
 	Input::GetInstance()->SetCamera(camera);
 }
@@ -58,10 +58,19 @@ void Game2D::Update(float deltaTime)
 	objectManager->UpdateFrames(deltaTime);
 	camera->SetPosition(player->GetPos());
 	map->Update(deltaTime);
+
+	static float tempVal = 0.0f;
+	tempVal += deltaTime;
+
+	if (tempVal > 0.25f)
+	{
+		//map->RemakeTerrain();
+		tempVal = 0.0f;
+	}
+	
 }
 
 void Game2D::Draw()
 {
 	renderer->Draw();
-	//renderer->DrawUI();
 }
