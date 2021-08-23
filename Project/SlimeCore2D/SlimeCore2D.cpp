@@ -1,3 +1,4 @@
+//#include "optick/optick.h"
 #include "Window.h"
 #include "Game2D.h"
 
@@ -11,6 +12,7 @@ int main()
 
 	while (!app->Window_shouldClose())
 	{
+		//OPTICK_FRAME("MainThread");
 		inputManager->Update();
 		app->Update_Window();
 

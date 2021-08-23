@@ -47,6 +47,15 @@ MapGenerator::~MapGenerator()
 
 	delete cells;
 	cells = nullptr;
+
+	for (int x = 0; x < mapSize; x++)
+	{
+		delete results[x];
+		results[x] = nullptr;
+	}
+
+	delete results;
+	results = nullptr;
 }
 
 int** MapGenerator::Generate()
