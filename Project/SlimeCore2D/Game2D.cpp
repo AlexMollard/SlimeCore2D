@@ -4,18 +4,18 @@ Game2D::Game2D()
 {
 	Init();
 
-	GameObject* shadow = objectManager->CreateQuad(glm::vec3(0, 0, 0.3), glm::vec2(1,2),nullptr);
+	GameObject* shadow = objectManager->CreateQuad(glm::vec3(0, 0, 0.3), glm::vec2(1, 2), nullptr).get();
 	shadow->SetHasAnimation(false);
 
-	player = new Player();
+	player = std::make_shared<Player>();
 	player->Create(glm::vec3(0, 0, -0.5f), glm::vec3(1), glm::vec2(1, 2), 404);
-	player->Init(camera, map->GetAllCells(), shadow);
+	player->Init(camera.get(), map->GetAllCells(), shadow);
 
 	map->Generate();
 
 	player->SetAllCells(map->GetAllCells());
 	renderer->AddObject(player);
-	physicsScene->addActor(player, "player");
+	physicsScene->addActor(player.get(), "player");
 
 	cloudManager->Init(35);
 }
@@ -33,20 +33,17 @@ Game2D::~Game2D()
 
 	delete cloudManager;
 	cloudManager = nullptr;
-
-	delete player;
-	player = nullptr;
 }
 
 void Game2D::Init()
 {
-	camera = new Camera(-16, -9, -1, 1);
-	renderer = new Renderer2D(camera);
+	camera        = std::make_shared<Camera>(-16, -9, -1, 1);
+	renderer      = new Renderer2D(camera);
 	objectManager = new ObjectManager(renderer);
-	physicsScene = new PhysicsScene();
-	map = new MapGenerator(objectManager, physicsScene,camera, 100);
-	cloudManager = new CloudManager(renderer);
-	Input::GetInstance()->SetCamera(camera);
+	physicsScene  = new PhysicsScene();
+	map           = new MapGenerator(objectManager, physicsScene, camera.get(), 100);
+	cloudManager  = new CloudManager(renderer);
+	Input::GetInstance()->SetCamera(camera.get());
 }
 
 void Game2D::Update(float deltaTime)
@@ -64,14 +61,13 @@ void Game2D::Update(float deltaTime)
 
 	if (tempVal > 0.25f)
 	{
-		//map->RemakeTerrain();
+		// map->RemakeTerrain();
 		tempVal = 0.0f;
 	}
-	
 }
 
 void Game2D::Draw()
 {
 	renderer->Draw();
-	//physicsScene->Debug();
+	// physicsScene->Debug();
 }

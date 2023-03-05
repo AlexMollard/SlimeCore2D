@@ -22,7 +22,6 @@ public:
 	void SetShader(Shader* newShader);
 	Shader* GetShader();
 
-	void SetID(int id);
 	int GetID();
 
 	Texture* GetTexture();

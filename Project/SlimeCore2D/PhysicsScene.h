@@ -13,8 +13,8 @@ public:
 	PhysicsScene();
 	~PhysicsScene() {};
 
-	void addActor(RigidBody* actor, std::string name, bool isKinematic = false);
-	void addActor(std::vector<RigidBody*> actors);
+	void addActor(RigidBody* actor, std::string name = "", bool isKinematic = false);
+	void addActor(const std::vector<RigidBody*>& actors);
 	void addActor(RigidBody** actors, int amount);
 	void removeActor(RigidBody* actor);
 

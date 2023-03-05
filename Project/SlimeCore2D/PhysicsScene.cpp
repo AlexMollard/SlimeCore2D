@@ -1,87 +1,76 @@
 #include "PhysicsScene.h"
-#include <iostream>
-#include <tuple>
-#include <sstream>
-#include <unordered_map>
-#include "Renderer2D.h"
 
-PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, 0))
-{
-}
+#include "Renderer2D.h"
+#include <iostream>
+#include <sstream>
+#include <tuple>
+#include <unordered_map>
+
+PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, 0)) {}
 
 void PhysicsScene::addActor(RigidBody* actor, std::string name, bool isKinematic)
 {
-	for (int i = 0; i < actors.size(); i++)
+	if (std::find(actors.begin(), actors.end(), actor) != actors.end())
 	{
-		if (actors[i] == actor)
-		{
-			std::cout << "Actor already exist in physics scene" << std::endl;
-			break;
-		}
+		std::cout << "Actor already exists in physics scene" << std::endl;
+		return;
 	}
+
 	actor->name = name;
 	actor->SetKinematic(isKinematic);
 
 	if (isKinematic)
-		actor->SetMass(999999999999999.99f);
+		actor->SetMass(std::numeric_limits<float>::max());
 	else
 		dynamicActors.push_back(actor);
 
 	actors.push_back(actor);
 }
 
-void PhysicsScene::addActor(std::vector<RigidBody*> actors)
+void PhysicsScene::addActor(const std::vector<RigidBody*>& actors)
 {
-	addActor(actors.data(), actors.size());
+	for (auto actor : actors)
+		addActor(actor);
 }
 
 void PhysicsScene::addActor(RigidBody** actors, int amount)
 {
 	for (int i = 0; i < amount; i++)
-		this->actors.push_back(actors[i]);
+		addActor(actors[i]);
 }
 
 void PhysicsScene::removeActor(RigidBody* actor)
 {
-	auto location = std::find(actors.begin(), actors.end(), actor);
-	actors.erase(location);
+	actors.erase(std::remove(actors.begin(), actors.end(), actor), actors.end());
 }
 
-void PhysicsScene::update(float dt) {
+void PhysicsScene::update(float dt)
+{
 	// update physics at a fixed time step
 	static float accumulatedTime = 0.0f;
 	accumulatedTime += dt;
 	while (accumulatedTime >= timeStep)
 	{
-		for (auto pActor : actors)
+		for (auto& actor : actors)
 		{
-			pActor->fixedUpdate(gravity, timeStep);
+			actor->fixedUpdate(gravity, timeStep);
 		}
 		accumulatedTime -= timeStep;
 	}
 
-	for (int i = 0; i < dynamicActors.size(); i++)
+	for (auto& dynamicActor : dynamicActors)
 	{
-		RigidBody* object = dynamicActors[i];
-
-		for (int y = 0; y < 9; y++)
+		for (auto& surroundingTile : dynamicActor->GetSurroundingTiles())
 		{
-			RigidBody* other = object->GetSurroundTile(y);
-
-			if (other == nullptr)
-				continue;
-
-			if (other->GetKinematic() == false)
-				continue;
-
-			auto result = CollisionManager::QuadVsQuad(object, other);
-
-			if (glm::length(result) > 0.01)
+			if (surroundingTile && surroundingTile->GetKinematic())
 			{
-				other->SetNormal(result);
-
-				other->ApplyOffSetToActor(object, glm::vec3(result, 0));
-				other->resolveCollision(object);
+				const auto result = CollisionManager::QuadVsQuad(dynamicActor, surroundingTile);
+				if (glm::length(result) > 0.01f)
+				{
+					surroundingTile->SetNormal(result);
+					surroundingTile->ApplyOffSetToActor(dynamicActor, glm::vec3(result, 0.0f));
+					surroundingTile->ResolveCollision(dynamicActor);
+				}
 			}
 		}
 	}
@@ -93,8 +82,8 @@ void PhysicsScene::Debug()
 
 	for (int i = 0; i < actors.size(); i++)
 	{
-		glm::vec2 pos = (actors[i]->useBoundingBox) ? actors[i]->GetBoundingBox()->GetPos(actors[i]->GetPos()) : actors[i]->GetPos();
-		glm::vec2 scale = (actors[i]->useBoundingBox) ? actors[i]->GetBoundingBox()->GetScale() : actors[i]->GetScale();
+		glm::vec2 pos   = (actors[i]->GetUseBoundingBox()) ? actors[i]->GetBoundingBox().GetPos(actors[i]->GetPos()) : actors[i]->GetPos();
+		glm::vec2 scale = (actors[i]->GetUseBoundingBox()) ? actors[i]->GetBoundingBox().GetScale() : actors[i]->GetScale();
 		Renderer2D::DrawQuad(glm::vec3(pos.x, pos.y, -0.8f), scale, glm::vec4(1, 0, 0, 1));
 	}
 

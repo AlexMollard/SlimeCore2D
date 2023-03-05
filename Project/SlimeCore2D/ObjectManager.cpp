@@ -7,20 +7,13 @@ ObjectManager::ObjectManager(Renderer2D* renderer)
 
 ObjectManager::~ObjectManager()
 {
-	for (int i = 0; i < objects.size(); i++)
-	{
-		delete (Quad*)objects[i];
-
-		objects[i] = nullptr;
-	}
-
 	delete renderer;
 	renderer = nullptr;
 }
 
-GameObject* ObjectManager::CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
+std::shared_ptr<GameObject> ObjectManager::CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
 {
-	GameObject* go = new GameObject();
+	auto go = std::make_shared<GameObject>();
 	go->Create(pos, color, size, objects.size());
 
 	renderer->AddObject(go);
@@ -29,9 +22,9 @@ GameObject* ObjectManager::CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::
 	return go;
 }
 
-GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
+std::shared_ptr<GameObject> ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
 {
-	Quad* go = new Quad();
+	auto go = std::make_shared<Quad>();
 	go->Create(pos, color, size, objects.size());
 
 	renderer->AddObject(go);
@@ -40,9 +33,9 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, glm::vec3 c
 	return go;
 }
 
-GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* tex)
+std::shared_ptr<GameObject> ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* tex)
 {
-	Quad* go = new Quad();
+	auto go = std::make_shared<Quad>();
 	go->Create(pos, glm::vec3(1), size, objects.size());
 	go->SetTexture(tex);
 
@@ -52,13 +45,13 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* te
 	return go;
 }
 
-void ObjectManager::RemoveQuad(GameObject* object)
+void ObjectManager::RemoveQuad(std::shared_ptr<GameObject> object)
 {
 	objects.erase(objects.begin() + GetObjectIndex(object));
 	renderer->RemoveQuad(object);
 }
 
-int ObjectManager::GetObjectIndex(GameObject* object)
+int ObjectManager::GetObjectIndex(std::shared_ptr<GameObject> object)
 {
 	for (int i = 0; i < objects.size(); i++)
 	{
@@ -86,7 +79,7 @@ void ObjectManager::UpdateFrames(float deltaTime)
 	}
 }
 
-GameObject* ObjectManager::Get(int index)
+std::shared_ptr<GameObject> ObjectManager::Get(int index)
 {
 	return objects[index];
 }

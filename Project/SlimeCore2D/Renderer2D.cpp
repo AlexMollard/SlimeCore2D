@@ -1,18 +1,21 @@
 #include "Renderer2D.h"
+
+#include "Math.h"
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include "Math.h"
+#include <memory>
+#include <numeric>
 
-std::vector<glm::vec2> Renderer2D::UVs;
-Camera* Renderer2D::camera;
-Shader* Renderer2D::basicShader;
-Shader* Renderer2D::UIShader;
+std::vector<glm::vec2> Renderer2D::uvs;
+std::shared_ptr<Camera> Renderer2D::camera;
+std::shared_ptr<Shader> Renderer2D::basicShader;
+std::shared_ptr<Shader> Renderer2D::uiShader;
 
-static const size_t maxQuadCount = 2000;
-static const size_t maxVertexCount = maxQuadCount * 4;
-static const size_t maxIndexCount = maxQuadCount * 6;
-static const size_t maxTextures = 31;
+constexpr size_t maxQuadCount   = 2000;
+constexpr size_t maxVertexCount = maxQuadCount * 4;
+constexpr size_t maxIndexCount  = maxQuadCount * 6;
+constexpr size_t maxTextures    = 31;
 
 struct Vertex
 {
@@ -28,52 +31,44 @@ struct RendererData
 	GLuint quadVB = 0;
 	GLuint quadIB = 0;
 
-	GLuint whiteTexture = 0;
+	GLuint whiteTexture       = 0;
 	uint32_t whiteTextureSlot = 0;
 
 	uint32_t indexCount = 0;
 
-	Vertex* quadBuffer = nullptr;
+	Vertex* quadBuffer    = nullptr;
 	Vertex* quadBufferPtr = nullptr;
 
 	std::array<uint32_t, maxTextures> textureSlots = {};
-	uint32_t textureSlotIndex = 1;
+	uint32_t textureSlotIndex                      = 1;
 };
 
 static RendererData data;
 
-static glm::vec2 basicUVS[4] =
-{
-	glm::vec2(0.0f,0.0f),
-	glm::vec2(1.0f,0.0f),
-	glm::vec2(1.0f,1.0f),
-	glm::vec2(0.0f,1.0f)
-};
+static constexpr glm::vec2 basicUVs[4] = { glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f) };
 
-Renderer2D::Renderer2D(Camera* camera)
+Renderer2D::Renderer2D(std::shared_ptr<Camera> camera)
 {
-	basicShader = new Shader("Basic Shader", "..\\Shaders\\BasicVertex.shader", "..\\Shaders\\BasicFragment.shader");
-	UIShader = new Shader("Basic Shader", "..\\Shaders\\UIVertex.shader", "..\\Shaders\\UIFragment.shader");
-	texturePool.push_back(new Texture("..\\Textures\\hotbar_background.png"));
-	texturePool.push_back(new Texture("..\\Textures\\hotbar_slot.png"));
+	basicShader = std::make_shared<Shader>("Basic Shader", "..\\Shaders\\BasicVertex.shader", "..\\Shaders\\BasicFragment.shader");
+	uiShader    = std::make_shared<Shader>("UI Shader", "..\\Shaders\\UIVertex.shader", "..\\Shaders\\UIFragment.shader");
+	texturePool.push_back(std::make_shared<Texture>("..\\Textures\\hotbar_background.png"));
+	texturePool.push_back(std::make_shared<Texture>("..\\Textures\\hotbar_slot.png"));
 
 	this->camera = camera;
 
 	basicShader->Use();
 
-	auto loc = glGetUniformLocation(basicShader->GetID(), "Textures");
-	int samplers[maxTextures];
-	for (int i = 0; i < maxTextures; i++)
-		samplers[i] = i;
+	const auto loc = glGetUniformLocation(basicShader->GetID(), "Textures");
+	std::array<int, maxTextures> samplers{};
+	std::iota(samplers.begin(), samplers.end(), 0);
 
-	glUniform1iv(loc, maxTextures, samplers);
+	glUniform1iv(loc, maxTextures, samplers.data());
 
+	uiShader->Use();
 
-	UIShader->Use();
+	const auto loc2 = glGetUniformLocation(uiShader->GetID(), "Textures");
 
-	loc = glGetUniformLocation(UIShader->GetID(), "Textures");
-
-	glUniform1iv(loc, maxTextures, samplers);
+	glUniform1iv(loc2, maxTextures, samplers.data());
 
 	Init();
 }
@@ -81,25 +76,20 @@ Renderer2D::Renderer2D(Camera* camera)
 Renderer2D::~Renderer2D()
 {
 	ShutDown();
-	for (int i = 0; i < texturePool.size(); i++)
+	for (auto& i : texturePool)
 	{
-		delete texturePool[i];
-		texturePool[i] = nullptr;
+		i = nullptr;
 	}
 
-	delete basicShader;
 	basicShader = nullptr;
+	uiShader    = nullptr;
 
-	delete UIShader;
-	UIShader = nullptr;
-
-	delete camera;
 	camera = nullptr;
 }
 
-void Renderer2D::AddObject(GameObject* newObject)
+void Renderer2D::AddObject(std::shared_ptr<GameObject> newObject)
 {
-	std::vector<GameObject*>::iterator it = find(objectPool.begin(), objectPool.end(), newObject);
+	auto it = std::find(objectPool.begin(), objectPool.end(), newObject);
 
 	if (it != objectPool.end())
 	{
@@ -107,38 +97,31 @@ void Renderer2D::AddObject(GameObject* newObject)
 		return;
 	}
 
-	GameObject* go = newObject;
-	go->SetID(objectPool.size());
-	go->SetShader(basicShader);
-	 
-	if (objectPool.size() > 0)
-	{
-		if (objectPool.back()->GetPos().z <= go->GetPos().z)
-		{
-			objectPool.push_back(go);
-			return;
-		}
+	newObject->SetID(objectPool.size());
+	newObject->SetShader(basicShader.get());
 
-		for (int i = 0; i < objectPool.size(); i++)
+	if (objectPool.empty() || objectPool.back()->GetPos().z <= newObject->GetPos().z)
+	{
+		objectPool.push_back(newObject);
+	}
+	else
+	{
+		for (auto i = objectPool.begin(); i != objectPool.end(); ++i)
 		{
-			if (objectPool[i]->GetPos().z >= go->GetPos().z)
+			if ((*i)->GetPos().z >= newObject->GetPos().z)
 			{
- 				objectPool.insert(objectPool.begin() + i, go);
+				objectPool.insert(i, newObject);
 				return;
 			}
 		}
-
 	}
-	else
-	objectPool.push_back(go);
 }
 
-Texture* Renderer2D::LoadTexture(std::string dir)
+std::shared_ptr<Texture> Renderer2D::LoadTexture(const std::string& dir)
 {
-	Texture* tempTex = new Texture(dir);
-
-	texturePool.push_back(tempTex);
-	return tempTex;
+	auto texture = std::make_shared<Texture>(dir);
+	texturePool.push_back(texture);
+	return texture;
 }
 
 void Renderer2D::Draw()
@@ -146,98 +129,95 @@ void Renderer2D::Draw()
 	BeginBatch();
 
 	basicShader->Use();
-
 	basicShader->setMat4("OrthoMatrix", camera->GetTransform());
 	basicShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 	basicShader->setVec4("SunColor", glm::vec4(1.0f));
 
-	glm::vec2 camPos = camera->GetPosition();
-
+	glm::vec2 camPos         = camera->GetPosition();
 	float distanceFromCenter = -camera->GetAspectRatio().x + 6;
-
-	for (int i = 0; i < objectPool.size(); i++)
+	for (auto& object : objectPool)
 	{
-		if (objectPool[i]->GetRender() == false)
-			continue;
-	
-		if (glm::distance(camPos, glm::vec2(objectPool[i]->GetPos())) > distanceFromCenter)
+		if (object == nullptr) // This must be in order so if this object is null everyone after it should also be null.
 		{
-			continue;
+			EndBatch();
+			Flush();
+			DrawUI();
+
+			return;
 		}
-	
-		if (objectPool[i]->GetTexture() == nullptr)
+
+		if (!object->GetRender())
+			continue;
+
+		if (glm::distance(camPos, glm::vec2(object->GetPos())) > distanceFromCenter)
+			continue;
+
+		std::shared_ptr<Texture> texture(object->GetTexture());
+		if (texture && texture != nullptr) // Check if texture is valid memory
 		{
-			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f });
+			DrawQuad(object->GetPos(), object->GetScale(), { object->GetColor(), 1.0f }, texture, object->GetFrame(), object->GetSpriteWidth());
 		}
-		else if (objectPool[i]->GetTexture() != nullptr)
+		else
 		{
-			DrawQuad(objectPool[i]->GetPos(), objectPool[i]->GetScale(), { objectPool[i]->GetColor() ,1.0f }, objectPool[i]->GetTexture(), objectPool[i]->GetFrame(), objectPool[i]->GetSpriteWidth());
+			DrawQuad(object->GetPos(), object->GetScale(), { object->GetColor(), 1.0f });
 		}
 	}
 
 	EndBatch();
 	Flush();
 	DrawUI();
-
 }
 
 void Renderer2D::DrawUI()
 {
 	BeginBatch();
 
-	UIShader->Use();
-
-	UIShader->setMat4("OrthoMatrix", UIMatrix);
-	UIShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	uiShader->Use();
+	uiShader->setMat4("OrthoMatrix", uiMatrix);
+	uiShader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 
 	static int testingINT = 0;
+	glm::vec3 lit         = glm::vec3(1.0f);
+	glm::vec3 unLit       = glm::vec3(0.05f);
 
-	glm::vec3 lit = glm::vec3(1);
-	glm::vec3 unLit = glm::vec3(0.05f);
-
-
-	//Slots
-	DrawUIQuad(glm::vec2(-3.35f, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f, (testingINT == 0) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(-2, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f, (testingINT == 1) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(-0.65f, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f, (testingINT == 2) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(0.65f, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f,  (testingINT == 3) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(2, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f,  (testingINT == 4) ? lit : unLit, texturePool[1]);
-	DrawUIQuad(glm::vec2(3.35f, -8.35f), 8, glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f,  (testingINT == 5) ? lit : unLit, texturePool[1]);
-
+	// Slots
+	auto textureSize = glm::vec2(texturePool[1]->GetWidth() / 16, texturePool[1]->GetHeight() / 16) * 0.35f;
+	glm::vec2 pos(-3.35f, -8.35f);
+	for (int i = 0; i < 6; i++, pos.x += 1.35f)
+	{
+		auto color = (testingINT == i) ? lit : unLit;
+		DrawUIQuad(pos, 8, textureSize, color, texturePool[1]);
+	}
 
 	DrawUIQuad(glm::vec2(14, 7), 8, glm::vec2(3.5f), glm::vec3(0));
 
-	if (Input::GetScroll() > 0)
-		testingINT++;
-	else if (Input::GetScroll() < 0)
-		testingINT--;
-
+	testingINT += Input::GetScroll();
 	if (testingINT > 5)
 		testingINT = 0;
-	else if(testingINT < 0)
+	else if (testingINT < 0)
 		testingINT = 5;
 
 	// Bar on bottom
-	DrawUIQuad(glm::vec2(0, -8.15f), 10, glm::vec2(texturePool[0]->GetWidth() / 16, texturePool[0]->GetHeight() / 16) * 0.35f, glm::vec3(1), texturePool[0]);
+	DrawUIQuad(glm::vec2(0, -8.15f), 10, textureSize, glm::vec3(1), texturePool[0]);
 
 	EndBatch();
 	Flush();
 }
 
-Shader* Renderer2D::GetBasicShader()
+std::shared_ptr<Shader> Renderer2D::GetBasicShader()
 {
 	return basicShader;
 }
 
-void Renderer2D::DrawUIQuad(glm::vec2 pos, int layer, glm::vec2 size, glm::vec3 color, Texture* texture)
+void Renderer2D::DrawUIQuad(glm::vec2 pos, int layer, glm::vec2 size, glm::vec3 color, std::shared_ptr<Texture> texture)
 {
 	if (texture == nullptr)
-		DrawQuad(glm::vec3(pos.x, pos.y, 2 + layer * 0.01f), size, { color,1.0f });
+		DrawQuad(glm::vec3(pos, 2 + layer * 0.01f), size, { color, 1.0f });
 	else
-		DrawQuad(glm::vec3(pos.x, pos.y, 2 + layer * 0.01f), size, { color,1.0f }, texture,0,texture->GetWidth());
+		DrawQuad(glm::vec3(pos, 2 + layer * 0.01f), size, { color, 1.0f }, texture, 0, texture->GetWidth());
 }
 
-void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color)
+void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 {
 	if (data.indexCount >= maxIndexCount)
 	{
@@ -246,29 +226,26 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color)
 		BeginBatch();
 	}
 
-	float textureIndex = 0.0f;
+	const float textureIndex = 0.0f;
 
-	glm::vec3 positions[4] =
-	{
-		glm::vec3(position.x - size.x / 2, position.y - size.y / 2, position.z),
-		glm::vec3(position.x + size.x / 2,position.y - size.y / 2, position.z),
-		glm::vec3(position.x + size.x / 2,position.y + size.y / 2, position.z),
-		glm::vec3(position.x - size.x / 2,position.y + size.y / 2, position.z)
-	};
+	const glm::vec3 positions[4] = { { position.x - size.x / 2.0f, position.y - size.y / 2.0f, position.z },
+		                             { position.x + size.x / 2.0f, position.y - size.y / 2.0f, position.z },
+		                             { position.x + size.x / 2.0f, position.y + size.y / 2.0f, position.z },
+		                             { position.x - size.x / 2.0f, position.y + size.y / 2.0f, position.z } };
 
 	for (int i = 0; i < 4; i++)
 	{
-		data.quadBufferPtr->position = positions[i];
-		data.quadBufferPtr->color = color;
-		data.quadBufferPtr->texCoords = basicUVS[i];
-		data.quadBufferPtr->texIndex = textureIndex;
+		data.quadBufferPtr->position  = positions[i];
+		data.quadBufferPtr->color     = color;
+		data.quadBufferPtr->texCoords = basicUVs[i];
+		data.quadBufferPtr->texIndex  = textureIndex;
 		data.quadBufferPtr++;
 	}
 
 	data.indexCount += 6;
 }
 
-void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame, int spriteWidth)
+void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, std::shared_ptr<Texture> texture, int frame, int spriteWidth)
 {
 	if (data.indexCount >= maxIndexCount || data.textureSlotIndex >= maxTextures)
 	{
@@ -277,92 +254,89 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, T
 		BeginBatch();
 	}
 
-	float textureIndex = 0.0f;
-	for (uint32_t i = 1; i < data.textureSlotIndex; i++)
+	uint32_t textureIndex = 0;
+	for (uint32_t i = 0; i < data.textureSlotIndex; i++)
 	{
 		if (data.textureSlots[i] == texture->GetID())
 		{
-			textureIndex = (float)i;
+			textureIndex = i + 1; // use 1-based indices to reserve 0 for the default texture slot
 			break;
 		}
 	}
 
-	if (textureIndex == 0.0f)
+	if (textureIndex == 0)
 	{
-		textureIndex = (float)data.textureSlotIndex;
+		if (data.textureSlotIndex >= maxTextures)
+		{
+			EndBatch();
+			Flush();
+			BeginBatch();
+		}
+		textureIndex = data.textureSlotIndex + 1; // use 1-based indices to reserve 0 for the default texture slot
+
 		data.textureSlots[data.textureSlotIndex] = texture->GetID();
 		data.textureSlotIndex++;
 	}
 
-	static bool useBasicUVS = false;
-
+	bool useBasicUVs = false;
 	if (texture->GetWidth() == 16)
 	{
-		useBasicUVS = true;
+		useBasicUVs = true;
 	}
 	else
 	{
-		useBasicUVS = false;
-		setActiveRegion(texture, frame, spriteWidth);
+		SetActiveRegion(texture, frame, spriteWidth);
 	}
 
-	glm::vec3 positions[4] =
-	{
-		glm::vec3(position.x - size.x / 2, position.y - size.y / 2, position.z),
-		glm::vec3(position.x + size.x / 2,position.y - size.y / 2, position.z),
-		glm::vec3(position.x + size.x / 2,position.y + size.y / 2, position.z),
-		glm::vec3(position.x - size.x / 2,position.y + size.y / 2, position.z)
-	};
+	glm::vec3 positions[4] = { glm::vec3(position.x - size.x / 2.0f, position.y - size.y / 2.0f, position.z),
+		                       glm::vec3(position.x + size.x / 2.0f, position.y - size.y / 2.0f, position.z),
+		                       glm::vec3(position.x + size.x / 2.0f, position.y + size.y / 2.0f, position.z),
+		                       glm::vec3(position.x - size.x / 2.0f, position.y + size.y / 2.0f, position.z) };
 
 	for (int i = 0; i < 4; i++)
 	{
-		data.quadBufferPtr->position = positions[i];
-		data.quadBufferPtr->color = color;
-		data.quadBufferPtr->texCoords = (useBasicUVS) ? basicUVS[i] : UVs[i];
-		data.quadBufferPtr->texIndex = textureIndex;
+		data.quadBufferPtr->position  = positions[i];
+		data.quadBufferPtr->color     = color;
+		data.quadBufferPtr->texCoords = (useBasicUVs) ? basicUVs[i] : uvs[i];
+		data.quadBufferPtr->texIndex  = static_cast<float>(textureIndex);
 		data.quadBufferPtr++;
 	}
 
 	data.indexCount += 6;
 }
 
-void Renderer2D::RemoveQuad(GameObject* object)
+void Renderer2D::RemoveQuad(std::shared_ptr<GameObject> object)
 {
-	objectPool.erase(objectPool.begin() + GetObjectIndex(object));
-
+	auto it = std::find(objectPool.begin(), objectPool.end(), object);
+	if (it != objectPool.end())
+	{
+		objectPool.erase(it);
+	}
 }
 
-int Renderer2D::GetObjectIndex(GameObject* object)
+int Renderer2D::GetObjectIndex(std::shared_ptr<GameObject> object)
 {
-	for (int i = 0; i < objectPool.size(); i++)
+	auto it = std::find(objectPool.begin(), objectPool.end(), object);
+	if (it != objectPool.end())
 	{
-		if (objectPool[i] == object)
-		{
-			return i;
-		}
+		return static_cast<int>(std::distance(objectPool.begin(), it));
 	}
 	return -404;
 }
 
-void Renderer2D::setActiveRegion(Texture* texture, int regionIndex, int spriteWidth)
+void Renderer2D::SetActiveRegion(std::shared_ptr<Texture> texture, int regionIndex, int spriteWidth)
 {
-	UVs.clear();
+	uvs.clear();
 
-	//					  (int) textureSize / spriteWidth;
 	int numberOfRegions = texture->GetWidth() / spriteWidth;
+	float regionWidth   = 1.0f / numberOfRegions;
+	float uv_x          = (regionIndex % numberOfRegions) * regionWidth;
+	float uv_y          = (regionIndex / numberOfRegions) * regionWidth;
 
-	float uv_x = (regionIndex % numberOfRegions) / (float)numberOfRegions;
-	float uv_y = (regionIndex / (float)numberOfRegions) * (float)numberOfRegions;
-
-	glm::vec2 uv_down_left = glm::vec2(uv_x, uv_y);
-	glm::vec2 uv_down_right = glm::vec2(uv_x + 1.0f / numberOfRegions, uv_y);
-	glm::vec2 uv_up_right = glm::vec2(uv_x + 1.0f / numberOfRegions, (uv_y + 1.0f));
-	glm::vec2 uv_up_left = glm::vec2(uv_x, (uv_y + 1.0f));
-
-	UVs.push_back(uv_down_left);
-	UVs.push_back(uv_down_right);
-	UVs.push_back(uv_up_right);
-	UVs.push_back(uv_up_left);
+	uvs.emplace_back(uv_x, uv_y);
+	uvs.emplace_back(glm::vec2(uv_x + regionWidth, uv_y));
+	uvs.emplace_back(glm::vec2(uv_x + regionWidth, uv_y + regionWidth));
+	uvs.emplace_back(glm::vec2(uv_x, uv_y + regionWidth));
 }
 
 void Renderer2D::Init()
@@ -449,12 +423,14 @@ void Renderer2D::EndBatch()
 
 void Renderer2D::Flush()
 {
-	for (uint32_t i = 0; i < data.textureSlotIndex; i++)
+	for (uint32_t i = 0; i < data.textureSlotIndex; ++i)
+	{
 		glBindTextureUnit(i, data.textureSlots[i]);
+	}
 
 	glBindVertexArray(data.quadVA);
 	glDrawElements(GL_TRIANGLES, data.indexCount, GL_UNSIGNED_INT, nullptr);
 
-	data.indexCount = 0;
+	data.indexCount       = 0;
 	data.textureSlotIndex = 1;
 }

@@ -6,26 +6,8 @@ CloudManager::CloudManager(Renderer2D* renderer)
 
 	for (int i = 0; i < CLOUD_TEXTURE_TOTAL; i++)
 	{
-		cloudTextures[i] = new Texture("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + ".png");
-		shadowTextures[i] = new Texture("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + "_shadow.png");
-	}
-}
-
-CloudManager::~CloudManager()
-{
-	for (int i = 0; i < CLOUD_TEXTURE_TOTAL; i++)
-	{
-		delete cloudTextures[i];
-		cloudTextures[i] = nullptr;
-
-		delete shadowTextures[i];
-		shadowTextures[i] = nullptr;
-	}
-
-	for (int i = 0; i < clouds.size(); i++)
-	{
-		delete clouds[i];
-		clouds[i] = nullptr;
+		cloudTextures[i] = std::make_shared<Texture>("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + ".png");
+		shadowTextures[i] = std::make_shared<Texture>("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + "_shadow.png");
 	}
 }
 
@@ -35,9 +17,11 @@ void CloudManager::Init(int cloudTotal)
 	{
 		int textIndex = rand() % CLOUD_TEXTURE_TOTAL;
 
-		clouds.push_back(new Cloud(cloudTextures[textIndex], shadowTextures[textIndex], ((rand() % 20) * 0.1f) + 2, glm::vec2((rand() % 150 - 50), rand() % 100 - 50)));
-		renderer->AddObject(clouds.back()->GetCloud());
-		renderer->AddObject(clouds.back()->GetShadow());
+	//	auto cloud = std::make_shared<Cloud>(cloudTextures[textIndex], shadowTextures[textIndex], ((rand() % 20) * 0.1f) + 2, glm::vec2((rand() % 150 - 50), rand() % 100 - 50));
+
+		//clouds.push_back(cloud);
+		//renderer->AddObject(cloud->GetCloud());
+		//renderer->AddObject(cloud->GetShadow());
 	}
 }
 

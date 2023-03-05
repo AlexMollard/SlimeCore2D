@@ -1,9 +1,10 @@
 #pragma once
+#include "CloudManager.h"
+#include "MapGenerator.h"
 #include "ObjectManager.h"
 #include "PhysicsScene.h"
-#include "MapGenerator.h"
 #include "Player.h"
-#include "CloudManager.h"
+#include <memory>
 class Game2D
 {
 public:
@@ -16,15 +17,13 @@ public:
 	void Draw();
 
 private:
-	Renderer2D* renderer = nullptr;
+	Renderer2D* renderer         = nullptr;
 	ObjectManager* objectManager = nullptr;
-	Input* inputManager = Input::GetInstance();
-	PhysicsScene* physicsScene = nullptr;
-	Camera* camera = nullptr;
-	MapGenerator* map = nullptr;
-	CloudManager* cloudManager = nullptr;
-	GameObject* testObject = nullptr;
-	Player* player = nullptr;
+	Input* inputManager          = Input::GetInstance();
+	PhysicsScene* physicsScene   = nullptr;
+	MapGenerator* map            = nullptr;
+	CloudManager* cloudManager   = nullptr;
 
-	float timer = 0.0f;
+	std::shared_ptr<Camera> camera = nullptr;
+	std::shared_ptr<Player> player = nullptr;
 };

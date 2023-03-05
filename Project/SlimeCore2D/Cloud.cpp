@@ -4,28 +4,19 @@ Cloud::Cloud(Texture* cloud, Texture* shadow, float size, glm::vec2 startPos)
 {
 	speed = (rand() % 10) * 0.1f + 1;
 
-	cloudObject = new GameObject();
+	cloudObject = std::make_shared<GameObject>();
 	cloudObject->SetPos({ startPos, -0.75f });
 	cloudObject->SetTexture(cloud);
 	cloudObject->SetSpriteWidth(32);
 	cloudObject->SetScale(glm::vec2(2 * size, 1 * size));
 
-	shadowObject = new GameObject();
+	shadowObject = std::make_shared<GameObject>();
 	shadowObject->SetPos(0, -4.0f, 0.01);
 	shadowObject->SetTexture(shadow);
 	shadowObject->SetSpriteWidth(32);
 	shadowObject->SetScale(glm::vec2(2 * size, 1 * size));
 
-	shadowObject->SetParent(cloudObject);
-}
-
-Cloud::~Cloud()
-{
-	delete cloudObject;
-	cloudObject = nullptr;
-
-	delete shadowObject;
-	shadowObject = nullptr;
+	shadowObject->SetParent(cloudObject.get());
 }
 
 void Cloud::Update(float deltaTime)
@@ -51,12 +42,12 @@ void Cloud::SetSpeed(float newSpeed)
 	speed = newSpeed;
 }
 
-GameObject* Cloud::GetCloud()
+std::shared_ptr<GameObject> Cloud::GetCloud()
 {
 	return cloudObject;
 }
 
-GameObject* Cloud::GetShadow()
+std::shared_ptr<GameObject> Cloud::GetShadow()
 {
 	return shadowObject;
 }

@@ -1,18 +1,13 @@
 #include "GameObject.h"
-#include <string>
+
 #include "gtc/quaternion.hpp"
+#include <string>
 
-GameObject::GameObject()
-{
-}
+GameObject::GameObject() {}
 
-GameObject::~GameObject()
-{
-}
+GameObject::~GameObject() {}
 
-void GameObject::Update(float deltaTime)
-{
-}
+void GameObject::Update(float deltaTime) {}
 
 void GameObject::Create(glm::vec3 pos, glm::vec3 color, glm::vec2 scale, int id)
 {
@@ -62,7 +57,7 @@ Shader* GameObject::GetShader()
 
 void GameObject::SetRotate(float rotation)
 {
-	this->rotation = rotation;
+	SetRotation(rotation);
 	float updatedRotation = rotation * 3.141592f / 180.0f;
 
 	float sin = glm::sin(updatedRotation);
@@ -70,28 +65,25 @@ void GameObject::SetRotate(float rotation)
 
 	float tx = 0;
 	float ty = 1;
-	normal.x = (cos * tx) - (sin * ty);
-	normal.y = (sin * tx) + (cos * ty);
+	glm::vec2 newNormal;
+	newNormal.x = (cos * tx) - (sin * ty);
+	newNormal.y = (sin * tx) + (cos * ty);
+	SetNormal(newNormal);
 
 	glm::mat4 tempModel(1);
 
 	tempModel = glm::rotate(tempModel, updatedRotation, glm::vec3(0, 0, 1));
 
-	tempModel[0] *= scale[0];
-	tempModel[1] *= scale[1];
+	tempModel[0] *= GetScale()[0];
+	tempModel[1] *= GetScale()[1];
 
-	model = tempModel;
-	SetPos(position);
-}
-
-void GameObject::SetID(int id)
-{
-	ID = id;
+	SetModel(tempModel);
+	SetPos(GetPosition());
 }
 
 int GameObject::GetID()
 {
-	return ID;
+	return GetID();
 }
 
 Texture* GameObject::GetTexture()

@@ -1,8 +1,6 @@
 #include "Player.h"
 
-Player::Player() : Quad()
-{
-}
+Player::Player() : Quad() {}
 
 Player::~Player()
 {
@@ -25,14 +23,14 @@ Player::~Player()
 void Player::Init(Camera* cam, Cell** cells, GameObject* shadow)
 {
 	this->cells = cells;
-	isPlayer = true;
-	camera = cam;
+	isPlayer    = true;
+	camera      = cam;
 
 	player_Idle_Right = new Texture("..\\Textures\\Player\\Knight_Idle_Right.png");
-	player_Idle_Left = new Texture("..\\Textures\\Player\\Knight_Idle_Left.png");
+	player_Idle_Left  = new Texture("..\\Textures\\Player\\Knight_Idle_Left.png");
 
 	player_Run_Right = new Texture("..\\Textures\\Player\\Knight_Run_Right.png");
-	player_Run_Left = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
+	player_Run_Left  = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
 
 	player_Shadow = new Texture("..\\Textures\\Player\\player_shadow.png");
 
@@ -42,7 +40,7 @@ void Player::Init(Camera* cam, Cell** cells, GameObject* shadow)
 	shadow->SetTexture(player_Shadow);
 	shadow->SetParent(this);
 	shadow->UpdatePos();
-	shadow->SetScale(glm::vec2(1,2));
+	shadow->SetScale(glm::vec2(1, 2));
 }
 
 void Player::Update(float deltaTime)
@@ -107,35 +105,15 @@ void Player::playerMovement(float deltaTime)
 void Player::UpdateSurroundingTiles()
 {
 	const int MAPSIZE = 100 * 0.5f;
+	const int posX    = (int)GetPos().x + MAPSIZE;
+	const int posY    = (int)GetPos().y + MAPSIZE - 1;
 
-	// I have taken 1 from the players Y position as the current player sprite is 32px high
-
-	// Top Left
-	surroundingTiles[0] = cells[((int)position.x - 1) + MAPSIZE][((int)position.y) + MAPSIZE].object;
-
-	// Top
-	surroundingTiles[1] = cells[((int)position.x) + MAPSIZE][((int)position.y) + MAPSIZE].object;
-
-	// Top Right
-	surroundingTiles[2] = cells[((int)position.x + 1) + MAPSIZE][((int)position.y) + MAPSIZE].object;
-
-	// Left
-	surroundingTiles[3] = cells[((int)position.x - 1) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
-
-	// Center
-	surroundingTiles[4] = cells[((int)position.x) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
-
-	// Right
-	surroundingTiles[5] = cells[((int)position.x + 1) + MAPSIZE][((int)position.y - 1) + MAPSIZE].object;
-
-	// Bottom left
-	surroundingTiles[6] = cells[((int)position.x - 1) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
-
-	// Bottom
-	surroundingTiles[7] = cells[((int)position.x) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
-
-	// Bottom Right
-	surroundingTiles[8] = cells[((int)position.x + 1) + MAPSIZE][((int)position.y - 2) + MAPSIZE].object;
+	for (int i = 0; i < 9; ++i)
+	{
+		const int x         = posX + (i % 3) - 1;
+		const int y         = posY + (i / 3) - 1;
+		SetSurroundTile(i, cells[x][y].object);
+	}
 }
 
 void Player::SetAllCells(Cell** cells)

@@ -52,9 +52,9 @@ private:
 	Cell** cells;
 	int** results;
 	std::vector<Cell*> treeCell;
-	std::vector<GameObject*> trees;
-	std::vector<GameObject*> treeShadowObjects;
-	std::vector<GameObject*> grassObjects;
+	std::vector<std::shared_ptr<GameObject>> trees;
+	std::vector<std::shared_ptr<GameObject>> treeShadowObjects;
+	std::vector<std::shared_ptr<GameObject>> grassObjects;
 
 	// Textures
 	Texture* water = nullptr;

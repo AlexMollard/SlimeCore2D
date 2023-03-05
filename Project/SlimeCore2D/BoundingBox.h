@@ -10,15 +10,15 @@ public:
 
 	void UpdateQuadBoundingBox(glm::vec2 pos, glm::vec2 size);
 
-	bool GetIsColliding(BoundingBox& other);
+	bool GetIsColliding(const BoundingBox& other) const;
 
 	bool GetMouseColliding();
 
 	glm::vec2& GetMax();
 	glm::vec2& GetMin();
 
-	glm::vec2 GetPos(glm::vec3 objectPos);
-	glm::vec2 GetScale();
+	glm::vec2 GetPos(glm::vec3 objectPos) const;
+	glm::vec2 GetScale() const;
 
 	glm::vec2 offset = glm::vec2(0);
 	glm::vec2 scale = glm::vec2(0);

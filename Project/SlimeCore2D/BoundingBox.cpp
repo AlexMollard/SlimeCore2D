@@ -14,7 +14,7 @@ void BoundingBox::UpdateQuadBoundingBox(glm::vec2 pos, glm::vec2 size)
 	min = glm::vec2(pos.x - (size.x * 0.5f), pos.y - (size.y * 0.5f));
 }
 
-bool BoundingBox::GetIsColliding(BoundingBox& other)
+bool BoundingBox::GetIsColliding(const BoundingBox& other) const
 {
 	bool collisionX = (other.min.x > max.x || other.max.x < min.x);
 
@@ -44,12 +44,12 @@ glm::vec2& BoundingBox::GetMin()
 	return min;
 }
 
-glm::vec2 BoundingBox::GetPos(glm::vec3 objectPos)
+glm::vec2 BoundingBox::GetPos(glm::vec3 objectPos) const
 {
 	return objectPos + glm::vec3(offset, 0);
 }
 
-glm::vec2 BoundingBox::GetScale()
+glm::vec2 BoundingBox::GetScale() const
 {
 	return scale;
 }
