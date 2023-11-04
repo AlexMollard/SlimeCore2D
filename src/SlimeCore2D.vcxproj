@@ -142,7 +142,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\stb;$(SolutionDir)dependencies\glText</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)external\glm\glm;$(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -161,7 +161,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\stb;$(SolutionDir)dependencies\glText</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)external\glm\glm;$(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -184,7 +184,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\stb;$(SolutionDir)dependencies\glText</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)external\glm\glm;$(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -207,7 +207,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\stb;$(SolutionDir)dependencies\glText</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)external\glm\glm;$(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
