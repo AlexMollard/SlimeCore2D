@@ -1,18 +1,21 @@
+#include "pch.h"
 #include "Input.h"
 #include <iostream>
 #include <string>
 
+// GLFW Callbacks
 void window_focus_callback(GLFWwindow* window, int focused);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-float Input::scroll;
-double Input::mouseXPos;
-double Input::mouseYPos;
+
+float Input::m_scroll;
+double Input::m_mouseXPos;
+double Input::m_mouseYPos;
 
 Input::Input()
 {
-	window = glfwGetCurrentContext();
-	glfwSetWindowFocusCallback(window, window_focus_callback);
-	glfwSetScrollCallback(window, scroll_callback);
+	m_window = glfwGetCurrentContext();
+	glfwSetWindowFocusCallback(m_window, window_focus_callback);
+	glfwSetScrollCallback(m_window, scroll_callback);
 }
 
 Input::~Input()
@@ -22,73 +25,73 @@ Input::~Input()
 // Most of this is broken because of the camera changing aspect ratio and position
 void Input::Update()
 {
-	aspectX = -camera->GetAspectRatio().x;
-	aspectY = -camera->GetAspectRatio().y;
+	m_aspectX = -m_camera->GetAspectRatio().x;
+	m_aspectY = -m_camera->GetAspectRatio().y;
 
-	deltaMouse = glm::vec2((float)mouseXPos, (float)mouseYPos);
+	m_deltaMouse = glm::vec2((float)m_mouseXPos, (float)m_mouseYPos);
 
-	glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
-	glfwGetWindowSize(window, &winWidth, &winHeight);
+	glfwGetCursorPos(m_window, &m_mouseXPos, &m_mouseYPos);
+	glfwGetWindowSize(m_window, &m_winWidth, &m_winHeight);
 
-	mouseXPos /= (winWidth / (aspectX * 2.0f));
-	mouseXPos -= aspectX;
+	m_mouseXPos /= (m_winWidth / (m_aspectX * 2.0f));
+	m_mouseXPos -= m_aspectX;
 
-	mouseYPos /= (winHeight / (aspectY * 2.0f));
-	mouseYPos -= aspectY;
-	mouseYPos = -mouseYPos;
+	m_mouseYPos /= (m_winHeight / (m_aspectY * 2.0f));
+	m_mouseYPos -= m_aspectY;
+	m_mouseYPos = -m_mouseYPos;
 
-	deltaMouse -= glm::vec2((float)mouseXPos, (float)mouseYPos);
-	Input::scroll = 0.0f;
+	m_deltaMouse -= glm::vec2((float)m_mouseXPos, (float)m_mouseYPos);
+	Input::m_scroll = 0.0f;
 }
 
 glm::vec2 Input::GetMousePos()
 {
-	return glm::vec2(mouseXPos, mouseYPos);
+	return { m_mouseXPos, m_mouseYPos };
 }
 
-glm::vec2 Input::GetDeltaMouse()
+glm::vec2 Input::GetDeltaMouse() const
 {
-	return deltaMouse;
+	return m_deltaMouse;
 }
 
-glm::vec2 Input::GetWindowSize()
+glm::vec2 Input::GetWindowSize() const
 {
-	return glm::vec2(winWidth, winHeight);
+	return { m_winWidth, m_winHeight };
 }
 
-glm::vec2 Input::GetAspectRatio()
+glm::vec2 Input::GetAspectRatio() const
 {
-	return glm::vec2(aspectX, aspectY);
+	return { m_aspectX, m_aspectY };
 }
 
 bool Input::GetMouseDown(int button)
 {
-	return (glfwGetMouseButton(GetInstance()->window, button));
+	return (glfwGetMouseButton(GetInstance()->m_window, button));
 }
 
 void Input::SetCamera(Camera* cam)
 {
-	camera = cam;
+	m_camera = cam;
 }
 
 GLFWwindow* Input::GetWindow()
 {
-	return window;
+	return m_window;
 }
 
 bool Input::GetFocus()
 {
-	return IsWindowFocused;
+	return m_isWindowFocused;
 }
 
 void Input::SetFocus(bool focus)
 {
-	IsWindowFocused = focus;
+	m_isWindowFocused = focus;
 }
 
 glm::vec2 Input::GetMouseToWorldPos()
 {
-	return GetInstance()->camera->GetPosition() + (glm::vec2(mouseXPos, mouseYPos));
+	return GetInstance()->m_camera->GetPosition() + (glm::vec2(m_mouseXPos, m_mouseYPos));
 }
 
 void window_focus_callback(GLFWwindow* window, int focused)
@@ -103,7 +106,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 bool Input::GetKeyPress(Keycode key)
 {
-	int state = glfwGetKey(GetInstance()->window, (int)key);
+	int state = glfwGetKey(GetInstance()->m_window, (int)key);
 	if (state == GLFW_PRESS)
 	{
 		return true;
@@ -114,10 +117,10 @@ bool Input::GetKeyPress(Keycode key)
 
 void Input::SetScroll(float newScroll)
 {
-	scroll = newScroll;
+	m_scroll = newScroll;
 }
 
 float Input::GetScroll()
 {
-	return Input::scroll;
+	return Input::m_scroll;
 }

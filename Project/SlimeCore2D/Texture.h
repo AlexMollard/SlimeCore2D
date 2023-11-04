@@ -7,21 +7,21 @@ class Texture
 {
 public:
 	Texture(std::string dir);
-	Texture(unsigned int* id);
-	Texture() {};
+	Texture(unsigned int id);
+	Texture() = default;
 	~Texture();
 
 	void load(std::string dir);
-	void Bind() { glBindTexture(GL_TEXTURE_2D, textureID); };
-	unsigned int GetID() { return textureID; };
-	void SetID(unsigned int newID) { textureID = newID; };
+	void Bind();;
+	unsigned int GetID();;
+	void SetID(unsigned int newID);;
 
 	int GetWidth();
 	int GetHeight();
 
 protected:
-	unsigned int textureID = 0;
-	int width = 0;
-	int height = 0;
-	int nrChannels = 4;
+	unsigned int m_textureId = 0;
+	int m_width = 0;
+	int m_height = 0;
+	int m_channels = 4;
 };

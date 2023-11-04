@@ -1,11 +1,7 @@
 #pragma once
 #include "RigidBody.h"
 
-class CollisionManager
+namespace CollisionManager
 {
-public:
-	CollisionManager();
-	~CollisionManager();
-
-	static glm::vec2 QuadVsQuad(RigidBody* rbOne, RigidBody* rbTwo);
+	glm::vec2 QuadVsQuad(RigidBody* rbOne, RigidBody* rbTwo);
 };

@@ -1,8 +1,9 @@
+#include "pch.h"
 #include "Window.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-Window::Window(int width, int height, char* name)
+Window::Window(int width, int height, const char* name)
 {
 	// Check for Memory Leaks
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -18,7 +19,7 @@ Window::~Window()
 	Window_destroy();
 }
 
-int Window::Window_intit(int width, int height, char* name)
+int Window::Window_intit(int width, int height, const char* name)
 {
 	if (!glfwInit())
 	{
@@ -50,7 +51,7 @@ int Window::Window_intit(int width, int height, char* name)
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
 	{
-		std::cout << "Glew is not havig a good time" << std::endl;
+		std::cout << "Glew is not having a good time" << std::endl;
 	}
 
 	// Outputting OpenGL Version and build

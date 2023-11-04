@@ -11,9 +11,9 @@ public:
 	~Input();
 
 	static Input* GetInstance() {
-		if (!instance)
-			instance = new Input;
-		return instance;
+		if (!m_instance)
+			m_instance = new Input;
+		return m_instance;
 	};
 
 	void Update();
@@ -21,10 +21,10 @@ public:
 	GLFWwindow* GetWindow();
 
 	static glm::vec2 GetMousePos();
-	glm::vec2 GetDeltaMouse();
+	glm::vec2 GetDeltaMouse() const;
 
-	glm::vec2 GetWindowSize();
-	glm::vec2 GetAspectRatio();
+	glm::vec2 GetWindowSize() const;
+	glm::vec2 GetAspectRatio() const;
 	static bool GetMouseDown(int button);
 
 	void SetCamera(Camera* cam);
@@ -39,25 +39,25 @@ public:
 
 	static glm::vec2 GetMouseToWorldPos();
 private:
-	static Input* instance;
+	static Input* m_instance;
 
 	Input();
 
-	GLFWwindow* window;
+	GLFWwindow* m_window;
 
-	static double mouseXPos;
-	static double mouseYPos;
+	static double m_mouseXPos;
+	static double m_mouseYPos;
 
-	int winWidth = 0;
-	int winHeight = 0;
+	int m_winWidth = 0;
+	int m_winHeight = 0;
 
-	double aspectX = 32;
-	double aspectY = 18;
+	double m_aspectX = 32;
+	double m_aspectY = 18;
 
-	bool IsWindowFocused = true;
+	bool m_isWindowFocused = true;
 
-	static float scroll;
-	glm::vec2 deltaMouse = glm::vec2();
+	static float m_scroll;
+	glm::vec2 m_deltaMouse = glm::vec2();
 
-	Camera* camera = nullptr;
+	Camera* m_camera = nullptr;
 };

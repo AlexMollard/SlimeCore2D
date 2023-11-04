@@ -1,13 +1,15 @@
 #pragma once
-#include "Quad.h"
-#include "Camera.h"
-#include "Cell.h"
+#include "GameObject.h"
 
-class Player : public Quad
+struct Cell;
+class Texture;
+class Camera;
+
+class Player : public GameObject
 {
 public:
-	Player();
-	~Player();
+	Player() = default;
+	~Player() final;
 
 	void Init(Camera* cam, Cell** cells, GameObject* shadow);
 
@@ -19,11 +21,11 @@ public:
 private:
 	Camera* camera = nullptr;
 
-	Texture* player_Idle_Left = nullptr;
-	Texture* player_Idle_Right = nullptr;
-	Texture* player_Run_Left = nullptr;
-	Texture* player_Run_Right = nullptr;
-	Texture* player_Shadow = nullptr;
+	Texture* m_playerIdleLeft = nullptr;
+	Texture* m_playerIdleRight = nullptr;
+	Texture* m_playerRunLeft = nullptr;
+	Texture* m_playerRunright = nullptr;
+	Texture* m_playerShadow = nullptr;
 
-	Cell** cells;
+	Cell** m_cells;
 };

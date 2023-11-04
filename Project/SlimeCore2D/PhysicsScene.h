@@ -7,11 +7,13 @@
 #include <functional>
 #include <algorithm>
 
+class Renderer2D;
+
 class PhysicsScene
 {
 public:
-	PhysicsScene();
-	~PhysicsScene() {};
+	PhysicsScene() = default;
+	~PhysicsScene() = default;
 
 	void addActor(RigidBody* actor, std::string name = "", bool isKinematic = false);
 	void addActor(const std::vector<RigidBody*>& actors);
@@ -19,17 +21,17 @@ public:
 	void removeActor(RigidBody* actor);
 
 	void update(float dt);
-	void Debug();
+	void Debug(Renderer2D& renderer2D);
 
-	void setGravity(const glm::vec3 gravity) { this->gravity = gravity; }
-	glm::vec2 getGravity() const { return gravity; }
+	void setGravity(const glm::vec3 inGravity);
+	glm::vec2 getGravity() const;
 
-	void setTimeStep(const float timeStep) { this->timeStep = timeStep; }
-	float getTimeStep() const { return timeStep; }
+	void setTimeStep(const float inTimeStep);
+	float getTimeStep() const;
 
 protected:
-	glm::vec2 gravity;
-	float timeStep = 0.01f;
-	std::vector<RigidBody*> actors;
-	std::vector<RigidBody*> dynamicActors;
+	glm::vec2 m_gravity = glm::vec2(0, 0);
+	float m_timeStep = 0.01f;
+	std::vector<RigidBody*> m_actors;
+	std::vector<RigidBody*> m_dynamicActors;
 };

@@ -1,13 +1,14 @@
+#include "pch.h"
 #include "CloudManager.h"
 
 CloudManager::CloudManager(Renderer2D* renderer)
 {
-	this->renderer = renderer;
+	this->m_renderer = renderer;
 
 	for (int i = 0; i < CLOUD_TEXTURE_TOTAL; i++)
 	{
-		cloudTextures[i] = std::make_shared<Texture>("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + ".png");
-		shadowTextures[i] = std::make_shared<Texture>("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + "_shadow.png");
+		m_cloudTextures[i] = std::make_shared<Texture>("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + ".png");
+		m_shadowTextures[i] = std::make_shared<Texture>("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + "_shadow.png");
 	}
 }
 
@@ -27,8 +28,8 @@ void CloudManager::Init(int cloudTotal)
 
 void CloudManager::Update(float deltaTime)
 {
-	for (int i = 0; i < clouds.size(); i++)
+	for (int i = 0; i < m_clouds.size(); i++)
 	{
-		clouds[i]->Update(deltaTime);
+		m_clouds[i]->Update(deltaTime);
 	}
 }

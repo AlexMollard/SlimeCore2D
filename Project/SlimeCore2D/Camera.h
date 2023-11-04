@@ -27,15 +27,15 @@ public:
 	void SetFOV(float newFOV);
 
 private:
-	glm::vec2 position = glm::vec2(0);
-	glm::mat4 defaultTransform = glm::mat4(1);
-	glm::mat4 transform = glm::mat4(1);
-	glm::vec2 aspectRatio = glm::vec2(1);
-	glm::vec2 aspectRatioBeforeFieldOfView = glm::vec2(1);
+	glm::vec2 m_position = glm::vec2(0);
+	glm::mat4 m_defaultTransform = glm::mat4(1);
+	glm::mat4 m_transform = glm::mat4(1);
+	glm::vec2 m_aspectRatio = glm::vec2(1);
+	glm::vec2 m_aspectRatioBeforeFieldOfView = glm::vec2(1);
 
-	float nearPlane = 0;
-	float farPlane = 0;
+	float m_nearPlane = 0;
+	float m_farPlane = 0;
 
 	// 1.0f is default
-	float fieldOfView = 1.0f;
+	float m_fieldOfView = 1.0f;
 };

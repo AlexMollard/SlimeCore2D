@@ -34,70 +34,67 @@ public:
 
 	void SetResultValues();
 
-
-
 	Cell** GetAllCells();
 private:
-	int mapSize = 0;
-	int seed = rand() % 9999999;
-	int streamWidth = 5;
-	float islandRadius = 10;
+	int m_mapSize = 0;
+	int m_seed = rand() % 9999999;
+	int m_streamWidth = 5;
+	float m_islandRadius = 10;
 
-	ObjectManager* objManager;
-	PhysicsScene* pScene;
+	ObjectManager* m_objManager;
+	PhysicsScene* m_physicsScene;
 
+	Camera* m_camera = nullptr;
 
-	Camera* camera = nullptr;
-
-	Cell** cells;
-	int** results;
-	std::vector<Cell*> treeCell;
-	std::vector<std::shared_ptr<GameObject>> trees;
-	std::vector<std::shared_ptr<GameObject>> treeShadowObjects;
-	std::vector<std::shared_ptr<GameObject>> grassObjects;
+	Cell** m_cells;
+	int** m_results;
+	std::vector<Cell*> m_treeCell;
+	std::vector<GameObject*> m_trees;
+	std::vector<GameObject*> m_treeShadowObjects;
+	std::vector<GameObject*> m_grassObjects;
 
 	// Textures
-	Texture* water = nullptr;
+	Texture* m_water = nullptr;
 
 	// Grass
-	Texture* center_0 = nullptr;
-	Texture* center_1 = nullptr;
-	Texture* center_2 = nullptr;
-	Texture* center_3 = nullptr;
+	Texture* m_center0 = nullptr;
+	Texture* m_center1 = nullptr;
+	Texture* m_center2 = nullptr;
+	Texture* m_center3 = nullptr;
 
 	// Sprouts
-	Texture* sprout_0 = nullptr;
-	Texture* sprout_1 = nullptr;
-	Texture* sprout_2 = nullptr;
-	Texture* sprout_3 = nullptr;
-	Texture* sprout_4 = nullptr;
+	Texture* m_sprout0 = nullptr;
+	Texture* m_sprout1 = nullptr;
+	Texture* m_sprout2 = nullptr;
+	Texture* m_sprout3 = nullptr;
+	Texture* m_sprout4 = nullptr;
 
 	// Stone
-	Texture* stone_0 = nullptr;
-	Texture* stone_1 = nullptr;
-	Texture* stone_2 = nullptr;
-	Texture* stone_3 = nullptr;
+	Texture* m_stone0 = nullptr;
+	Texture* m_stone1 = nullptr;
+	Texture* m_stone2 = nullptr;
+	Texture* m_stone3 = nullptr;
 
 	// Ledges
-	Texture* top_Left = nullptr;
-	Texture* top_Center = nullptr;
-	Texture* top_Right = nullptr;
+	Texture* m_topLeft = nullptr;
+	Texture* m_topCenter = nullptr;
+	Texture* m_topRight = nullptr;
 
-	Texture* inner_Top_Left = nullptr;
-	Texture* inner_Top_Right = nullptr;
+	Texture* m_innerTopLeft = nullptr;
+	Texture* m_innerTopRight = nullptr;
 
-	Texture* middle_Left = nullptr;
-	Texture* middle_Right = nullptr;
+	Texture* m_middleLeft = nullptr;
+	Texture* m_middleRight = nullptr;
 
-	Texture* inner_Bottom_Left = nullptr;
-	Texture* inner_Bottom_Right = nullptr;
+	Texture* m_innerBottomLeft = nullptr;
+	Texture* m_innerBottomRight = nullptr;
 
-	Texture* bottom_Left = nullptr;
-	Texture* bottom_Center = nullptr;
-	Texture* bottom_Center_2 = nullptr;
-	Texture* bottom_Right = nullptr;
+	Texture* m_bottomLeft = nullptr;
+	Texture* m_bottomCenter = nullptr;
+	Texture* m_bottomCenter2 = nullptr;
+	Texture* m_bottomRight = nullptr;
 
 	// Trees
-	Texture* tree_0 = nullptr;
-	Texture* tree_0_Shadow = nullptr;
+	Texture* m_tree0 = nullptr;
+	Texture* m_tree0Shadow = nullptr;
 };

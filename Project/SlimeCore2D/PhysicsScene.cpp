@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PhysicsScene.h"
 
 #include "Renderer2D.h"
@@ -6,11 +7,9 @@
 #include <tuple>
 #include <unordered_map>
 
-PhysicsScene::PhysicsScene() : timeStep(0.01f), gravity(glm::vec2(0, 0)) {}
-
 void PhysicsScene::addActor(RigidBody* actor, std::string name, bool isKinematic)
 {
-	if (std::find(actors.begin(), actors.end(), actor) != actors.end())
+	if (std::find(m_actors.begin(), m_actors.end(), actor) != m_actors.end())
 	{
 		std::cout << "Actor already exists in physics scene" << std::endl;
 		return;
@@ -22,9 +21,9 @@ void PhysicsScene::addActor(RigidBody* actor, std::string name, bool isKinematic
 	if (isKinematic)
 		actor->SetMass(std::numeric_limits<float>::max());
 	else
-		dynamicActors.push_back(actor);
+		m_dynamicActors.push_back(actor);
 
-	actors.push_back(actor);
+	m_actors.push_back(actor);
 }
 
 void PhysicsScene::addActor(const std::vector<RigidBody*>& actors)
@@ -41,7 +40,7 @@ void PhysicsScene::addActor(RigidBody** actors, int amount)
 
 void PhysicsScene::removeActor(RigidBody* actor)
 {
-	actors.erase(std::remove(actors.begin(), actors.end(), actor), actors.end());
+	m_actors.erase(std::remove(m_actors.begin(), m_actors.end(), actor), m_actors.end());
 }
 
 void PhysicsScene::update(float dt)
@@ -49,16 +48,16 @@ void PhysicsScene::update(float dt)
 	// update physics at a fixed time step
 	static float accumulatedTime = 0.0f;
 	accumulatedTime += dt;
-	while (accumulatedTime >= timeStep)
+	while (accumulatedTime >= m_timeStep)
 	{
-		for (auto& actor : actors)
+		for (auto& actor : m_actors)
 		{
-			actor->fixedUpdate(gravity, timeStep);
+			actor->fixedUpdate(m_gravity, m_timeStep);
 		}
-		accumulatedTime -= timeStep;
+		accumulatedTime -= m_timeStep;
 	}
 
-	for (auto& dynamicActor : dynamicActors)
+	for (auto& dynamicActor : m_dynamicActors)
 	{
 		for (auto& surroundingTile : dynamicActor->GetSurroundingTiles())
 		{
@@ -76,17 +75,37 @@ void PhysicsScene::update(float dt)
 	}
 }
 
-void PhysicsScene::Debug()
+void PhysicsScene::Debug(Renderer2D& renderer2D)
 {
-	Renderer2D::BeginBatch();
+	renderer2D.BeginBatch();
 
-	for (int i = 0; i < actors.size(); i++)
+	for (int i = 0; i < m_actors.size(); i++)
 	{
-		glm::vec2 pos   = (actors[i]->GetUseBoundingBox()) ? actors[i]->GetBoundingBox().GetPos(actors[i]->GetPos()) : actors[i]->GetPos();
-		glm::vec2 scale = (actors[i]->GetUseBoundingBox()) ? actors[i]->GetBoundingBox().GetScale() : actors[i]->GetScale();
-		Renderer2D::DrawQuad(glm::vec3(pos.x, pos.y, -0.8f), scale, glm::vec4(1, 0, 0, 1));
+		glm::vec2 pos   = (m_actors[i]->GetUseBoundingBox()) ? m_actors[i]->GetBoundingBox().GetPos(m_actors[i]->GetPos()) : m_actors[i]->GetPos();
+		glm::vec2 scale = (m_actors[i]->GetUseBoundingBox()) ? m_actors[i]->GetBoundingBox().GetScale() : m_actors[i]->GetScale();
+		renderer2D.DrawQuad(glm::vec3(pos.x, pos.y, -0.8f), scale, glm::vec4(1, 0, 0, 1));
 	}
 
-	Renderer2D::EndBatch();
-	Renderer2D::Flush;
+	renderer2D.EndBatch();
+	renderer2D.Flush();
+}
+
+void PhysicsScene::setGravity(const glm::vec3 inGravity)
+{
+	m_gravity = inGravity;
+}
+
+glm::vec2 PhysicsScene::getGravity() const
+{
+	return m_gravity;
+}
+
+void PhysicsScene::setTimeStep(const float inTimeStep)
+{
+	m_timeStep = inTimeStep;
+}
+
+float PhysicsScene::getTimeStep() const
+{
+	return m_timeStep;
 }

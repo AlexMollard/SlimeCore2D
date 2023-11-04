@@ -14,9 +14,9 @@ public:
 	void Update(float deltaTime);
 
 private:
-	std::shared_ptr<Texture> cloudTextures[CLOUD_TEXTURE_TOTAL];
-	std::shared_ptr<Texture> shadowTextures[CLOUD_TEXTURE_TOTAL];
+	std::shared_ptr<Texture> m_cloudTextures[CLOUD_TEXTURE_TOTAL];
+	std::shared_ptr<Texture> m_shadowTextures[CLOUD_TEXTURE_TOTAL];
 
-	std::vector<std::shared_ptr<Cloud>> clouds;
-	Renderer2D* renderer;
+	std::vector<std::shared_ptr<Cloud>> m_clouds;
+	Renderer2D* m_renderer;
 };

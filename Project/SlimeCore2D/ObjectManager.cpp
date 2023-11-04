@@ -1,61 +1,69 @@
+#include "pch.h"
 #include "ObjectManager.h"
+#include "GameObject.h"
 
 ObjectManager::ObjectManager(Renderer2D* renderer)
 {
-	this->renderer = renderer;
+	this->m_renderer = renderer;
 }
 
 ObjectManager::~ObjectManager()
 {
-	delete renderer;
-	renderer = nullptr;
+	for (auto object : m_objects)
+	{
+		if (!object || object->GetIsPlayer())
+			return;
+
+		delete object;
+		object = nullptr;
+	}
+
+	delete m_renderer;
+	m_renderer = nullptr;
 }
 
-std::shared_ptr<GameObject> ObjectManager::CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
+GameObject* ObjectManager::CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
 {
-	auto go = std::make_shared<GameObject>();
-	go->Create(pos, color, size, objects.size());
+	auto go = new GameObject(pos, color, size, m_objects.size());
 
-	renderer->AddObject(go);
-	objects.push_back(go);
+	m_renderer->AddObject(go);
+	m_objects.push_back(go);
 
 	return go;
 }
 
-std::shared_ptr<GameObject> ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
+GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
 {
-	auto go = std::make_shared<Quad>();
-	go->Create(pos, color, size, objects.size());
+	auto go = new GameObject(pos, color, size, m_objects.size());
 
-	renderer->AddObject(go);
-	objects.push_back(go);
+	m_renderer->AddObject(go);
+	m_objects.push_back(go);
 
 	return go;
 }
 
-std::shared_ptr<GameObject> ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* tex)
+GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* tex)
 {
-	auto go = std::make_shared<Quad>();
-	go->Create(pos, glm::vec3(1), size, objects.size());
+	auto go = new GameObject(pos, glm::vec3(1), size, m_objects.size());
 	go->SetTexture(tex);
 
-	renderer->AddObject(go);
-	objects.push_back(go);
+	m_renderer->AddObject(go);
+	m_objects.push_back(go);
 
 	return go;
 }
 
-void ObjectManager::RemoveQuad(std::shared_ptr<GameObject> object)
+void ObjectManager::RemoveQuad(GameObject* object)
 {
-	objects.erase(objects.begin() + GetObjectIndex(object));
-	renderer->RemoveQuad(object);
+	m_objects.erase(m_objects.begin() + GetObjectIndex(object));
+	m_renderer->RemoveQuad(*object);
 }
 
-int ObjectManager::GetObjectIndex(std::shared_ptr<GameObject> object)
+int ObjectManager::GetObjectIndex(GameObject* object)
 {
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < m_objects.size(); i++)
 	{
-		if (objects[i] == object)
+		if (m_objects[i] == object)
 		{
 			return i;
 		}
@@ -65,26 +73,26 @@ int ObjectManager::GetObjectIndex(std::shared_ptr<GameObject> object)
 
 void ObjectManager::Update(float deltaTime)
 {
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < m_objects.size(); i++)
 	{
-		objects[i]->Update(deltaTime);
+		m_objects[i]->Update(deltaTime);
 	}
 }
 
 void ObjectManager::UpdateFrames(float deltaTime)
 {
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < m_objects.size(); i++)
 	{
-		objects[i]->UpdateSpriteTimer(deltaTime);
+		m_objects[i]->UpdateSpriteTimer(deltaTime);
 	}
 }
 
-std::shared_ptr<GameObject> ObjectManager::Get(int index)
+GameObject* ObjectManager::Get(int index)
 {
-	return objects[index];
+	return m_objects[index];
 }
 
-int ObjectManager::Size()
+int ObjectManager::GetSize()
 {
-	return objects.size();
+	return m_objects.size();
 }

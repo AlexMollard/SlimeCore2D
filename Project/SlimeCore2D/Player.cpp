@@ -1,43 +1,43 @@
+#include "pch.h"
 #include "Player.h"
-
-Player::Player() : Quad() {}
+#include "Cell.h"
 
 Player::~Player()
 {
-	delete player_Idle_Right;
-	player_Idle_Right = nullptr;
+	delete m_playerIdleRight;
+	m_playerIdleRight = nullptr;
 
-	delete player_Idle_Left;
-	player_Idle_Left = nullptr;
+	delete m_playerIdleLeft;
+	m_playerIdleLeft = nullptr;
 
-	delete player_Run_Right;
-	player_Run_Right = nullptr;
+	delete m_playerRunright;
+	m_playerRunright = nullptr;
 
-	delete player_Run_Left;
-	player_Run_Left = nullptr;
+	delete m_playerRunLeft;
+	m_playerRunLeft = nullptr;
 
-	delete player_Shadow;
-	player_Shadow = nullptr;
+	delete m_playerShadow;
+	m_playerShadow = nullptr;
 }
 
 void Player::Init(Camera* cam, Cell** cells, GameObject* shadow)
 {
-	this->cells = cells;
-	isPlayer    = true;
+	m_cells = cells;
+	m_isPlayer    = true;
 	camera      = cam;
 
-	player_Idle_Right = new Texture("..\\Textures\\Player\\Knight_Idle_Right.png");
-	player_Idle_Left  = new Texture("..\\Textures\\Player\\Knight_Idle_Left.png");
+	m_playerIdleRight = new Texture("..\\Textures\\Player\\Knight_Idle_Right.png");
+	m_playerIdleLeft  = new Texture("..\\Textures\\Player\\Knight_Idle_Left.png");
 
-	player_Run_Right = new Texture("..\\Textures\\Player\\Knight_Run_Right.png");
-	player_Run_Left  = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
+	m_playerRunright = new Texture("..\\Textures\\Player\\Knight_Run_Right.png");
+	m_playerRunLeft  = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
 
-	player_Shadow = new Texture("..\\Textures\\Player\\player_shadow.png");
+	m_playerShadow = new Texture("..\\Textures\\Player\\player_shadow.png");
 
 	SetBoundingBox(glm::vec2(0, -0.75f), glm::vec2(1, 0.5f));
-	SetTexture(player_Idle_Right);
+	SetTexture(m_playerIdleRight);
 
-	shadow->SetTexture(player_Shadow);
+	shadow->SetTexture(m_playerShadow);
 	shadow->SetParent(this);
 	shadow->UpdatePos();
 	shadow->SetScale(glm::vec2(1, 2));
@@ -60,17 +60,17 @@ void Player::Update(float deltaTime)
 	if (Input::GetKeyPress(Keycode::D) || Input::GetKeyPress(Keycode::A) || Input::GetKeyPress(Keycode::W) || Input::GetKeyPress(Keycode::S))
 	{
 		if (right)
-			SetTexture(player_Run_Right);
+			SetTexture(m_playerRunright);
 		else
-			SetTexture(player_Run_Left);
+			SetTexture(m_playerRunLeft);
 		SetFrameRate(0.1f);
 	}
 	else
 	{
 		if (right)
-			SetTexture(player_Idle_Right);
+			SetTexture(m_playerIdleRight);
 		else
-			SetTexture(player_Idle_Left);
+			SetTexture(m_playerIdleLeft);
 
 		SetFrameRate(0.15f);
 	}
@@ -112,11 +112,11 @@ void Player::UpdateSurroundingTiles()
 	{
 		const int x         = posX + (i % 3) - 1;
 		const int y         = posY + (i / 3) - 1;
-		SetSurroundTile(i, cells[x][y].object);
+		SetSurroundTile(i, m_cells[x][y].GetGameObject());
 	}
 }
 
 void Player::SetAllCells(Cell** cells)
 {
-	this->cells = cells;
+	m_cells = cells;
 }

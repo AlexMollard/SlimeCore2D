@@ -1,12 +1,13 @@
+#include "pch.h"
 //#include "optick/optick.h"
 #include "Window.h"
 #include "Game2D.h"
 
-Input* Input::instance = 0;
+Input* Input::m_instance = 0;
 
 int main()
 {
-	Window* app = new Window(1536, 852, (char*)"SlimeCore2D");
+	Window* app = new Window(1536, 852, "SlimeCore2D");
 	Game2D* game = new Game2D();
 	Input* inputManager = Input::GetInstance();
 

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "MapGenerator.h"
 
 #include "gtc/noise.hpp"
@@ -8,29 +9,29 @@
 
 MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, Camera* cam, int mapSize)
 {
-	objManager = objectManager;
+	m_objManager = objectManager;
 	CreateTextures();
-	this->mapSize = mapSize;
-	this->pScene  = pScene;
-	camera        = cam;
+	this->m_mapSize = mapSize;
+	this->m_physicsScene  = pScene;
+	m_camera        = cam;
 
 	// Create Cells
-	cells = new Cell*[mapSize];
+	m_cells = new Cell*[mapSize];
 	for (int i = 0; i < mapSize; i++)
-		cells[i] = new Cell[mapSize];
+		m_cells[i] = new Cell[mapSize];
 
 	// Create endResult
-	results = new int*[mapSize];
+	m_results = new int*[mapSize];
 	for (int i = 0; i < mapSize; i++)
-		results[i] = new int[mapSize];
+		m_results[i] = new int[mapSize];
 
 	for (int x = 0; x < mapSize; x++)
 	{
 		for (int y = 0; y < mapSize; y++)
 		{
-			cells[x][y].cellType = type::Water;
+			m_cells[x][y].SetCellType(type::Water);
 
-			cells[x][y].object = objManager->CreateQuad(glm::vec3(x - mapSize / 2, y - mapSize / 2, 0), glm::vec2(1)).get();
+			m_cells[x][y].SetGameObject(m_objManager->CreateQuad(glm::vec3(x - mapSize / 2, y - mapSize / 2, 0), glm::vec2(1)));
 		}
 	}
 
@@ -41,129 +42,129 @@ MapGenerator::~MapGenerator()
 {
 	DeleteTextures();
 
-	for (int i = 0; i < mapSize; i++)
+	for (int i = 0; i < m_mapSize; i++)
 	{
-		delete cells[i];
-		cells[i] = nullptr;
+		delete m_cells[i];
+		m_cells[i] = nullptr;
 	}
 
-	delete cells;
-	cells = nullptr;
+	delete m_cells;
+	m_cells = nullptr;
 
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		delete results[x];
-		results[x] = nullptr;
+		delete m_results[x];
+		m_results[x] = nullptr;
 	}
 
-	delete results;
-	results = nullptr;
+	delete m_results;
+	m_results = nullptr;
 }
 
 int** MapGenerator::Generate()
 {
-	int islandSpawnRadius = (mapSize - ((islandRadius * 2) + 2));
+	int islandSpawnRadius = (m_mapSize - ((m_islandRadius * 2) + 2));
 	const int islandCount = 55;
 
 	glm::vec2 randomPoint[islandCount];
-	randomPoint[0] = glm::vec2(mapSize / 2);
+	randomPoint[0] = glm::vec2(m_mapSize / 2);
 
 	// Setting random island centers
 	for (int i = 1; i < islandCount; i++)
 	{
-		randomPoint[i] = glm::vec2((rand() % islandSpawnRadius) + islandRadius - 1, (rand() % islandSpawnRadius) + islandRadius - 1);
+		randomPoint[i] = glm::vec2((rand() % islandSpawnRadius) + m_islandRadius - 1, (rand() % islandSpawnRadius) + m_islandRadius - 1);
 	}
 
 	// creating islands from centrers
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			type currentType = cells[x][y].cellType;
+			type currentType = m_cells[x][y].GetCellType();
 			for (int i = 0; i < islandCount; i++)
 			{
 				if (currentType == type::Water)
 				{
 					float distance = glm::distance(randomPoint[i], glm::vec2(x, y));
-					currentType    = (distance < (islandRadius - (rand() % (int)islandRadius / 4))) ? type::Ground : type::Water;
+					currentType    = (distance < (m_islandRadius - (rand() % (int)m_islandRadius / 4))) ? type::Ground : type::Water;
 				}
 				else
 					break;
 			}
 
-			cells[x][y].cellType    = currentType;
-			cells[x][y].preCellType = currentType;
-			cells[x][y].position    = glm::vec2(x, y);
+			m_cells[x][y].SetCellType(currentType);
+			m_cells[x][y].SetPreCellType(currentType);
+			m_cells[x][y].SetPosition(glm::vec2(x, y));
 		}
 	}
 
 	// Creating Streams/Rivers
 	for (int q = 0; q < 15; q++)
 	{
-		glm::vec2 tile = glm::vec2((rand() % mapSize), (rand() % mapSize));
+		glm::vec2 tile = glm::vec2((rand() % m_mapSize), (rand() % m_mapSize));
 
-		while (glm::distance(tile, glm::vec2(mapSize / 2)) < streamWidth * 2)
+		while (glm::distance(tile, glm::vec2(m_mapSize / 2)) < m_streamWidth * 2)
 		{
-			tile = glm::vec2((rand() % mapSize), (rand() % mapSize));
+			tile = glm::vec2((rand() % m_mapSize), (rand() % m_mapSize));
 		}
 
-		Cell* highestCell = &cells[(int)tile.x][(int)tile.y];
+		Cell* highestCell = &m_cells[(int)tile.x][(int)tile.y];
 
 		std::vector<Cell*> streamCells;
 		streamCells.push_back(highestCell);
 		Cell* nextCell = highestCell;
 
-		while (highestCell->cellType != type::Water && highestCell != nullptr)
+		while (highestCell->GetCellType() != type::Water && highestCell != nullptr)
 		{
 			bool right = false;
 			bool left  = false;
 			bool up    = false;
 			bool down  = false;
 
-			highestCell->object->SetColor(glm::vec3(0.1f, 0.3f, 0.75f));
-			highestCell->cellType = type::Water;
+			highestCell->GetGameObject()->SetColor(glm::vec3(0.1f, 0.3f, 0.75f));
+			highestCell->SetCellType(type::Water);
 			// Right
-			if (highestCell->position.x < mapSize - 1)
+			if (highestCell->GetPosition().x < m_mapSize - 1)
 				if (rand() % 4 > 2)
 				{
-					nextCell = &cells[(int)highestCell->position.x + 1][(int)highestCell->position.y];
+					nextCell = &m_cells[(int)highestCell->GetPosition().x + 1][(int)highestCell->GetPosition().y];
 					right    = true;
 				}
 
 			// Left
-			if (highestCell->position.x > 0)
+			if (highestCell->GetPosition().x > 0)
 				if (rand() % 4 > 2)
 				{
-					nextCell = &cells[(int)highestCell->position.x - 1][(int)highestCell->position.y];
+					nextCell = &m_cells[(int)highestCell->GetPosition().x - 1][(int)highestCell->GetPosition().y];
 					left     = true;
 				}
 
 			// Up
-			if (highestCell->position.y < mapSize - 1)
+			if (highestCell->GetPosition().y < m_mapSize - 1)
 				if (rand() % 4 > 2)
 				{
-					nextCell = &cells[(int)highestCell->position.x][(int)highestCell->position.y + 1];
+					nextCell = &m_cells[(int)highestCell->GetPosition().x][(int)highestCell->GetPosition().y + 1];
 					up       = true;
 				}
 
 			// Down
-			if (highestCell->position.y > 0)
+			if (highestCell->GetPosition().y > 0)
 				if (rand() % 4 > 2)
 				{
-					nextCell = &cells[(int)highestCell->position.x][(int)highestCell->position.y - 1];
+					nextCell = &m_cells[(int)highestCell->GetPosition().x][(int)highestCell->GetPosition().y - 1];
 					down     = true;
 				}
 
 			if (highestCell == nextCell)
 			{
 				if (right)
-					nextCell = nextCell = &cells[(int)highestCell->position.x + 1][(int)highestCell->position.y];
+					nextCell = nextCell = &m_cells[(int)highestCell->GetPosition().x + 1][(int)highestCell->GetPosition().y];
 				else if (left)
-					nextCell = nextCell = &cells[(int)highestCell->position.x - 1][(int)highestCell->position.y];
+					nextCell = nextCell = &m_cells[(int)highestCell->GetPosition().x - 1][(int)highestCell->GetPosition().y];
 				else if (up)
-					nextCell = nextCell = &cells[(int)highestCell->position.x][(int)highestCell->position.y + 1];
+					nextCell = nextCell = &m_cells[(int)highestCell->GetPosition().x][(int)highestCell->GetPosition().y + 1];
 				else if (down)
-					nextCell = nextCell = &cells[(int)highestCell->position.x][(int)highestCell->position.y - 1];
+					nextCell = nextCell = &m_cells[(int)highestCell->GetPosition().x][(int)highestCell->GetPosition().y - 1];
 				else
 					break;
 			}
@@ -172,16 +173,16 @@ int** MapGenerator::Generate()
 			streamCells.push_back(highestCell);
 		}
 
-		for (int x = 0; x < mapSize; x++)
+		for (int x = 0; x < m_mapSize; x++)
 		{
-			for (int y = 0; y < mapSize; y++)
+			for (int y = 0; y < m_mapSize; y++)
 			{
 				for (int i = 0; i < streamCells.size(); i++)
 				{
-					float distance = glm::distance(streamCells[i]->position, glm::vec2(x, y));
-					if (distance < streamWidth)
+					float distance = glm::distance(streamCells[i]->GetPosition(), glm::vec2(x, y));
+					if (distance < m_streamWidth)
 					{
-						cells[x][y].cellType = type::Water;
+						m_cells[x][y].SetCellType(type::Water);
 					}
 				}
 			}
@@ -195,68 +196,68 @@ int** MapGenerator::Generate()
 	}
 
 	// Setting all ground tiles next to water into walls
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			if (GetTotalGroundSurrounding(cells[x][y]) < 8 && cells[x][y].cellType == type::Ground)
-				cells[x][y].preCellType = type::Wall;
+			if (GetTotalGroundSurrounding(m_cells[x][y]) < 8 && m_cells[x][y].GetCellType() == type::Ground)
+				m_cells[x][y].SetPreCellType(type::Wall);
 		}
 	}
 
 	SetCellTypeToPreCellType();
 
 	// Setting all tiles to correct sprites and disabling water from rendering
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			if (GetTotalGroundSurrounding(cells[x][y]) == 0 && cells[x][y].cellType == type::Wall)
+			if (GetTotalGroundSurrounding(m_cells[x][y]) == 0 && m_cells[x][y].GetCellType() == type::Wall)
 			{
-				cells[x][y].cellType = type::Water;
+				m_cells[x][y].SetCellType(type::Water);
 			}
 
-			if (cells[x][y].cellType == type::Wall)
+			if (m_cells[x][y].GetCellType() == type::Wall)
 			{
-				pScene->addActor(cells[x][y].object, "wall", true);
+				m_physicsScene->addActor(m_cells[x][y].GetGameObject(), "wall", true);
 				SetTileSprite(x, y);
 
-				cells[x][y].object->SetColor(glm::vec3(1));
+				m_cells[x][y].GetGameObject()->SetColor(glm::vec3(1));
 			}
 
-			if (cells[x][y].cellType == type::Water)
+			if (m_cells[x][y].GetCellType() == type::Water)
 			{
 				if (rand() % 10 == 2)
 				{
-					cells[x][y].object->SetColor(glm::vec3(1));
-					cells[x][y].object->SetHasAnimation(true);
-					cells[x][y].object->SetTexture(water);
-					cells[x][y].object->SetFrameRate(0.33f);
-					cells[x][y].object->SetFrame(rand() % 3);
+					m_cells[x][y].GetGameObject()->SetColor(glm::vec3(1));
+					m_cells[x][y].GetGameObject()->SetHasAnimation(true);
+					m_cells[x][y].GetGameObject()->SetTexture(m_water);
+					m_cells[x][y].GetGameObject()->SetFrameRate(0.33f);
+					m_cells[x][y].GetGameObject()->SetFrame(rand() % 3);
 					continue;
 				}
 
-				cells[x][y].object->SetRender(false);
+				m_cells[x][y].GetGameObject()->SetRender(false);
 			}
 
-			if (cells[x][y].cellType == type::Ground)
+			if (m_cells[x][y].GetCellType() == type::Ground)
 			{
-				cells[x][y].object->SetColor(glm::vec3(1));
+				m_cells[x][y].GetGameObject()->SetColor(glm::vec3(1));
 
 				int texValue = rand() % 8;
 
 				// Grass
 				if (texValue > 2)
-					cells[x][y].object->SetTexture(center_0);
+					m_cells[x][y].GetGameObject()->SetTexture(m_center0);
 
 				if (texValue == 0)
-					cells[x][y].object->SetTexture(center_1);
+					m_cells[x][y].GetGameObject()->SetTexture(m_center1);
 
 				if (texValue == 1)
-					cells[x][y].object->SetTexture(center_2);
+					m_cells[x][y].GetGameObject()->SetTexture(m_center2);
 
 				if (texValue == 2)
-					cells[x][y].object->SetTexture(center_3);
+					m_cells[x][y].GetGameObject()->SetTexture(m_center3);
 			}
 		}
 	}
@@ -272,33 +273,33 @@ int** MapGenerator::Generate()
 
 	SetResultValues();
 
-	return results;
+	return m_results;
 }
 
 void MapGenerator::SetCellTypeToPreCellType()
 {
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			cells[x][y].cellType = cells[x][y].preCellType;
+			m_cells[x][y].SetCellType(m_cells[x][y].GetPreCellType());
 		}
 	}
 }
 
 void MapGenerator::EatWater(int landAroundMin)
 {
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			if (GetTotalGroundSurrounding(cells[x][y]) >= landAroundMin && cells[x][y].cellType == type::Water)
+			if (GetTotalGroundSurrounding(m_cells[x][y]) >= landAroundMin && m_cells[x][y].GetCellType() == type::Water)
 			{
-				cells[x][y].cellType = type::Ground;
-				cells[x][y].object->SetColor(glm::vec3(1.0f));
-				cells[x][y].object->SetTexture(center_0);
+				m_cells[x][y].SetCellType(type::Ground);
+				m_cells[x][y].GetGameObject()->SetColor(glm::vec3(1.0f));
+				m_cells[x][y].GetGameObject()->SetTexture(m_center0);
 			}
-			cells[x][y].preCellType = cells[x][y].cellType;
+			m_cells[x][y].SetPreCellType(m_cells[x][y].GetCellType());
 		}
 	}
 }
@@ -310,46 +311,46 @@ void MapGenerator::SetStoneTiles(int VainCount)
 
 	for (int i = 0; i < VainCount; i++)
 	{
-		Cell* currentStone = &cells[rand() % mapSize][rand() % mapSize];
+		Cell* currentStone = &m_cells[rand() % m_mapSize][rand() % m_mapSize];
 
-		while (currentStone->cellType != type::Ground)
+		while (currentStone->GetCellType() != type::Ground)
 		{
-			currentStone = &cells[rand() % mapSize][rand() % mapSize];
+			currentStone = &m_cells[rand() % m_mapSize][rand() % m_mapSize];
 		}
 		stoneMidPoint.push_back(currentStone);
 	}
 
 	// Setting Stone type and Textures
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			if (cells[x][y].cellType == type::Ground)
+			if (m_cells[x][y].GetCellType() == type::Ground)
 			{
 				for (int i = 0; i < stoneMidPoint.size(); i++)
 				{
-					if (glm::distance(cells[x][y].position, stoneMidPoint[i]->position) < (maxDistance - rand() % (int)maxDistance))
+					if (glm::distance(m_cells[x][y].GetPosition(), stoneMidPoint[i]->GetPosition()) < (maxDistance - rand() % (int)maxDistance))
 					{
-						cells[x][y].cellType = type::Stone;
+						m_cells[x][y].SetCellType(type::Stone);
 					}
 				}
 			}
 
-			if (cells[x][y].cellType == type::Stone)
+			if (m_cells[x][y].GetCellType() == type::Stone)
 			{
 				int texValue = rand() % 8;
 
 				if (texValue > 2)
-					cells[x][y].object->SetTexture(stone_0);
+					m_cells[x][y].GetGameObject()->SetTexture(m_stone0);
 
 				if (texValue == 0)
-					cells[x][y].object->SetTexture(stone_1);
+					m_cells[x][y].GetGameObject()->SetTexture(m_stone1);
 
 				if (texValue == 1)
-					cells[x][y].object->SetTexture(stone_2);
+					m_cells[x][y].GetGameObject()->SetTexture(m_stone2);
 
 				if (texValue == 2)
-					cells[x][y].object->SetTexture(stone_3);
+					m_cells[x][y].GetGameObject()->SetTexture(m_stone3);
 			}
 		}
 	}
@@ -361,79 +362,82 @@ void MapGenerator::SetTreeTiles(int forestCount)
 	std::vector<Cell*> forestMidpoints;
 	const float maxDistance = 10;
 
-	std::uniform_int_distribution<int> dist(0, mapSize - 1);
+	std::uniform_int_distribution dist(0, m_mapSize - 1);
 	std::default_random_engine rng;
-	rng.seed(std::chrono::system_clock::now().time_since_epoch().count());
+	rng.seed(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
 
-	auto isGround    = [](const Cell& cell) { return cell.cellType == type::Ground; };
-	auto isNotGround = [](const Cell& cell) { return cell.cellType != type::Ground; };
+	auto isGround    = [](const Cell& cell) { return cell.GetCellType() == type::Ground; };
+	auto isNotGround = [](const Cell& cell) { return cell.GetCellType() != type::Ground; };
 
 	while (forestMidpoints.size() < forestCount)
 	{
 		int x = dist(rng);
 		int y = dist(rng);
-		if (isGround(cells[x][y]) &&
-		    std::none_of(forestMidpoints.begin(), forestMidpoints.end(),
-		                 [&, x, y, maxDistance](const Cell* midpoint) { return glm::distance(cells[x][y].position, midpoint->position) < (maxDistance - rand() % 2); }))
+		if (isGround(m_cells[x][y]) &&
+		    std::ranges::none_of(forestMidpoints.begin(), forestMidpoints.end(),
+		        [&, x, y, maxDistance](const Cell* midpoint) 
+				{
+					return glm::distance(m_cells[x][y].GetPosition(), midpoint->GetPosition()) < (maxDistance - rand() % 2); 
+				}))
 		{
-			forestMidpoints.push_back(&cells[x][y]);
+			forestMidpoints.push_back(&m_cells[x][y]);
 		}
 	}
 
 	// Setting Color
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			auto& cell = cells[x][y];
-			if (cell.cellType != type::Ground)
+			auto& cell = m_cells[x][y];
+			if (cell.GetCellType() != type::Ground)
 			{
 				continue;
 			}
 
 			for (auto& midPoint : forestMidpoints)
 			{
-				if (glm::distance(cell.position, midPoint->position) < (maxDistance - rand() % 2))
+				if (glm::distance(cell.GetPosition(), midPoint->GetPosition()) < (maxDistance - rand() % 2))
 				{
-					cell.object->SetColor(glm::vec3(0.8f, 0.8f, 0.8f));
+					cell.GetGameObject()->SetColor(glm::vec3(0.8f, 0.8f, 0.8f));
 
 					if (rand() % 10 > 8)
 					{
-						if (!treeCell.empty() &&
-						    std::all_of(treeCell.begin(), treeCell.end(), [&](const auto& tree) { return glm::distance(cell.position, tree->position) > 2; }))
+						if (!m_treeCell.empty() &&
+						    std::ranges::all_of(m_treeCell.begin(), m_treeCell.end(), [&](const auto& tree) { return glm::distance(cell.GetPosition(), tree->GetPosition()) > 2; }))
 						{
-							glm::vec3 newPos = cell.object->GetPos();
+							glm::vec3 newPos = cell.GetGameObject()->GetPos();
 							newPos           = glm::vec3(newPos.x, newPos.y + 1.5f, -0.25f + (y * 0.001f));
 
-							auto tempTree = objManager->CreateQuad(newPos, glm::vec2(1), tree_0);
+							auto tempTree = m_objManager->CreateQuad(newPos, glm::vec2(1), m_tree0);
 							tempTree->SetSpriteWidth(32);
-							auto shadow = objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), tree_0_Shadow);
-							shadow->SetParent(tempTree.get());
+							auto shadow = m_objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), m_tree0Shadow);
+							shadow->SetParent(tempTree);
 							shadow->UpdatePos();
 							shadow->SetSpriteWidth(32);
 
-							treeShadowObjects.push_back(shadow);
+							m_treeShadowObjects.push_back(shadow);
 
-							treeCell.push_back(&cell);
-							trees.push_back(tempTree);
-							cell.cellType = type::Tree;
+							m_treeCell.push_back(&cell);
+							m_trees.push_back(tempTree);
+							cell.SetCellType(type::Tree);
 						}
-						else if (treeCell.empty())
+						else if (m_treeCell.empty())
 						{
-							glm::vec3 newPos = cell.object->GetPos();
+							glm::vec3 newPos = cell.GetGameObject()->GetPos();
 							newPos           = glm::vec3(newPos.x, newPos.y + 1.5f, -0.25f + (y * 0.001f));
 
-							auto tempTree = objManager->CreateQuad(newPos, glm::vec2(1), tree_0);
+							auto tempTree = m_objManager->CreateQuad(newPos, glm::vec2(1), m_tree0);
 							tempTree->SetSpriteWidth(32);
-							auto shadow = objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), tree_0_Shadow);
-							shadow->SetParent(tempTree.get());
+							auto shadow = m_objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), m_tree0Shadow);
+							shadow->SetParent(tempTree);
 							shadow->UpdatePos();
 							shadow->SetSpriteWidth(32);
 
-							treeShadowObjects.push_back(shadow);
-							treeCell.push_back(&cell);
-							trees.push_back(tempTree);
-							cell.cellType = type::Tree;
+							m_treeShadowObjects.push_back(shadow);
+							m_treeCell.push_back(&cell);
+							m_trees.push_back(tempTree);
+							cell.SetCellType(type::Tree);
 						}
 					}
 				}
@@ -444,7 +448,7 @@ void MapGenerator::SetTreeTiles(int forestCount)
 
 type MapGenerator::SetType(int x, int y)
 {
-	int size = mapSize;
+	int size = m_mapSize;
 
 	if (y >= size - 1)
 	{
@@ -491,153 +495,159 @@ type MapGenerator::SetType(int x, int y)
 
 void MapGenerator::CreateTextures()
 {
-	water = new Texture("..\\Textures\\Water\\WaterOne.png");
+	m_water = new Texture(R"(..\Textures\Water\WaterOne.png)");
 
-	center_0 = new Texture("..\\Textures\\Grass\\floor_0.png");
-	center_1 = new Texture("..\\Textures\\Grass\\floor_1.png");
-	center_2 = new Texture("..\\Textures\\Grass\\floor_2.png");
-	center_3 = new Texture("..\\Textures\\Grass\\floor_3.png");
+	m_center0 = new Texture(R"(..\Textures\Grass\floor_0.png)");
+	m_center1 = new Texture(R"(..\Textures\Grass\floor_1.png)");
+	m_center2 = new Texture(R"(..\Textures\Grass\floor_2.png)");
+	m_center3 = new Texture(R"(..\Textures\Grass\floor_3.png)");
 
-	sprout_0 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_0.png");
-	sprout_1 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_1.png");
-	sprout_2 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_2.png");
-	sprout_3 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_3.png");
-	sprout_4 = new Texture("..\\Textures\\Grass\\Sprouts\\sprout_4.png");
+	m_sprout0 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_0.png)");
+	m_sprout1 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_1.png)");
+	m_sprout2 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_2.png)");
+	m_sprout3 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_3.png)");
+	m_sprout4 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_4.png)");
 
-	stone_0 = new Texture("..\\Textures\\Stone\\Stone_0.png");
-	stone_1 = new Texture("..\\Textures\\Stone\\Stone_1.png");
-	stone_2 = new Texture("..\\Textures\\Stone\\Stone_2.png");
-	stone_3 = new Texture("..\\Textures\\Stone\\Stone_3.png");
+	m_stone0 = new Texture(R"(..\Textures\Stone\Stone_0.png)");
+	m_stone1 = new Texture(R"(..\Textures\Stone\Stone_1.png)");
+	m_stone2 = new Texture(R"(..\Textures\Stone\Stone_2.png)");
+	m_stone3 = new Texture(R"(..\Textures\Stone\Stone_3.png)");
 
-	top_Left   = new Texture("..\\Textures\\Ledges\\Wall_Top_Left.png");
-	top_Center = new Texture("..\\Textures\\Ledges\\Wall_Top.png");
-	top_Right  = new Texture("..\\Textures\\Ledges\\Wall_Top_Right.png");
+	m_topLeft   = new Texture(R"(..\Textures\Ledges\Wall_Top_Left.png)");
+	m_topCenter = new Texture(R"(..\Textures\Ledges\Wall_Top.png)");
+	m_topRight  = new Texture(R"(..\Textures\Ledges\Wall_Top_Right.png)");
 
-	inner_Top_Left  = new Texture("..\\Textures\\Ledges\\Wall_Inner_Top_Left.png");
-	inner_Top_Right = new Texture("..\\Textures\\Ledges\\Wall_Inner_Top_Right.png");
+	m_innerTopLeft  = new Texture(R"(..\Textures\Ledges\Wall_Inner_Top_Left.png)");
+	m_innerTopRight = new Texture(R"(..\Textures\Ledges\Wall_Inner_Top_Right.png)");
 
-	middle_Left  = new Texture("..\\Textures\\Ledges\\Wall_Left.png");
-	middle_Right = new Texture("..\\Textures\\Ledges\\Wall_Right.png");
+	m_middleLeft  = new Texture(R"(..\Textures\Ledges\Wall_Left.png)");
+	m_middleRight = new Texture(R"(..\Textures\Ledges\Wall_Right.png)");
 
-	inner_Bottom_Left  = new Texture("..\\Textures\\Ledges\\Wall_Inner_Left.png");
-	inner_Bottom_Right = new Texture("..\\Textures\\Ledges\\Wall_Inner_Right.png");
+	m_innerBottomLeft  = new Texture(R"(..\Textures\Ledges\Wall_Inner_Left.png)");
+	m_innerBottomRight = new Texture(R"(..\Textures\Ledges\Wall_Inner_Right.png)");
 
-	bottom_Left     = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Left.png");
-	bottom_Center   = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Center.png");
-	bottom_Center_2 = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Center_2.png");
-	bottom_Right    = new Texture("..\\Textures\\Ledges\\Wall_Bottom_Right.png");
+	m_bottomLeft     = new Texture(R"(..\Textures\Ledges\Wall_Bottom_Left.png)");
+	m_bottomCenter   = new Texture(R"(..\Textures\Ledges\Wall_Bottom_Center.png)");
+	m_bottomCenter2 = new Texture(R"(..\Textures\Ledges\Wall_Bottom_Center_2.png)");
+	m_bottomRight    = new Texture(R"(..\Textures\Ledges\Wall_Bottom_Right.png)");
 
-	tree_0        = new Texture("..\\Textures\\Trees\\tree_0.png");
-	tree_0_Shadow = new Texture("..\\Textures\\Trees\\tree_0_shadow.png");
+	m_tree0        = new Texture(R"(..\Textures\Trees\tree_0.png)");
+	m_tree0Shadow = new Texture(R"(..\Textures\Trees\tree_0_shadow.png)");
 }
 
 void MapGenerator::DeleteTextures()
 {
-	delete water;
-	water = nullptr;
+	delete m_water;
+	m_water = nullptr;
 
-	delete center_0;
-	center_0 = nullptr;
-	delete center_1;
-	center_1 = nullptr;
-	delete center_2;
-	center_2 = nullptr;
-	delete center_3;
-	center_3 = nullptr;
+	delete m_center0;
+	m_center0 = nullptr;
+	delete m_center1;
+	m_center1 = nullptr;
+	delete m_center2;
+	m_center2 = nullptr;
+	delete m_center3;
+	m_center3 = nullptr;
 
-	delete sprout_0;
-	sprout_0 = nullptr;
-	delete sprout_1;
-	sprout_1 = nullptr;
-	delete sprout_2;
-	sprout_2 = nullptr;
-	delete sprout_3;
-	sprout_3 = nullptr;
-	delete sprout_4;
-	sprout_4 = nullptr;
+	delete m_sprout0;
+	m_sprout0 = nullptr;
+	delete m_sprout1;
+	m_sprout1 = nullptr;
+	delete m_sprout2;
+	m_sprout2 = nullptr;
+	delete m_sprout3;
+	m_sprout3 = nullptr;
+	delete m_sprout4;
+	m_sprout4 = nullptr;
 
-	delete stone_0;
-	stone_0 = nullptr;
-	delete stone_1;
-	stone_1 = nullptr;
-	delete stone_2;
-	stone_2 = nullptr;
-	delete stone_3;
-	stone_3 = nullptr;
+	delete m_stone0;
+	m_stone0 = nullptr;
+	delete m_stone1;
+	m_stone1 = nullptr;
+	delete m_stone2;
+	m_stone2 = nullptr;
+	delete m_stone3;
+	m_stone3 = nullptr;
 
-	delete top_Left;
-	top_Left = nullptr;
-	delete top_Center;
-	top_Center = nullptr;
-	delete top_Right;
-	top_Right = nullptr;
+	delete m_topLeft;
+	m_topLeft = nullptr;
+	delete m_topCenter;
+	m_topCenter = nullptr;
+	delete m_topRight;
+	m_topRight = nullptr;
 
-	delete inner_Top_Left;
-	inner_Top_Left = nullptr;
-	delete inner_Top_Right;
-	inner_Top_Right = nullptr;
+	delete m_innerTopLeft;
+	m_innerTopLeft = nullptr;
+	delete m_innerTopRight;
+	m_innerTopRight = nullptr;
 
-	delete middle_Left;
-	middle_Left = nullptr;
-	delete middle_Right;
-	middle_Right = nullptr;
+	delete m_middleLeft;
+	m_middleLeft = nullptr;
+	delete m_middleRight;
+	m_middleRight = nullptr;
 
-	delete inner_Bottom_Left;
-	inner_Bottom_Left = nullptr;
-	delete inner_Bottom_Right;
-	inner_Bottom_Right = nullptr;
+	delete m_innerBottomLeft;
+	m_innerBottomLeft = nullptr;
+	delete m_innerBottomRight;
+	m_innerBottomRight = nullptr;
 
-	delete bottom_Left;
-	bottom_Left = nullptr;
-	delete bottom_Center;
-	bottom_Center = nullptr;
-	delete bottom_Center_2;
-	bottom_Center_2 = nullptr;
-	delete bottom_Right;
-	bottom_Right = nullptr;
+	delete m_bottomLeft;
+	m_bottomLeft = nullptr;
+	delete m_bottomCenter;
+	m_bottomCenter = nullptr;
+	delete m_bottomCenter2;
+	m_bottomCenter2 = nullptr;
+	delete m_bottomRight;
+	m_bottomRight = nullptr;
 
-	delete tree_0;
-	tree_0 = nullptr;
-	delete tree_0_Shadow;
-	tree_0_Shadow = nullptr;
+	delete m_tree0;
+	m_tree0 = nullptr;
+	delete m_tree0Shadow;
+	m_tree0Shadow = nullptr;
 }
 
 void MapGenerator::RemakeTerrain()
 {
 	// Remove trees
-	for (auto& tree : trees)
+	for (auto& tree : m_trees)
 	{
-		objManager->RemoveQuad(std::shared_ptr<GameObject>(tree));
+		m_objManager->RemoveQuad(tree);
+		delete tree;
+		tree = nullptr;
 	}
-	trees.clear();
+	m_trees.clear();
 
 	// Remove tree shadows
-	for (auto& shadow : treeShadowObjects)
+	for (auto& shadow : m_treeShadowObjects)
 	{
-		objManager->RemoveQuad(std::shared_ptr<GameObject>(shadow));
+		m_objManager->RemoveQuad(shadow);
+		delete shadow;
+		shadow = nullptr;
 	}
-	treeShadowObjects.clear();
-	treeCell.clear();
+	m_treeShadowObjects.clear();
+	m_treeCell.clear();
 
 	// Remove grass
-	for (auto& grass : grassObjects)
+	for (auto& grass : m_grassObjects)
 	{
-		objManager->RemoveQuad(std::shared_ptr<GameObject>(grass));
+		m_objManager->RemoveQuad(grass);
+		delete grass;
+		grass = nullptr;
 	}
-	grassObjects.clear();
+	m_grassObjects.clear();
 
 	// Remove wall tiles and reset other tiles
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			if (cells[x][y].cellType == type::Wall)
+			if (m_cells[x][y].GetCellType() == type::Wall)
 			{
-				pScene->removeActor(cells[x][y].object);
+				m_physicsScene->removeActor(m_cells[x][y].GetGameObject());
 			}
-			cells[x][y].cellType    = type::Water;
-			cells[x][y].preCellType = type::Water;
-			cells[x][y].object->SetRender(true);
+			m_cells[x][y].SetCellType(type::Water);
+			m_cells[x][y].SetPreCellType(type::Water);
+			m_cells[x][y].GetGameObject()->SetRender(true);
 		}
 	}
 
@@ -646,28 +656,28 @@ void MapGenerator::RemakeTerrain()
 
 void MapGenerator::SetGrass()
 {
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			if (cells[x][y].cellType == type::Ground)
+			if (m_cells[x][y].GetCellType() == type::Ground)
 			{
 				if (rand() % 10 == 1)
 				{
-					glm::vec3 newPos        = cells[x][y].object->GetPos();
+					glm::vec3 newPos        = m_cells[x][y].GetGameObject()->GetPos();
 					newPos                  = glm::vec3(newPos.x + ((rand() % 10) - 5) * 0.1f, newPos.y + ((rand() % 10)) * 0.1f, newPos.z - 0.1f);
 					Texture* currentTexture = nullptr;
 
 					switch (rand() % 5)
 					{
-					case 0: currentTexture = sprout_0; break;
-					case 1: currentTexture = sprout_1; break;
-					case 2: currentTexture = sprout_2; break;
-					case 3: currentTexture = sprout_3; break;
-					case 4: currentTexture = sprout_4; break;
+					case 0: currentTexture = m_sprout0; break;
+					case 1: currentTexture = m_sprout1; break;
+					case 2: currentTexture = m_sprout2; break;
+					case 3: currentTexture = m_sprout3; break;
+					case 4: currentTexture = m_sprout4; break;
 					}
 
-					grassObjects.push_back(objManager->CreateQuad(newPos, glm::vec2(1), currentTexture));
+					m_grassObjects.push_back(m_objManager->CreateQuad(newPos, glm::vec2(1), currentTexture));
 				}
 			}
 		}
@@ -676,16 +686,16 @@ void MapGenerator::SetGrass()
 
 void MapGenerator::Update(float deltaTime)
 {
-	for (int i = 0; i < trees.size(); i++)
+	for (int i = 0; i < m_trees.size(); i++)
 	{
-		glm::vec3 newPos = trees[i]->GetPos();
-		if (trees[i]->GetPos().y - 1 > camera->GetPosition().y)
+		glm::vec3 newPos = m_trees[i]->GetPos();
+		if (m_trees[i]->GetPos().y - 1 > m_camera->GetPosition().y)
 		{
-			trees[i]->SetPos(newPos.x, newPos.y, -0.24f);
+			m_trees[i]->SetPos(newPos.x, newPos.y, -0.24f);
 		}
 		else
 		{
-			trees[i]->SetPos(newPos.x, newPos.y, -0.6f);
+			m_trees[i]->SetPos(newPos.x, newPos.y, -0.6f);
 		}
 	}
 }
@@ -694,105 +704,105 @@ Texture* MapGenerator::SetWall(bool up, bool right, bool down, bool left, bool f
 {
 	if (down && !up && floorAbove && floorRight)
 	{
-		return inner_Bottom_Left;
+		return m_innerBottomLeft;
 	}
 
 	if (down && !up && floorAbove && floorLeft)
 	{
-		return inner_Bottom_Right;
+		return m_innerBottomRight;
 	}
 
 	if (up && !down && floorBelow && floorRight)
 	{
-		return inner_Top_Left;
+		return m_innerTopLeft;
 	}
 
 	if (up && !down && floorBelow && floorLeft)
 	{
-		return inner_Top_Right;
+		return m_innerTopRight;
 	}
 
 	if (up && right && !down && !floorBelow && !floorRight)
 	{
-		return bottom_Left;
+		return m_bottomLeft;
 	}
 
 	if (up && left && !down && !floorBelow && !floorLeft)
 	{
-		return bottom_Right;
+		return m_bottomRight;
 	}
 
 	if (down && right && !floorAbove && !floorBelow && !floorLeft && !floorRight)
 	{
-		return top_Left;
+		return m_topLeft;
 	}
 
 	if (down && left && !floorAbove && !floorBelow && !floorLeft && !floorRight)
 	{
-		return top_Right;
+		return m_topRight;
 	}
 
 	if (floorBelow && !floorAbove)
 	{
-		return top_Center;
+		return m_topCenter;
 	}
 
 	if (floorRight && !floorAbove)
 	{
-		return middle_Left;
+		return m_middleLeft;
 	}
 
 	if (floorLeft && !floorAbove)
 	{
-		return middle_Right;
+		return m_middleRight;
 	}
 
-	return (rand() % 2 == 1) ? bottom_Center : bottom_Center_2;
+	return (rand() % 2 == 1) ? m_bottomCenter : m_bottomCenter2;
 }
 
 int MapGenerator::GetTotalGroundSurrounding(Cell& cell)
 {
 	int totalGroundTiles = 0;
-	int x                = cell.position.x;
-	int y                = cell.position.y;
+	int x                = cell.GetPosition().x;
+	int y                = cell.GetPosition().y;
 
-	if (x < mapSize - 1)
-		if (cells[x + 1][y].cellType != type::Water && cells[x + 1][y].cellType != type::Wall)
+	if (x < m_mapSize - 1)
+		if (m_cells[x + 1][y].GetCellType() != type::Water && m_cells[x + 1][y].GetCellType() != type::Wall)
 			totalGroundTiles++;
 
 	if (x > 0)
-		if (cells[x - 1][y].cellType != type::Water && cells[x - 1][y].cellType != type::Wall)
+		if (m_cells[x - 1][y].GetCellType() != type::Water && m_cells[x - 1][y].GetCellType() != type::Wall)
 			totalGroundTiles++;
 
-	if (y < mapSize - 1)
+	if (y < m_mapSize - 1)
 	{
-		if (cells[x][y + 1].cellType != type::Water && cells[x][y + 1].cellType != type::Wall)
+		if (m_cells[x][y + 1].GetCellType() != type::Water && m_cells[x][y + 1].GetCellType() != type::Wall)
 			totalGroundTiles++;
 
 		// Top - Left
 		if (x > 0)
-			if (cells[x - 1][y + 1].cellType != type::Water && cells[x - 1][y + 1].cellType != type::Wall)
+			if (m_cells[x - 1][y + 1].GetCellType() != type::Water && m_cells[x - 1][y + 1].GetCellType() != type::Wall)
 				totalGroundTiles++;
 
 		// Top - Right
-		if (x < mapSize - 1)
-			if (cells[x + 1][y + 1].cellType != type::Water && cells[x + 1][y + 1].cellType != type::Wall)
+		if (x < m_mapSize - 1)
+			if (m_cells[x + 1][y + 1].GetCellType() != type::Water && m_cells[x + 1][y + 1].GetCellType() != type::Wall)
 				totalGroundTiles++;
 	}
 
 	if (y > 0)
 	{
-		if (cells[x][y - 1].cellType != type::Water && cells[x][y - 1].cellType != type::Wall)
+		if (m_cells[x][y - 1].GetCellType() != type::Water && m_cells[x][y - 1].GetCellType() != type::Wall)
 			totalGroundTiles++;
 
 		// Bottom - Left
 		if (x > 0)
-			if (cells[x - 1][y - 1].cellType != type::Water && cells[x - 1][y - 1].cellType != type::Wall)
+			if (m_cells[x - 1][y - 1].GetCellType() != type::Water && m_cells[x - 1][y - 1].GetCellType() != type::Wall)
 				totalGroundTiles++;
 
 		// Bottom - Right
-		if (x < mapSize - 1)
-			if (cells[x + 1][y - 1].cellType != type::Water && cells[x + 1][y - 1].cellType != type::Wall)
+		if (x < m_mapSize - 1)
+			if (m_cells[x + 1][y - 1].GetCellType() != type::Water && m_cells[x + 1][y - 1].GetCellType() != type::Wall)
 				totalGroundTiles++;
 	}
 
@@ -801,38 +811,38 @@ int MapGenerator::GetTotalGroundSurrounding(Cell& cell)
 
 void MapGenerator::SetResultValues()
 {
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			switch (cells[x][y].cellType)
+			switch (m_cells[x][y].GetCellType())
 			{
-			case type::Water: results[x][y] = 0; break;
+			case type::Water: m_results[x][y] = 0; break;
 
-			case type::Ground: results[x][y] = 1; break;
+			case type::Ground: m_results[x][y] = 1; break;
 
-			case type::Stone: results[x][y] = 2; break;
+			case type::Stone: m_results[x][y] = 2; break;
 
-			case type::Wall: results[x][y] = 1; break;
+			case type::Wall: m_results[x][y] = 1; break;
 
-			case type::Tree: results[x][y] = 3; break;
+			case type::Tree: m_results[x][y] = 3; break;
 
-			default: results[x][y] = 1; break;
+			default: m_results[x][y] = 1; break;
 			}
 		}
 	}
 
-	for (int x = 0; x < mapSize; x++)
+	for (int x = 0; x < m_mapSize; x++)
 	{
-		for (int y = 0; y < mapSize; y++)
+		for (int y = 0; y < m_mapSize; y++)
 		{
-			switch (results[x][y])
+			switch (m_results[x][y])
 			{
-			case 0: std::cout << "\033[34m" << results[x][y] << "\033[0m"; break;
-			case 1: std::cout << "\033[92m" << results[x][y] << "\033[0m"; break;
-			case 2: std::cout << "\033[90m" << results[x][y] << "\033[0m"; break;
+			case 0: std::cout << "\033[34m" << m_results[x][y] << "\033[0m"; break;
+			case 1: std::cout << "\033[92m" << m_results[x][y] << "\033[0m"; break;
+			case 2: std::cout << "\033[90m" << m_results[x][y] << "\033[0m"; break;
 
-			case 3: std::cout << "\033[32m" << results[x][y] << "\033[0m"; break;
+			case 3: std::cout << "\033[32m" << m_results[x][y] << "\033[0m"; break;
 			default: break;
 			}
 		}
@@ -842,7 +852,7 @@ void MapGenerator::SetResultValues()
 
 Cell** MapGenerator::GetAllCells()
 {
-	return cells;
+	return m_cells;
 }
 
 Texture* MapGenerator::GetTexture(type tileType)
@@ -850,19 +860,19 @@ Texture* MapGenerator::GetTexture(type tileType)
 	switch (tileType)
 	{
 	case type::Water: return nullptr; break;
-	case type::Ground: return center_0; break;
-	case type::TopLeft: return top_Left; break;
-	case type::TopCenter: return top_Center; break;
-	case type::TopRight: return top_Right; break;
-	case type::InnerTopLeft: return inner_Top_Left; break;
-	case type::InnerTopRight: return inner_Top_Right; break;
-	case type::MiddleLeft: return middle_Left; break;
-	case type::MiddleRight: return middle_Right; break;
-	case type::InnerBottomLeft: return inner_Bottom_Left; break;
-	case type::InnerBottomRight: return inner_Bottom_Right; break;
-	case type::BottomLeft: return bottom_Left; break;
-	case type::BottomCenter: return bottom_Center; break;
-	case type::BottomRight: return bottom_Right; break;
+	case type::Ground: return m_center0; break;
+	case type::TopLeft: return m_topLeft; break;
+	case type::TopCenter: return m_topCenter; break;
+	case type::TopRight: return m_topRight; break;
+	case type::InnerTopLeft: return m_innerTopLeft; break;
+	case type::InnerTopRight: return m_innerTopRight; break;
+	case type::MiddleLeft: return m_middleLeft; break;
+	case type::MiddleRight: return m_middleRight; break;
+	case type::InnerBottomLeft: return m_innerBottomLeft; break;
+	case type::InnerBottomRight: return m_innerBottomRight; break;
+	case type::BottomLeft: return m_bottomLeft; break;
+	case type::BottomCenter: return m_bottomCenter; break;
+	case type::BottomRight: return m_bottomRight; break;
 	default: break;
 	}
 
@@ -873,41 +883,41 @@ void MapGenerator::SetTileSprite(int x, int y)
 {
 	bool top = false, right = false, bottom = false, left = false, floorAbove = false, floorBelow = false, floorRight = false, floorLeft = false;
 
-	if (x < mapSize - 1)
+	if (x < m_mapSize - 1)
 	{
-		if (cells[x + 1][y].preCellType == type::Wall)
+		if (m_cells[x + 1][y].GetPreCellType() == type::Wall)
 			right = true;
 
-		if (cells[x + 1][y].cellType == type::Ground)
+		if (m_cells[x + 1][y].GetCellType() == type::Ground)
 			floorRight = true;
 	}
 
 	if (x > 0)
 	{
-		if (cells[x - 1][y].preCellType == type::Wall)
+		if (m_cells[x - 1][y].GetPreCellType() == type::Wall)
 			left = true;
 
-		if (cells[x - 1][y].cellType == type::Ground)
+		if (m_cells[x - 1][y].GetCellType() == type::Ground)
 			floorLeft = true;
 	}
 
-	if (y < mapSize - 1)
+	if (y < m_mapSize - 1)
 	{
-		if (cells[x][y + 1].preCellType == type::Wall)
+		if (m_cells[x][y + 1].GetPreCellType() == type::Wall)
 			top = true;
 
-		if (cells[x][y + 1].cellType == type::Ground)
+		if (m_cells[x][y + 1].GetCellType() == type::Ground)
 			floorAbove = true;
 	}
 
 	if (y > 0)
 	{
-		if (cells[x][y - 1].preCellType == type::Wall)
+		if (m_cells[x][y - 1].GetPreCellType() == type::Wall)
 			bottom = true;
 
-		if (cells[x][y - 1].cellType == type::Ground)
+		if (m_cells[x][y - 1].GetCellType() == type::Ground)
 			floorBelow = true;
 	}
 
-	cells[x][y].object->SetTexture(SetWall(top, right, bottom, left, floorAbove, floorBelow, floorRight, floorLeft));
+	m_cells[x][y].GetGameObject()->SetTexture(SetWall(top, right, bottom, left, floorAbove, floorBelow, floorRight, floorLeft));
 }

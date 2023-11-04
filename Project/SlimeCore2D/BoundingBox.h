@@ -5,8 +5,8 @@
 class BoundingBox
 {
 public:
-	BoundingBox();
-	~BoundingBox();
+	BoundingBox() = default;
+	~BoundingBox() = default;
 
 	void UpdateQuadBoundingBox(glm::vec2 pos, glm::vec2 size);
 
@@ -20,12 +20,12 @@ public:
 	glm::vec2 GetPos(glm::vec3 objectPos) const;
 	glm::vec2 GetScale() const;
 
-	glm::vec2 offset = glm::vec2(0);
-	glm::vec2 scale = glm::vec2(0);
+	glm::vec2 m_offset = glm::vec2(0);
+	glm::vec2 m_scale = glm::vec2(0);
 private:
 
-	Input* inputManager = Input::GetInstance();
+	Input* m_inputManager = Input::GetInstance();
 
-	glm::vec2 max = glm::vec2(0);
-	glm::vec2 min = glm::vec2(0);
+	glm::vec2 m_max = glm::vec2(0);
+	glm::vec2 m_min = glm::vec2(0);
 };

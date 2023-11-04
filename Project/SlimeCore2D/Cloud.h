@@ -1,5 +1,5 @@
 #pragma once
-#include "Quad.h"
+#include "GameObject.h"
 #include <memory>
 class Cloud
 {
@@ -17,6 +17,6 @@ public:
 private:
 	float speed = 1.0f;
 
-	std::shared_ptr<GameObject> cloudObject = nullptr;
-	std::shared_ptr<GameObject> shadowObject = nullptr;
+	std::shared_ptr<GameObject> m_cloudObject = nullptr;
+	std::shared_ptr<GameObject> m_shadowObject = nullptr;
 };

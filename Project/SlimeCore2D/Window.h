@@ -5,11 +5,11 @@
 class Window
 {
 public:
-	Window(int width, int height, char* name);
+	Window(int width, int height, const char* name);
 	~Window();
 
 	// Window Functions
-	int Window_intit(int width, int height, char* name);
+	int Window_intit(int width, int height, const char* name);
 	void Update_Window();
 	int Window_shouldClose();
 	void Window_destroy();

@@ -1,60 +1,59 @@
+#include "pch.h"
 #include "Game2D.h"
 
 Game2D::Game2D()
 {
 	Init();
 
-	GameObject* shadow = objectManager->CreateQuad(glm::vec3(0, 0, 0.3), glm::vec2(1, 2), nullptr).get();
+	GameObject* shadow = m_objectManager->CreateQuad(glm::vec3(0, 0, 0.3), glm::vec2(1, 2), nullptr);
 	shadow->SetHasAnimation(false);
 
-	player = std::make_shared<Player>();
-	player->Create(glm::vec3(0, 0, -0.5f), glm::vec3(1), glm::vec2(1, 2), 404);
-	player->Init(camera.get(), map->GetAllCells(), shadow);
+	m_player.Create(glm::vec3(0, 0, -0.5f), glm::vec3(1), glm::vec2(1, 2), 404);
+	m_player.Init(&m_camera, m_map->GetAllCells(), shadow);
 
-	map->Generate();
+	m_map->Generate();
 
-	player->SetAllCells(map->GetAllCells());
-	renderer->AddObject(player);
-	physicsScene->addActor(player.get(), "player");
+	m_player.SetAllCells(m_map->GetAllCells());
+	m_renderer->AddObject(&m_player);
+	m_physicsScene->addActor(&m_player, "player");
 
-	cloudManager->Init(35);
+	m_cloudManager->Init(35);
 }
 
 Game2D::~Game2D()
 {
-	delete physicsScene;
-	physicsScene = nullptr;
+	delete m_physicsScene;
+	m_physicsScene = nullptr;
 
-	delete objectManager;
-	objectManager = nullptr;
+	delete m_objectManager;
+	m_objectManager = nullptr;
 
-	delete map;
-	map = nullptr;
+	delete m_map;
+	m_map = nullptr;
 
-	delete cloudManager;
-	cloudManager = nullptr;
+	delete m_cloudManager;
+	m_cloudManager = nullptr;
 }
 
 void Game2D::Init()
 {
-	camera        = std::make_shared<Camera>(-16, -9, -1, 1);
-	renderer      = new Renderer2D(camera);
-	objectManager = new ObjectManager(renderer);
-	physicsScene  = new PhysicsScene();
-	map           = new MapGenerator(objectManager, physicsScene, camera.get(), 100);
-	cloudManager  = new CloudManager(renderer);
-	Input::GetInstance()->SetCamera(camera.get());
+	m_renderer      = new Renderer2D(&m_camera);
+	m_objectManager = new ObjectManager(m_renderer);
+	m_physicsScene  = new PhysicsScene();
+	m_map           = new MapGenerator(m_objectManager, m_physicsScene, &m_camera, 100);
+	m_cloudManager  = new CloudManager(m_renderer);
+	Input::GetInstance()->SetCamera(&m_camera);
 }
 
 void Game2D::Update(float deltaTime)
 {
-	camera->Update(deltaTime);
-	player->Update(deltaTime);
-	cloudManager->Update(deltaTime);
-	physicsScene->update(deltaTime);
-	objectManager->UpdateFrames(deltaTime);
-	camera->SetPosition(player->GetPos());
-	map->Update(deltaTime);
+	m_camera.Update(deltaTime);
+	m_player.Update(deltaTime);
+	m_cloudManager->Update(deltaTime);
+	m_physicsScene->update(deltaTime);
+	m_objectManager->UpdateFrames(deltaTime);
+	m_camera.SetPosition(m_player.GetPos());
+	m_map->Update(deltaTime);
 
 	static float tempVal = 0.0f;
 	tempVal += deltaTime;
@@ -68,6 +67,6 @@ void Game2D::Update(float deltaTime)
 
 void Game2D::Draw()
 {
-	renderer->Draw();
-	// physicsScene->Debug();
+	m_renderer->Draw();
+	//physicsScene->Debug();
 }

@@ -1,12 +1,9 @@
+#include "pch.h"
 #include "CollisionManager.h"
 
 #include <algorithm>
 #include <numeric>
 #include <utility>
-
-CollisionManager::CollisionManager() {}
-
-CollisionManager::~CollisionManager() {}
 
 glm::vec2 CollisionManager::QuadVsQuad(RigidBody* rbOne, RigidBody* rbTwo)
 {

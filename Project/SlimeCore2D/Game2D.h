@@ -4,7 +4,6 @@
 #include "ObjectManager.h"
 #include "PhysicsScene.h"
 #include "Player.h"
-#include <memory>
 class Game2D
 {
 public:
@@ -17,13 +16,13 @@ public:
 	void Draw();
 
 private:
-	Renderer2D* renderer         = nullptr;
-	ObjectManager* objectManager = nullptr;
-	Input* inputManager          = Input::GetInstance();
-	PhysicsScene* physicsScene   = nullptr;
-	MapGenerator* map            = nullptr;
-	CloudManager* cloudManager   = nullptr;
+	Renderer2D* m_renderer         = nullptr;
+	ObjectManager* m_objectManager = nullptr;
+	Input* m_inputManager          = Input::GetInstance();
+	PhysicsScene* m_physicsScene   = nullptr;
+	MapGenerator* m_map            = nullptr;
+	CloudManager* m_cloudManager   = nullptr;
 
-	std::shared_ptr<Camera> camera = nullptr;
-	std::shared_ptr<Player> player = nullptr;
+	Camera m_camera = Camera(-16, -9, -1, 1);
+	Player m_player;
 };
