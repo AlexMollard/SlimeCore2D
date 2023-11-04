@@ -253,13 +253,13 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, T
 		Flush();
 		BeginBatch();
 	}
-
+	
 	uint32_t textureIndex = 0;
 	for (uint32_t i = 0; i < data.textureSlotIndex; i++)
 	{
 		if (data.textureSlots[i] == texture->GetID())
 		{
-			textureIndex = i + 1; // use 1-based indices to reserve 0 for the default texture slot
+			textureIndex = i;
 			break;
 		}
 	}
@@ -272,7 +272,7 @@ void Renderer2D::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, T
 			Flush();
 			BeginBatch();
 		}
-		textureIndex = data.textureSlotIndex + 1; // use 1-based indices to reserve 0 for the default texture slot
+		textureIndex = data.textureSlotIndex;
 
 		data.textureSlots[data.textureSlotIndex] = texture->GetID();
 		data.textureSlotIndex++;
