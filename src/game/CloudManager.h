@@ -1,8 +1,10 @@
 #pragma once
 #include "Cloud.h"
+
 #define CLOUD_TEXTURE_TOTAL 3
-#include "Renderer2D.h"
 #include <memory>
+
+class Renderer2D;
 class CloudManager
 {
 public:

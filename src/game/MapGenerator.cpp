@@ -495,44 +495,44 @@ type MapGenerator::SetType(int x, int y)
 
 void MapGenerator::CreateTextures()
 {
-	m_water = new Texture(R"(..\Textures\Water\WaterOne.png)");
+	m_water = new Texture(ResourceManager::GetTexturePath("/Water/WaterOne"));
 
-	m_center0 = new Texture(R"(..\Textures\Grass\floor_0.png)");
-	m_center1 = new Texture(R"(..\Textures\Grass\floor_1.png)");
-	m_center2 = new Texture(R"(..\Textures\Grass\floor_2.png)");
-	m_center3 = new Texture(R"(..\Textures\Grass\floor_3.png)");
+	m_center0 = new Texture(ResourceManager::GetTexturePath("/Grass/floor_0"));
+	m_center1 = new Texture(ResourceManager::GetTexturePath("/Grass/floor_1"));
+	m_center2 = new Texture(ResourceManager::GetTexturePath("/Grass/floor_2"));
+	m_center3 = new Texture(ResourceManager::GetTexturePath("/Grass/floor_3"));
 
-	m_sprout0 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_0.png)");
-	m_sprout1 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_1.png)");
-	m_sprout2 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_2.png)");
-	m_sprout3 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_3.png)");
-	m_sprout4 = new Texture(R"(..\Textures\Grass\Sprouts\sprout_4.png)");
+	m_sprout0 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_0"));
+	m_sprout1 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_1"));
+	m_sprout2 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_2"));
+	m_sprout3 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_3"));
+	m_sprout4 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_4"));
 
-	m_stone0 = new Texture(R"(..\Textures\Stone\Stone_0.png)");
-	m_stone1 = new Texture(R"(..\Textures\Stone\Stone_1.png)");
-	m_stone2 = new Texture(R"(..\Textures\Stone\Stone_2.png)");
-	m_stone3 = new Texture(R"(..\Textures\Stone\Stone_3.png)");
+	m_stone0 = new Texture(ResourceManager::GetTexturePath("/Stone/Stone_0"));
+	m_stone1 = new Texture(ResourceManager::GetTexturePath("/Stone/Stone_1"));
+	m_stone2 = new Texture(ResourceManager::GetTexturePath("/Stone/Stone_2"));
+	m_stone3 = new Texture(ResourceManager::GetTexturePath("/Stone/Stone_3"));
 
-	m_topLeft   = new Texture(R"(..\Textures\Ledges\Wall_Top_Left.png)");
-	m_topCenter = new Texture(R"(..\Textures\Ledges\Wall_Top.png)");
-	m_topRight  = new Texture(R"(..\Textures\Ledges\Wall_Top_Right.png)");
+	m_topLeft   = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Top_Left"));
+	m_topCenter = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Top"));
+	m_topRight  = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Top_Right"));
 
-	m_innerTopLeft  = new Texture(R"(..\Textures\Ledges\Wall_Inner_Top_Left.png)");
-	m_innerTopRight = new Texture(R"(..\Textures\Ledges\Wall_Inner_Top_Right.png)");
+	m_innerTopLeft  = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Inner_Top_Left"));
+	m_innerTopRight = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Inner_Top_Right"));
 
-	m_middleLeft  = new Texture(R"(..\Textures\Ledges\Wall_Left.png)");
-	m_middleRight = new Texture(R"(..\Textures\Ledges\Wall_Right.png)");
+	m_middleLeft  = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Left"));
+	m_middleRight = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Right"));
 
-	m_innerBottomLeft  = new Texture(R"(..\Textures\Ledges\Wall_Inner_Left.png)");
-	m_innerBottomRight = new Texture(R"(..\Textures\Ledges\Wall_Inner_Right.png)");
+	m_innerBottomLeft  = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Inner_Left"));
+	m_innerBottomRight = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Inner_Right"));
 
-	m_bottomLeft     = new Texture(R"(..\Textures\Ledges\Wall_Bottom_Left.png)");
-	m_bottomCenter   = new Texture(R"(..\Textures\Ledges\Wall_Bottom_Center.png)");
-	m_bottomCenter2 = new Texture(R"(..\Textures\Ledges\Wall_Bottom_Center_2.png)");
-	m_bottomRight    = new Texture(R"(..\Textures\Ledges\Wall_Bottom_Right.png)");
+	m_bottomLeft     = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Bottom_Left"));
+	m_bottomCenter   = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Bottom_Center"));
+	m_bottomCenter2 =  new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Bottom_Center_2"));
+	m_bottomRight = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Bottom_Right"));
 
-	m_tree0        = new Texture(R"(..\Textures\Trees\tree_0.png)");
-	m_tree0Shadow = new Texture(R"(..\Textures\Trees\tree_0_shadow.png)");
+	m_tree0       = new Texture(ResourceManager::GetTexturePath("/Trees/tree_0"));
+	m_tree0Shadow = new Texture(ResourceManager::GetTexturePath("/Trees/tree_0_shadow"));
 }
 
 void MapGenerator::DeleteTextures()

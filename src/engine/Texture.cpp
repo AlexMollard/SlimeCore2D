@@ -26,7 +26,7 @@ Texture::Texture(std::string dir)
 	}
 	else
 	{
-		printf("Failed to load texture\n");
+		printf("Failed to load texture: %s\n", dir.c_str());
 	}
 	stbi_image_free(data);
 }

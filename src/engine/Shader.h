@@ -7,10 +7,13 @@
 class Shader
 {
 public:
-	Shader(std::string name, const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
-	Shader(std::string name);
+	Shader(const char* name, const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
+	Shader(const std::string& name, std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath);
+	Shader(const std::string& name);
 	Shader() = default;
 	~Shader();
+
+	void CreateShader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
 
 	unsigned int CompileShader(unsigned int type, const std::string& source);
 	void CheckCompileErrors(GLuint shader, std::string type);

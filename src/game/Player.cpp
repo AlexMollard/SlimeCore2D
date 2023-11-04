@@ -26,13 +26,13 @@ void Player::Init(Camera* cam, Cell** cells, GameObject* shadow)
 	m_isPlayer    = true;
 	camera      = cam;
 
-	m_playerIdleRight = new Texture("..\\Textures\\Player\\Knight_Idle_Right.png");
-	m_playerIdleLeft  = new Texture("..\\Textures\\Player\\Knight_Idle_Left.png");
+	m_playerIdleRight = new Texture(ResourceManager::GetTexturePath("Player/Knight_Idle_Right"));
+	m_playerIdleLeft  = new Texture(ResourceManager::GetTexturePath("Player/Knight_Idle_Left"));
 
-	m_playerRunright = new Texture("..\\Textures\\Player\\Knight_Run_Right.png");
-	m_playerRunLeft  = new Texture("..\\Textures\\Player\\Knight_Run_Left.png");
+	m_playerRunright = new Texture(ResourceManager::GetTexturePath("Player/Knight_Run_Right"));
+	m_playerRunLeft  = new Texture(ResourceManager::GetTexturePath("Player/Knight_Run_Left"));
 
-	m_playerShadow = new Texture("..\\Textures\\Player\\player_shadow.png");
+	m_playerShadow = new Texture(ResourceManager::GetTexturePath("Player/player_shadow"));
 
 	SetBoundingBox(glm::vec2(0, -0.75f), glm::vec2(1, 0.5f));
 	SetTexture(m_playerIdleRight);

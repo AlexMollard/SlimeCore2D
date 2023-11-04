@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "CloudManager.h"
+#include "engine/Renderer2D.h"
+#include <format>
 
 CloudManager::CloudManager(Renderer2D* renderer)
 {
@@ -7,8 +9,8 @@ CloudManager::CloudManager(Renderer2D* renderer)
 
 	for (int i = 0; i < CLOUD_TEXTURE_TOTAL; i++)
 	{
-		m_cloudTextures[i] = std::make_shared<Texture>("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + ".png");
-		m_shadowTextures[i] = std::make_shared<Texture>("..\\Textures\\Clouds\\cloud_" + std::to_string(i) + "_shadow.png");
+		m_cloudTextures[i] = std::make_shared<Texture>(ResourceManager::GetTexturePath(std::format("Clouds/cloud_{}", i)));
+		m_shadowTextures[i] = std::make_shared<Texture>(ResourceManager::GetTexturePath(std::format("Clouds/cloud_{}", i), "_shadow.png"));
 	}
 }
 

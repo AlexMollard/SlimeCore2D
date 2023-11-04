@@ -1,8 +1,8 @@
 #pragma once
 #include "CloudManager.h"
 #include "MapGenerator.h"
-#include "ObjectManager.h"
-#include "PhysicsScene.h"
+#include "engine/ObjectManager.h"
+#include "engine/PhysicsScene.h"
 #include "Player.h"
 class Game2D
 {

@@ -57,8 +57,8 @@ private:
 	std::vector<Texture*> m_texturePool = std::vector<Texture*>();
 	std::vector<Shader*> m_shaderPool = std::vector<Shader*>();
 
-	Shader m_basicShader = Shader("Basic Shader", "..\\Shaders\\BasicVertex.shader", "..\\Shaders\\BasicFragment.shader");
-	Shader m_uiShader = Shader("UI Shader", "..\\Shaders\\UIVertex.shader", "..\\Shaders\\UIFragment.shader");
+	Shader m_basicShader = Shader("Basic Shader", ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str());
+	Shader m_uiShader = Shader("UI Shader", ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("UIFragment").c_str());
 	Camera* m_camera = nullptr;
 
 	std::vector<glm::vec2> m_uvs;

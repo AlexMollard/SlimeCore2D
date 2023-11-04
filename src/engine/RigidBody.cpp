@@ -2,7 +2,7 @@
 #include "RigidBody.h"
 
 #include <iostream>
-#include "Cell.h"
+#include "game/Cell.h"
 
 glm::vec2 RigidBody::GetVelocity() const
 {

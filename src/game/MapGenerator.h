@@ -1,6 +1,6 @@
 #pragma once
-#include "ObjectManager.h"
-#include "PhysicsScene.h"
+#include "engine/ObjectManager.h"
+#include "engine/PhysicsScene.h"
 #include "Cell.h"
 class MapGenerator
 {

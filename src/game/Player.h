@@ -1,5 +1,5 @@
 #pragma once
-#include "GameObject.h"
+#include "engine/GameObject.h"
 
 struct Cell;
 class Texture;

@@ -1,4 +1,6 @@
 #pragma once
+#include "ResourceManager.h"
+#define GLEW_STATIC
 
 #ifdef _DEBUG
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)

@@ -6,9 +6,25 @@
 #include <sstream>
 #include <iostream>
 
-Shader::Shader(std::string name, const char* vertexPath, const char* fragmentPath, const char* geometryPath)
+Shader::Shader(const char* name, const char* vertexPath, const char* fragmentPath, const char* geometryPath) : m_name(name)
 {
-	m_name = name;
+	CreateShader(vertexPath, fragmentPath, geometryPath);
+}
+
+Shader::Shader(const std::string& name, std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath) : m_name(name)
+{
+	CreateShader(vertexPath.data(), fragmentPath.data(), geometryPath.data());
+}
+
+Shader::Shader(const std::string& name) : m_name(name) {}
+
+Shader::~Shader()
+{
+	glDeleteProgram(m_shaderId);
+}
+
+void Shader::CreateShader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
+{
 	// 1. retrieve the vertex/fragment source code from filePath
 	std::string vertexCode;
 	std::string fragmentCode;
@@ -86,16 +102,6 @@ Shader::Shader(std::string name, const char* vertexPath, const char* fragmentPat
 	glDeleteShader(fragment);
 	if (geometryPath != nullptr)
 		glDeleteShader(geometry);
-}
-
-Shader::Shader(std::string name)
-{
-	this->m_name = name;
-}
-
-Shader::~Shader()
-{
-	glDeleteProgram(m_shaderId);
 }
 
 unsigned int Shader::CompileShader(unsigned int type, const std::string& source)

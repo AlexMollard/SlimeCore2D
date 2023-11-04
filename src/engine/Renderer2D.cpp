@@ -45,8 +45,8 @@ static constexpr glm::vec2 basicUVs[4] = { glm::vec2(0.0f, 0.0f), glm::vec2(1.0f
 
 Renderer2D::Renderer2D(Camera* camera) : m_camera(camera)
 {
-	m_texturePool.push_back(new Texture("..\\Textures\\hotbar_background.png"));
-	m_texturePool.push_back(new Texture("..\\Textures\\hotbar_slot.png"));
+	m_texturePool.push_back(new Texture(ResourceManager::GetTexturePath("hotbar_background")));
+	m_texturePool.push_back(new Texture(ResourceManager::GetTexturePath("hotbar_slot")));
 
 	m_basicShader.Use();
 
