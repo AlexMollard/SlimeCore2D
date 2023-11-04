@@ -340,15 +340,21 @@ void Renderer2D::SetActiveRegion(Texture* texture, int regionIndex, int spriteWi
 {
 	m_uvs.clear();
 
+	//					  (int) textureSize / spriteWidth;
 	int numberOfRegions = texture->GetWidth() / spriteWidth;
-	float regionWidth = 1.0f / numberOfRegions;
-	float uv_x = (regionIndex % numberOfRegions) * regionWidth;
-	float uv_y = (regionIndex / numberOfRegions) * regionWidth;
 
-	m_uvs.emplace_back(uv_x, uv_y);
-	m_uvs.emplace_back(glm::vec2(uv_x + regionWidth, uv_y));
-	m_uvs.emplace_back(glm::vec2(uv_x + regionWidth, uv_y + regionWidth));
-	m_uvs.emplace_back(glm::vec2(uv_x, uv_y + regionWidth));
+	float uv_x = (regionIndex % numberOfRegions) / (float)numberOfRegions;
+	float uv_y = (regionIndex / (float)numberOfRegions) * (float)numberOfRegions;
+
+	glm::vec2 uv_down_left = glm::vec2(uv_x, uv_y);
+	glm::vec2 uv_down_right = glm::vec2(uv_x + 1.0f / numberOfRegions, uv_y);
+	glm::vec2 uv_up_right = glm::vec2(uv_x + 1.0f / numberOfRegions, (uv_y + 1.0f));
+	glm::vec2 uv_up_left = glm::vec2(uv_x, (uv_y + 1.0f));
+
+	m_uvs.push_back(uv_down_left);
+	m_uvs.push_back(uv_down_right);
+	m_uvs.push_back(uv_up_right);
+	m_uvs.push_back(uv_up_left);
 }
 
 void Renderer2D::Init()
