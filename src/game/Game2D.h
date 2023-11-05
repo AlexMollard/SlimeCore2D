@@ -19,14 +19,20 @@ public:
 	void Draw();
 
 private:
-	Camera m_camera = Camera(-16, -9, -1, 1);
+	float m_gradientAmount = 0.0f;
+
+	glm::vec4 sunColour = glm::vec4(1.0f, 0.7f, 0.8f, 1.0f);
+
+	Camera m_camera = Camera(-16, -9, -10, 10);
 	Player m_player;
+	GameObject m_gradientQuad;
 
 	Renderer2D m_renderer = Renderer2D(&m_camera);
 	BatchRenderer m_mapBatchRenderer = BatchRenderer();
 	BatchRenderer m_treeBatchRenderer = BatchRenderer();
 	BatchRenderer m_cloudBatchRenderer = BatchRenderer();
 	BatchRenderer m_batchRenderer = BatchRenderer();
+	BatchRenderer m_gradientBatchRenderer = BatchRenderer();
 	BatchRenderer m_uiBatchRenderer = BatchRenderer();
 	
 	PhysicsScene m_physicsScene = PhysicsScene();

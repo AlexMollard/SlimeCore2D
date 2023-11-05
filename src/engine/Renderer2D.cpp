@@ -8,57 +8,60 @@
 #include <memory>
 #include <numeric>
 #include "BatchRenderer.h"
+#include <tuple>
+
+std::string ShaderTypeToString(ShaderType type)
+{
+	switch (type)
+	{
+		case ShaderType::BASIC:
+			return "basic";
+		case ShaderType::UI:
+			return "UI";
+		case ShaderType::GRADIENT:
+			return "gradient";
+		default:
+			return "basic";
+	}
+}
 
 Renderer2D::Renderer2D(Camera* camera) : m_camera(camera)
 {
-	switch (m_shaderType)
-	{
-	case ShaderType::Basic:
-		m_shader = new Shader("Basic Shader", ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str());
-		break;
-	case ShaderType::UI:
-		m_shader = new Shader("UI Shader", ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("UIFragment").c_str());
-		break;
-	default:
-		break;
-	}
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::BASIC), new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str()));
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::UI), new Shader(ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("UIFragment").c_str()));
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::GRADIENT), new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("GradientFragment").c_str()));
 
-	m_shader->Use();
-
-	const auto loc = glGetUniformLocation(m_shader->GetID(), "Textures");
-	std::array<int, MAX_TEXTURE_COUNT> samplers{};
-	std::iota(samplers.begin(), samplers.end(), 0);
-
-	glUniform1iv(loc, MAX_TEXTURE_COUNT, samplers.data());
+	AddTextureSlotsToShader(GetShader(ShaderType::BASIC));
+	AddTextureSlotsToShader(GetShader(ShaderType::UI));
+	AddTextureSlotsToShader(GetShader(ShaderType::GRADIENT));
 }
 
 Renderer2D::~Renderer2D()
 {
-	delete m_shader;
-	m_shader = nullptr;
+	for (auto& shader : m_shaderMap)
+	{
+		delete shader.second;
+		shader.second = nullptr;
+	}
 
 	m_camera = nullptr;
 }
 
-void Renderer2D::Draw(BatchRenderer* batchRenderer)
+void Renderer2D::AddTextureSlotsToShader(Shader* shader)
 {
-	batchRenderer->BeginBatch();
-
-	m_shader->Use();
-	m_shader->setMat4("OrthoMatrix", m_camera->GetTransform());
-	m_shader->setMat4("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_shader->setVec4("SunColor", glm::vec4(1.0f));
-
-	glm::vec2 camPos = m_camera->GetPosition();
-	float distanceFromCenter = -m_camera->GetAspectRatio().x + 6;
-
-	batchRenderer->Render(camPos, distanceFromCenter);
-
-	batchRenderer->EndBatch();
-	batchRenderer->Flush();
+	shader->Use();
+	const auto loc = glGetUniformLocation(shader->GetID(), "Textures");
+	std::array<int, MAX_TEXTURE_COUNT> samplers{};
+	std::iota(samplers.begin(), samplers.end(), 0);
+	glUniform1iv(loc, MAX_TEXTURE_COUNT, samplers.data());
 }
 
-Shader* Renderer2D::GetShader()
+Shader* Renderer2D::GetShader(const char* shaderName)
 {
-	return m_shader;
+	return m_shaderMap[shaderName];
+}
+
+Shader* Renderer2D::GetShader(ShaderType shaderType)
+{
+	return m_shaderMap[ShaderTypeToString(shaderType)];
 }

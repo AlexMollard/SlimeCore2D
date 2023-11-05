@@ -5,7 +5,7 @@ struct Cell;
 class Texture;
 class Camera;
 
-class Player : public GameObject
+class Player final : public GameObject
 {
 public:
 	Player() = default;

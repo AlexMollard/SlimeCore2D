@@ -5,18 +5,17 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include "Camera.h"
 
-Shader::Shader(const char* name, const char* vertexPath, const char* fragmentPath, const char* geometryPath) : m_name(name)
+Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
 	CreateShader(vertexPath, fragmentPath, geometryPath);
 }
 
-Shader::Shader(const std::string& name, std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath) : m_name(name)
+Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath)
 {
 	CreateShader(vertexPath.data(), fragmentPath.data(), geometryPath.data());
 }
-
-Shader::Shader(const std::string& name) : m_name(name) {}
 
 Shader::~Shader()
 {
@@ -162,67 +161,8 @@ void Shader::Use()
 	glUseProgram(m_shaderId);
 }
 
-std::string Shader::GetName()
+void Shader::SetCommonUniforms(Camera* camera)
 {
-	return m_name;
-}
-
-void Shader::setBool(const std::string& name, bool value) const
-{
-	glUniform1i(glGetUniformLocation(m_shaderId, name.c_str()), (int)value);
-}
-
-void Shader::setInt(const std::string& name, int value) const
-{
-	glUniform1i(glGetUniformLocation(m_shaderId, name.c_str()), value);
-}
-
-void Shader::setFloat(const std::string& name, float value) const
-{
-	glUniform1f(glGetUniformLocation(m_shaderId, name.c_str()), value);
-}
-
-void Shader::setVec2(const std::string& name, float x, float y) const
-{
-	glUniform2f(glGetUniformLocation(m_shaderId, name.c_str()), x, y);
-}
-
-void Shader::setVec2(const std::string& name, const glm::vec2& value) const
-{
-	glUniform2fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, &value[0]);
-}
-
-void Shader::setVec3(const std::string& name, float x, float y, float z) const
-{
-	glUniform3f(glGetUniformLocation(m_shaderId, name.c_str()), x, y, z);
-}
-
-void Shader::setVec3(const std::string& name, const glm::vec3& value) const
-{
-	glUniform3fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, &value[0]);
-}
-
-void Shader::setVec4(const std::string& name, float x, float y, float z, float w)
-{
-	glUniform4f(glGetUniformLocation(m_shaderId, name.c_str()), x, y, z, w);
-}
-
-void Shader::setVec4(const std::string& name, const glm::vec4& value) const
-{
-	glUniform4fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, &value[0]);
-}
-
-void Shader::setMat2(const std::string& name, const glm::mat2& mat) const
-{
-	glUniformMatrix2fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-}
-
-void Shader::setMat3(const std::string& name, const glm::mat3& mat) const
-{
-	glUniformMatrix3fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-}
-
-void Shader::setMat4(const std::string& name, const glm::mat4& mat) const
-{
-	glUniformMatrix4fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+	SetUniform("OrthoMatrix", camera->GetTransform());
+	SetUniform("Model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 }

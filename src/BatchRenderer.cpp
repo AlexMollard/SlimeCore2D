@@ -139,7 +139,7 @@ void BatchRenderer::AddObject(GameObject* newObject)
 Texture* BatchRenderer::LoadTexture(const std::string& dir)
 {
 	auto texture = new Texture(dir);
-	m_texturePool.at(m_texturePool.size()) = texture;
+	m_texturePool.emplace_back(texture);
 	return texture;
 }
 
@@ -180,28 +180,10 @@ void BatchRenderer::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color
 		BeginBatch();
 	}
 
-	uint32_t textureIndex = 0;
-	for (uint32_t i = 0; i < m_data->textureSlotIndex; i++)
-	{
-		if (m_data->textureSlots[i] == texture->GetID())
-		{
-			textureIndex = i;
-			break;
-		}
-	}
-
+	uint32_t textureIndex = GetTextureIndex(texture);
 	if (textureIndex == 0)
 	{
-		if (m_data->textureSlotIndex >= MAX_TEXTURE_COUNT)
-		{
-			EndBatch();
-			Flush();
-			BeginBatch();
-		}
-		textureIndex = m_data->textureSlotIndex;
-
-		m_data->textureSlots[m_data->textureSlotIndex] = texture->GetID();
-		m_data->textureSlotIndex++;
+		textureIndex = AddTextureSlot(texture);
 	}
 
 	bool useBasicUVs = false;
@@ -214,10 +196,12 @@ void BatchRenderer::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color
 		SetActiveRegion(texture, frame, spriteWidth);
 	}
 
-	glm::vec3 positions[4] = { glm::vec3(position.x - size.x / 2.0f, position.y - size.y / 2.0f, position.z),
-							   glm::vec3(position.x + size.x / 2.0f, position.y - size.y / 2.0f, position.z),
-							   glm::vec3(position.x + size.x / 2.0f, position.y + size.y / 2.0f, position.z),
-							   glm::vec3(position.x - size.x / 2.0f, position.y + size.y / 2.0f, position.z) };
+	glm::vec3 positions[4] = {
+		glm::vec3(position.x - size.x / 2.0f, position.y - size.y / 2.0f, position.z),
+		glm::vec3(position.x + size.x / 2.0f, position.y - size.y / 2.0f, position.z),
+		glm::vec3(position.x + size.x / 2.0f, position.y + size.y / 2.0f, position.z),
+		glm::vec3(position.x - size.x / 2.0f, position.y + size.y / 2.0f, position.z)
+	};
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -229,6 +213,31 @@ void BatchRenderer::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color
 	}
 
 	m_data->indexCount += 6;
+}
+
+uint32_t BatchRenderer::GetTextureIndex(Texture* texture)
+{
+	for (uint32_t i = 0; i < m_data->textureSlotIndex; i++)
+	{
+		if (m_data->textureSlots[i] == texture->GetID())
+		{
+			return i;
+		}
+	}
+	return 0;
+}
+
+uint32_t BatchRenderer::AddTextureSlot(Texture* texture)
+{
+	if (m_data->textureSlotIndex >= MAX_TEXTURE_COUNT)
+	{
+		EndBatch();
+		Flush();
+		BeginBatch();
+	}
+
+	m_data->textureSlots[m_data->textureSlotIndex] = texture->GetID();
+	return m_data->textureSlotIndex++;
 }
 
 void BatchRenderer::SetActiveRegion(Texture* texture, int regionIndex, int spriteWidth)
@@ -316,6 +325,8 @@ void BatchRenderer::Flush()
 
 void BatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter)
 {
+	BeginBatch();
+
 	int index = 0;
 	for (auto object : m_objectPool)
 	{
@@ -333,8 +344,7 @@ void BatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter)
 		if (glm::distance(camPos, glm::vec2(object->GetPos())) > distanceFromCenter)
 			continue;
 
-		Texture* texture = object->GetTexture();
-		if (texture && texture != nullptr) // Check if texture is valid memory
+		if (Texture* texture = object->GetTexture()) // Check if texture is valid memory
 		{
 			DrawQuad(object->GetPos(), object->GetScale(), { object->GetColor(), 1.0f }, texture, object->GetFrame(), object->GetSpriteWidth());
 		}
@@ -345,6 +355,9 @@ void BatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter)
 
 		index++;
 	}
+
+	EndBatch();
+	Flush();
 }
 
 void BatchRenderer::ShutDown()

@@ -4,12 +4,13 @@
 #include "glm.hpp"
 #include <string>
 
+class Camera;
+
 class Shader
 {
 public:
-	Shader(const char* name, const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
-	Shader(const std::string& name, std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath);
-	Shader(const std::string& name);
+	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
+	Shader(std::string_view vertexPath, std::string_view fragmentPath, std::string_view geometryPath);
 	Shader() = default;
 	~Shader();
 
@@ -19,41 +20,62 @@ public:
 	void CheckCompileErrors(GLuint shader, std::string type);
 	unsigned int GetID();
 	void Use();
-	std::string GetName();;
+
+	void SetCommonUniforms(Camera* camera);
 
 #pragma region Uniform functions
-	// ------------------------------------------------------------------------
-	void setBool(const std::string& name, bool value) const;
+	template <typename T>
+    void SetUniform(const std::string& name, T value) const {
+        assert(true && "Uniform variable not found in the shader.");
+    }
 
-	// ------------------------------------------------------------------------
-	void setInt(const std::string& name, int value) const;
+    // Specializations for supported types
+    template <>
+    void SetUniform<bool>(const std::string& name, bool value) const {
+        glUniform1i(glGetUniformLocation(m_shaderId, name.c_str()), static_cast<int>(value));
+    }
 
-	// ------------------------------------------------------------------------
-	void setFloat(const std::string& name, float value) const;
+    template <>
+    void SetUniform<int>(const std::string& name, int value) const {
+        glUniform1i(glGetUniformLocation(m_shaderId, name.c_str()), value);
+    }
 
-	// ------------------------------------------------------------------------
-	void setVec2(const std::string& name, const glm::vec2& value) const;
-	void setVec2(const std::string& name, float x, float y) const;
+    template <>
+    void SetUniform<float>(const std::string& name, float value) const {
+        glUniform1f(glGetUniformLocation(m_shaderId, name.c_str()), value);
+    }
 
-	// ------------------------------------------------------------------------
-	void setVec3(const std::string& name, const glm::vec3& value) const;
-	void setVec3(const std::string& name, float x, float y, float z) const;
+    template <>
+    void SetUniform<glm::vec2>(const std::string& name, glm::vec2 value) const {
+        glUniform2fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, &value[0]);
+    }
 
-	// ------------------------------------------------------------------------
-	void setVec4(const std::string& name, const glm::vec4& value) const;
-	void setVec4(const std::string& name, float x, float y, float z, float w);
+    template <>
+    void SetUniform<glm::vec3>(const std::string& name, glm::vec3 value) const {
+        glUniform3fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, &value[0]);
+    }
 
-	// ------------------------------------------------------------------------
-	void setMat2(const std::string& name, const glm::mat2& mat) const;
+    template <>
+    void SetUniform<glm::vec4>(const std::string& name, glm::vec4 value) const {
+        glUniform4fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, &value[0]);
+    }
 
-	// ------------------------------------------------------------------------
-	void setMat3(const std::string& name, const glm::mat3& mat) const;
+    template <>
+    void SetUniform<glm::mat2>(const std::string& name, glm::mat2 mat) const {
+        glUniformMatrix2fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    }
 
-	// ------------------------------------------------------------------------
-	void setMat4(const std::string& name, const glm::mat4& mat) const;
+    template <>
+    void SetUniform<glm::mat3>(const std::string& name, glm::mat3 mat) const {
+        glUniformMatrix3fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    }
+
+    template <>
+    void SetUniform<glm::mat4>(const std::string& name, glm::mat4 mat) const {
+        glUniformMatrix4fv(glGetUniformLocation(m_shaderId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    }
 #pragma endregion
 
 protected:
 	unsigned int m_shaderId = 0;
-	std::string m_name = "DefaultName";
 };

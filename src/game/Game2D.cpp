@@ -24,6 +24,11 @@ Game2D::Game2D()
 	m_physicsScene.addActor(&m_player, "player");
 
 	m_cloudManager.Init(&m_cloudBatchRenderer, 35);
+
+	Texture* gradient = m_gradientBatchRenderer.LoadTexture(ResourceManager::GetTexturePath("gradient"));
+	m_gradientQuad.SetPos(0, 0, -1); // Render in front of everything
+	m_gradientQuad.SetTexture(gradient);
+	m_gradientBatchRenderer.AddObject(&m_gradientQuad);
 }
 
 Game2D::~Game2D()
@@ -34,6 +39,10 @@ Game2D::~Game2D()
 
 void Game2D::Update(float deltaTime)
 {
+	m_gradientAmount += deltaTime * 0.5f;
+	if (m_gradientAmount > 1.5f)
+		m_gradientAmount = 0.0f;
+
 	m_camera.Update(deltaTime);
 	m_player.Update(deltaTime);
 	m_cloudManager.Update(deltaTime);
@@ -45,9 +54,11 @@ void Game2D::Update(float deltaTime)
 
 void Game2D::Draw()
 {
-	m_renderer.Draw(&m_mapBatchRenderer);
-	m_renderer.Draw(&m_batchRenderer);
-	m_renderer.Draw(&m_treeBatchRenderer);
-	m_renderer.Draw(&m_cloudBatchRenderer);
-	m_renderer.Draw(&m_uiBatchRenderer);
+	m_renderer.Draw(&m_mapBatchRenderer, ShaderType::BASIC, sunColour);
+	m_renderer.Draw(&m_batchRenderer, ShaderType::BASIC, sunColour);
+	m_renderer.Draw(&m_treeBatchRenderer, ShaderType::BASIC, sunColour);
+	m_renderer.Draw(&m_cloudBatchRenderer, ShaderType::BASIC, sunColour);
+	m_renderer.Draw(&m_uiBatchRenderer, ShaderType::UI, sunColour);
+
+	m_renderer.Draw(&m_gradientBatchRenderer, ShaderType::GRADIENT, m_gradientAmount);
 }

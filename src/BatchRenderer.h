@@ -23,6 +23,9 @@ public:
 	void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);;
 	void DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame = 0, int spriteWidth = 16);
 
+	uint32_t GetTextureIndex(Texture* texture);
+	uint32_t AddTextureSlot(Texture* texture);
+
 	void RemoveQuad(const GameObject& object);
 	int GetObjectIndex(const GameObject& object);
 	void SetActiveRegion(Texture* texture, int regionIndex, int spriteWidth);
@@ -35,6 +38,8 @@ public:
 
 	void Render(const glm::vec2& camPos, float distanceFromCenter);
 private:
+	bool m_renderBufferValid = false;
+
 	std::vector<GameObject*> m_objectPool = std::vector<GameObject*>();
 	std::vector<Texture*> m_texturePool = std::vector<Texture*>();
 	std::vector<glm::vec2> m_uvs;
