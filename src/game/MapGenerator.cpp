@@ -6,14 +6,17 @@
 #include <iostream>
 #include <random>
 #include <time.h>
+#include "BatchRenderer.h"
 
-MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, Camera* cam, int mapSize)
+MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, Camera* cam, BatchRenderer* tileBatch, BatchRenderer* treeBatch, int mapSize)
 {
 	m_objManager = objectManager;
 	CreateTextures();
-	this->m_mapSize = mapSize;
-	this->m_physicsScene  = pScene;
+	m_mapSize = mapSize;
+	m_physicsScene  = pScene;
 	m_camera        = cam;
+	m_tileBatch    = tileBatch;
+	m_treeBatch    = treeBatch;
 
 	// Create Cells
 	m_cells = new Cell*[mapSize];
@@ -32,6 +35,7 @@ MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, C
 			m_cells[x][y].SetCellType(type::Water);
 
 			m_cells[x][y].SetGameObject(m_objManager->CreateQuad(glm::vec3(x - mapSize / 2, y - mapSize / 2, 0), glm::vec2(1)));
+			m_tileBatch->AddObject(m_cells[x][y].GetGameObject());
 		}
 	}
 
@@ -190,10 +194,7 @@ int** MapGenerator::Generate()
 	}
 
 	// Cleaning up island (turning single water cells to ground cells)
-	for (int i = 0; i < 12; i++)
-	{
-		EatWater(5);
-	}
+	EatWater(7);
 
 	// Setting all ground tiles next to water into walls
 	for (int x = 0; x < m_mapSize; x++)
@@ -421,6 +422,9 @@ void MapGenerator::SetTreeTiles(int forestCount)
 							m_treeCell.push_back(&cell);
 							m_trees.push_back(tempTree);
 							cell.SetCellType(type::Tree);
+
+							m_treeBatch->AddObject(tempTree);
+							m_treeBatch->AddObject(shadow);
 						}
 						else if (m_treeCell.empty())
 						{
@@ -438,6 +442,9 @@ void MapGenerator::SetTreeTiles(int forestCount)
 							m_treeCell.push_back(&cell);
 							m_trees.push_back(tempTree);
 							cell.SetCellType(type::Tree);
+
+							m_treeBatch->AddObject(tempTree);
+							m_treeBatch->AddObject(shadow);
 						}
 					}
 				}

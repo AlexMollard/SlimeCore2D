@@ -182,9 +182,9 @@ void GameObject::UpdateSpriteTimer(float deltaTime)
 	}
 }
 
-bool GameObject::GetIsPlayer()
+bool GameObject::GetIsMemoryManaged()
 {
-	return m_isPlayer;
+	return m_isMemoryManaged;
 }
 
 bool GameObject::GetRender()

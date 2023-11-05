@@ -21,7 +21,6 @@ public:
 	void removeActor(RigidBody* actor);
 
 	void update(float dt);
-	void Debug(Renderer2D& renderer2D);
 
 	void setGravity(const glm::vec3 inGravity);
 	glm::vec2 getGravity() const;

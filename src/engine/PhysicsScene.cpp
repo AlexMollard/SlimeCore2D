@@ -75,21 +75,6 @@ void PhysicsScene::update(float dt)
 	}
 }
 
-void PhysicsScene::Debug(Renderer2D& renderer2D)
-{
-	renderer2D.BeginBatch();
-
-	for (int i = 0; i < m_actors.size(); i++)
-	{
-		glm::vec2 pos   = (m_actors[i]->GetUseBoundingBox()) ? m_actors[i]->GetBoundingBox().GetPos(m_actors[i]->GetPos()) : m_actors[i]->GetPos();
-		glm::vec2 scale = (m_actors[i]->GetUseBoundingBox()) ? m_actors[i]->GetBoundingBox().GetScale() : m_actors[i]->GetScale();
-		renderer2D.DrawQuad(glm::vec3(pos.x, pos.y, -0.8f), scale, glm::vec4(1, 0, 0, 1));
-	}
-
-	renderer2D.EndBatch();
-	renderer2D.Flush();
-}
-
 void PhysicsScene::setGravity(const glm::vec3 inGravity)
 {
 	m_gravity = inGravity;

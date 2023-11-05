@@ -2,11 +2,13 @@
 #include "engine/ObjectManager.h"
 #include "engine/PhysicsScene.h"
 #include "Cell.h"
+
+class BatchRenderer;
 class MapGenerator
 {
 public:
 
-	MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene,Camera* cam, int mapSize);
+	MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, Camera* cam, BatchRenderer* tileBatch, BatchRenderer* treeBatch, int mapSize);
 	~MapGenerator();
 
 	int** Generate();
@@ -43,6 +45,9 @@ private:
 
 	ObjectManager* m_objManager;
 	PhysicsScene* m_physicsScene;
+
+	BatchRenderer* m_tileBatch = nullptr;
+	BatchRenderer* m_treeBatch = nullptr;
 
 	Camera* m_camera = nullptr;
 

@@ -47,7 +47,7 @@ public:
 
 	void UpdateSpriteTimer(float deltaTime);
 
-	bool GetIsPlayer();
+	bool GetIsMemoryManaged();
 
 	bool GetRender();
 	void SetRender(bool value);
@@ -58,7 +58,7 @@ protected:
 	glm::vec3 m_spawnPoint = glm::vec3(0);
 
 	bool m_render = true;
-	bool m_isPlayer = false;
+	bool m_isMemoryManaged = false;
 
 	Texture* m_texture = nullptr;
 	Shader* m_shader = nullptr;

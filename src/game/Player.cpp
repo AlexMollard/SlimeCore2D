@@ -23,8 +23,8 @@ Player::~Player()
 void Player::Init(Camera* cam, Cell** cells, GameObject* shadow)
 {
 	m_cells = cells;
-	m_isPlayer    = true;
-	camera      = cam;
+	m_isMemoryManaged = true;
+	camera = cam;
 
 	m_playerIdleRight = new Texture(ResourceManager::GetTexturePath("Player/Knight_Idle_Right"));
 	m_playerIdleLeft  = new Texture(ResourceManager::GetTexturePath("Player/Knight_Idle_Left"));

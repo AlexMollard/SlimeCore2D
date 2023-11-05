@@ -1,12 +1,10 @@
 #include "pch.h"
 #include "CloudManager.h"
-#include "engine/Renderer2D.h"
+#include "BatchRenderer.h"
 #include <format>
 
-CloudManager::CloudManager(Renderer2D* renderer)
+CloudManager::CloudManager()
 {
-	this->m_renderer = renderer;
-
 	for (int i = 0; i < CLOUD_TEXTURE_TOTAL; i++)
 	{
 		m_cloudTextures[i] = std::make_shared<Texture>(ResourceManager::GetTexturePath(std::format("Clouds/cloud_{}", i)));
@@ -14,17 +12,17 @@ CloudManager::CloudManager(Renderer2D* renderer)
 	}
 }
 
-void CloudManager::Init(int cloudTotal)
+void CloudManager::Init(BatchRenderer* batchRenderer, int cloudTotal)
 {
 	for (int i = 0; i < cloudTotal; i++)
 	{
 		int textIndex = rand() % CLOUD_TEXTURE_TOTAL;
 
-	//	auto cloud = std::make_shared<Cloud>(cloudTextures[textIndex], shadowTextures[textIndex], ((rand() % 20) * 0.1f) + 2, glm::vec2((rand() % 150 - 50), rand() % 100 - 50));
+		auto cloud = std::make_shared<Cloud>(m_cloudTextures[textIndex].get(), m_shadowTextures[textIndex].get(), ((rand() % 20) * 0.1f) + 2, glm::vec2((rand() % 150 - 50), rand() % 100 - 50));
 
-		//clouds.push_back(cloud);
-		//renderer->AddObject(cloud->GetCloud());
-		//renderer->AddObject(cloud->GetShadow());
+		m_clouds.push_back(cloud);
+		batchRenderer->AddObject(cloud->GetCloud().get());
+		batchRenderer->AddObject(cloud->GetShadow().get());
 	}
 }
 

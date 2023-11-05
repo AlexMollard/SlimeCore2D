@@ -9,43 +9,23 @@
 #include <vector>
 #include <array>
 
+class BatchRenderer;
+
+enum class ShaderType
+{
+	Basic,
+	UI
+};
+
 class Renderer2D
 {
 public:
 	Renderer2D(Camera* camera);
 	~Renderer2D();
 
-	void Init();
-	void ShutDown();
+	void Draw(BatchRenderer* batchRenderer);
 
-	void AddObject(GameObject* newObject);
-
-	Texture* LoadTexture(const std::string& dir);
-
-	void Draw();
-	void DrawUI();
-
-	Shader* GetBasicShader();
-
-	void DrawUIQuad(glm::vec2 pos = glm::vec2(0), int layer = 1, glm::vec2 size = glm::vec2(1), glm::vec3 color = glm::vec3(1),
-	                       Texture* texture = nullptr);
-
-	void SetActiveRegion(Texture* texture, int regionIndex, int spriteWidth);
-
-	void DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
-	void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
-	{
-		DrawQuad(glm::vec3(position, -0.9f), size, color);
-	};
-	void DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame = 0, int spriteWidth = 16);
-
-	void RemoveQuad(const GameObject& object);
-	int GetObjectIndex(const GameObject& object);
-
-	void BeginBatch();
-	void EndBatch();
-	void Flush();
-
+	Shader* GetShader();
 private:
 	glm::vec3 m_currentColor = glm::vec3(-404);
 	glm::mat4 m_uiMatrix     = glm::ortho<float>(16, -16, 9, -9, 2, 4);
@@ -53,13 +33,8 @@ private:
 	Shader* m_currentShader   = nullptr;
 	Texture* m_currentTexture = nullptr;
 
-	std::vector<GameObject*> m_objectPool = std::vector<GameObject*>();
-	std::vector<Texture*> m_texturePool = std::vector<Texture*>();
-	std::vector<Shader*> m_shaderPool = std::vector<Shader*>();
+	ShaderType m_shaderType = ShaderType::Basic;
 
-	Shader m_basicShader = Shader("Basic Shader", ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str());
-	Shader m_uiShader = Shader("UI Shader", ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("UIFragment").c_str());
+	Shader* m_shader = nullptr;
 	Camera* m_camera = nullptr;
-
-	std::vector<glm::vec2> m_uvs;
 };

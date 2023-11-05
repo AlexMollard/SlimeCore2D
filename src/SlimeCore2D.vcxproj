@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BatchRenderer.h" />
     <ClInclude Include="engine\BoundingBox.h" />
     <ClInclude Include="engine\Camera.h" />
     <ClInclude Include="engine\CollisionManager.h" />
@@ -39,10 +40,12 @@
     <ClInclude Include="game\Game2D.h" />
     <ClInclude Include="game\MapGenerator.h" />
     <ClInclude Include="game\Player.h" />
+    <ClInclude Include="MiniMap.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ResourceManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BatchRenderer.cpp" />
     <ClCompile Include="engine\BoundingBox.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
     <ClCompile Include="engine\CollisionManager.cpp" />
@@ -61,6 +64,7 @@
     <ClCompile Include="game\MapGenerator.cpp" />
     <ClCompile Include="game\Player.cpp" />
     <ClCompile Include="game\SlimeCore2D.cpp" />
+    <ClCompile Include="MiniMap.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

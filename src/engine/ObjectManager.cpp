@@ -11,22 +11,18 @@ ObjectManager::~ObjectManager()
 {
 	for (auto object : m_objects)
 	{
-		if (!object || object->GetIsPlayer())
+		if (!object || object->GetIsMemoryManaged())
 			return;
 
 		delete object;
 		object = nullptr;
 	}
-
-	delete m_renderer;
-	m_renderer = nullptr;
 }
 
 GameObject* ObjectManager::CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::vec3 color)
 {
 	auto go = new GameObject(pos, color, size, m_objects.size());
 
-	m_renderer->AddObject(go);
 	m_objects.push_back(go);
 
 	return go;
@@ -36,7 +32,6 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, glm::vec3 c
 {
 	auto go = new GameObject(pos, color, size, m_objects.size());
 
-	m_renderer->AddObject(go);
 	m_objects.push_back(go);
 
 	return go;
@@ -47,7 +42,6 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* te
 	auto go = new GameObject(pos, glm::vec3(1), size, m_objects.size());
 	go->SetTexture(tex);
 
-	m_renderer->AddObject(go);
 	m_objects.push_back(go);
 
 	return go;
@@ -56,7 +50,6 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* te
 void ObjectManager::RemoveQuad(GameObject* object)
 {
 	m_objects.erase(m_objects.begin() + GetObjectIndex(object));
-	m_renderer->RemoveQuad(*object);
 }
 
 int ObjectManager::GetObjectIndex(GameObject* object)
