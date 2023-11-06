@@ -39,9 +39,11 @@ Game2D::~Game2D()
 
 void Game2D::Update(float deltaTime)
 {
-	m_gradientAmount += deltaTime * 0.5f;
+	m_gradientAmount = (m_isGradientIncreasing) ? m_gradientAmount + deltaTime : m_gradientAmount - deltaTime;
 	if (m_gradientAmount > 1.5f)
-		m_gradientAmount = 0.0f;
+		m_isGradientIncreasing = false;
+	else if (m_gradientAmount < -0.5f)
+		m_isGradientIncreasing = true;
 
 	m_camera.Update(deltaTime);
 	m_player.Update(deltaTime);
@@ -58,7 +60,7 @@ void Game2D::Draw()
 	m_renderer.Draw(&m_batchRenderer, ShaderType::BASIC, sunColour);
 	m_renderer.Draw(&m_treeBatchRenderer, ShaderType::BASIC, sunColour);
 	m_renderer.Draw(&m_cloudBatchRenderer, ShaderType::BASIC, sunColour);
-	m_renderer.Draw(&m_uiBatchRenderer, ShaderType::UI, sunColour);
+	m_renderer.Draw(&m_uiBatchRenderer, ShaderType::UI);
 
 	m_renderer.Draw(&m_gradientBatchRenderer, ShaderType::GRADIENT, m_gradientAmount);
 }

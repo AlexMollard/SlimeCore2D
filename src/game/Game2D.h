@@ -20,6 +20,7 @@ public:
 
 private:
 	float m_gradientAmount = 0.0f;
+	bool m_isGradientIncreasing = true;
 
 	glm::vec4 sunColour = glm::vec4(1.0f, 0.7f, 0.8f, 1.0f);
 
