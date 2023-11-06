@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BatchRenderer.h" />
+    <ClInclude Include="engine\BatchRenderer.h" />
     <ClInclude Include="engine\BoundingBox.h" />
     <ClInclude Include="engine\Camera.h" />
     <ClInclude Include="engine\CollisionManager.h" />
@@ -34,18 +34,18 @@
     <ClInclude Include="engine\Shader.h" />
     <ClInclude Include="engine\Texture.h" />
     <ClInclude Include="engine\Window.h" />
+    <ClInclude Include="engine\ResourceManager.h" />
     <ClInclude Include="game\Cell.h" />
     <ClInclude Include="game\Cloud.h" />
     <ClInclude Include="game\CloudManager.h" />
     <ClInclude Include="game\Game2D.h" />
     <ClInclude Include="game\MapGenerator.h" />
     <ClInclude Include="game\Player.h" />
-    <ClInclude Include="MiniMap.h" />
+    <ClInclude Include="game\MiniMap.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="ResourceManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BatchRenderer.cpp" />
+    <ClCompile Include="engine\BatchRenderer.cpp" />
     <ClCompile Include="engine\BoundingBox.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
     <ClCompile Include="engine\CollisionManager.cpp" />
@@ -64,8 +64,11 @@
     <ClCompile Include="game\MapGenerator.cpp" />
     <ClCompile Include="game\Player.cpp" />
     <ClCompile Include="game\SlimeCore2D.cpp" />
-    <ClCompile Include="MiniMap.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="game\MiniMap.cpp" />
+    <ClCompile Include="engine\ResourceManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".clang-format" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

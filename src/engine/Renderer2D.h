@@ -6,6 +6,7 @@
 #include "Texture.h"
 #include <array>
 #include <glm.hpp>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -23,6 +24,21 @@ enum class ShaderType
 
 std::string ShaderTypeToString(ShaderType type);
 
+#ifdef DEBUG_UNIFORMS
+#include <typeinfo> // for typeid
+
+	template<typename... T>
+	static void PrintIncomingVariables(ShaderType shaderType, T&&... args)
+	{
+		std::cout << ShaderTypeToString(shaderType) << ": " << std::endl;
+		((std::cout << "Type T: " << typeid(T).name()), ...);
+		std::cout << "." << std::endl;
+	}
+#else
+    template<typename... T>
+	static void PrintIncomingVariables(ShaderType shaderType, T&&... args){};
+#endif // DEBUG_UNIFORMS
+
 class Renderer2D
 {
 public:
@@ -35,6 +51,7 @@ public:
 		Shader* shader = m_shaderMap[ShaderTypeToString(shaderType)];
 		shader->Use();
 		shader->SetCommonUniforms(m_camera);
+
 		SetShaderUniforms(shader, shaderType, std::forward<Args>(args)...);
 
 		glm::vec2 camPos         = m_camera->GetPosition();
@@ -55,36 +72,37 @@ private:
 	Camera* m_camera = nullptr;
 
 	template<typename... T>
-	void SetShaderUniforms(Shader* shader, ShaderType shaderType, T&&... optionalParams) const
-	{
-		// Depending on the shader type, set the specific uniforms using the provided arguments.
-		switch (shaderType)
-		{
-		case ShaderType::BASIC:
-		{
-			if constexpr ((std::is_same_v<T, glm::vec4> || ...))
-			{ // Unpack template parameters with fold expression
-				(shader->SetUniform("SunColor", std::forward<T>(optionalParams)), ...);
-			}
-			break;
-		}
-		case ShaderType::UI:
-		{
-			// Set the UI shader uniforms.
-			break;
-		}
-		case ShaderType::GRADIENT:
-		{
-			if constexpr ((std::is_same_v<T, float> || ...))
-			{
-				(shader->SetUniform("GradientAmount", std::forward<T>(optionalParams)), ...);
-			}
-			break;
-		}
-		default:
-			// Handle other shader types or throw an error.
-			assert(false && "Unknown ShaderType.");
-			break;
-		}
-	}
+	void SetShaderUniforms(Shader* shader, ShaderType shaderType, T&&... optionalParams) const;
 };
+
+template<typename... T>
+void Renderer2D::SetShaderUniforms(Shader* shader, ShaderType shaderType, T&&... optionalParams) const
+{
+	PrintIncomingVariables(shaderType, std::forward<T>(optionalParams)...);
+
+	// Depending on the shader type, set the specific uniforms using the provided arguments.
+	switch (shaderType)
+	{
+	case ShaderType::BASIC:
+	{
+		// Set suncolour and watercolour.
+		(shader->SetUniform("SunColor", std::forward<T>(optionalParams)), ...);
+		(shader->SetUniform("WaterColor", std::forward<T>(optionalParams)), ...);
+		break;
+	}
+	case ShaderType::UI:
+	{
+		// Set the UI shader uniforms.
+		break;
+	}
+	case ShaderType::GRADIENT:
+	{
+		(shader->SetUniform("GradientAmount", std::forward<T>(optionalParams)), ...);
+		break;
+	}
+	default:
+		// Handle other shader types or throw an error.
+		assert(false && "Unknown ShaderType.");
+		break;
+	}
+}

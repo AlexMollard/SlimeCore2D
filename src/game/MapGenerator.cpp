@@ -6,7 +6,7 @@
 #include <iostream>
 #include <random>
 #include <time.h>
-#include "BatchRenderer.h"
+#include "engine/BatchRenderer.h"
 
 MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, Camera* cam, BatchRenderer* tileBatch, BatchRenderer* treeBatch, int mapSize)
 {

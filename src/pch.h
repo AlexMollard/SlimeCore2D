@@ -1,5 +1,5 @@
 #pragma once
-#include "ResourceManager.h"
+#include "engine/ResourceManager.h"
 #define GLEW_STATIC
 
 #ifdef _DEBUG
