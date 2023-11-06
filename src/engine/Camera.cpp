@@ -51,7 +51,7 @@ glm::vec2 Camera::GetPosition()
 	return m_position;
 }
 
-glm::mat4 Camera::GetTransform()
+glm::mat4& Camera::GetTransform()
 {
 	return  m_transform;
 }

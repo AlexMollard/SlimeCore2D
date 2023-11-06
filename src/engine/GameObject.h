@@ -2,6 +2,7 @@
 #include "RigidBody.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "CommonEnums.h"
 
 class GameObject : public RigidBody
 {
@@ -52,6 +53,9 @@ public:
 	bool GetRender();
 	void SetRender(bool value);
 
+	FlipPolicy GetFlipPolicy() const;
+	void SetFlipPolicy(FlipPolicy val);
+
 protected:
 	glm::vec3 m_color = glm::vec3(1);
 	glm::vec3 n_defaultColor = glm::vec3(1);
@@ -62,6 +66,8 @@ protected:
 
 	Texture* m_texture = nullptr;
 	Shader* m_shader = nullptr;
+
+	FlipPolicy m_flipPolicy = FlipPolicy::None;
 
 	// Sprite Stuff
 	int m_frame = 0;

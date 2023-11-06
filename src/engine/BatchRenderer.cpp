@@ -1,7 +1,10 @@
 #include "pch.h"
+
 #include "BatchRenderer.h"
-#include "engine/GameObject.h"
+
 #include <iostream>
+
+#include "engine/GameObject.h"
 
 struct Vertex
 {
@@ -17,21 +20,21 @@ struct RendererData
 	GLuint quadVB = 0;
 	GLuint quadIB = 0;
 
-	GLuint whiteTexture = 0;
+	GLuint whiteTexture       = 0;
 	uint32_t whiteTextureSlot = 0;
 
 	uint32_t indexCount = 0;
 
-	Vertex* quadBuffer = nullptr;
+	Vertex* quadBuffer    = nullptr;
 	Vertex* quadBufferPtr = nullptr;
 
 	std::array<uint32_t, MAX_TEXTURE_COUNT> textureSlots = {};
-	uint32_t textureSlotIndex = 1;
+	uint32_t textureSlotIndex                            = 1;
 };
 
 BatchRenderer::BatchRenderer()
 {
-	m_data = new RendererData();
+	m_data             = new RendererData();
 	m_data->quadBuffer = new Vertex[MAX_VERTEX_COUNT];
 
 	glCreateVertexArrays(1, &m_data->quadVA);
@@ -143,35 +146,7 @@ Texture* BatchRenderer::LoadTexture(const std::string& dir)
 	return texture;
 }
 
-void BatchRenderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
-{
-	if (m_data->indexCount >= MAX_INDEX_COUNT)
-	{
-		EndBatch();
-		Flush();
-		BeginBatch();
-	}
-
-	const float textureIndex = 0.0f;
-
-	const glm::vec3 positions[4] = { { position.x - size.x / 2.0f, position.y - size.y / 2.0f, position.z },
-									 { position.x + size.x / 2.0f, position.y - size.y / 2.0f, position.z },
-									 { position.x + size.x / 2.0f, position.y + size.y / 2.0f, position.z },
-									 { position.x - size.x / 2.0f, position.y + size.y / 2.0f, position.z } };
-
-	for (int i = 0; i < 4; i++)
-	{
-		m_data->quadBufferPtr->position = positions[i];
-		m_data->quadBufferPtr->color = color;
-		m_data->quadBufferPtr->texCoords = basicUVs[i];
-		m_data->quadBufferPtr->texIndex = textureIndex;
-		m_data->quadBufferPtr++;
-	}
-
-	m_data->indexCount += 6;
-}
-
-void BatchRenderer::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame, int spriteWidth)
+void BatchRenderer::DrawQuad(const BatchData& batchData)
 {
 	if (m_data->indexCount >= MAX_INDEX_COUNT || m_data->textureSlotIndex >= MAX_TEXTURE_COUNT)
 	{
@@ -180,35 +155,56 @@ void BatchRenderer::DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color
 		BeginBatch();
 	}
 
-	uint32_t textureIndex = GetTextureIndex(texture);
-	if (textureIndex == 0)
+	bool useBasicUVs      = true;
+	uint32_t textureIndex = 0;
+	if (batchData.texture)
 	{
-		textureIndex = AddTextureSlot(texture);
+		textureIndex = GetTextureIndex(batchData.texture);
+		if (textureIndex == 0)
+		{
+			textureIndex = AddTextureSlot(batchData.texture);
+		}
+
+		if (batchData.texture->GetWidth() > 16)
+		{
+			useBasicUVs = false;
+			SetActiveRegion(batchData.texture, batchData.spriteFrame, batchData.spriteWidth);
+		}
 	}
 
-	bool useBasicUVs = false;
-	if (texture->GetWidth() == 16)
-	{
-		useBasicUVs = true;
-	}
-	else
-	{
-		SetActiveRegion(texture, frame, spriteWidth);
-	}
+	glm::vec3 positions[4] = { glm::vec3(batchData.position.x - batchData.size.x / 2.0f, batchData.position.y - batchData.size.y / 2.0f, batchData.position.z),
+		                       glm::vec3(batchData.position.x + batchData.size.x / 2.0f, batchData.position.y - batchData.size.y / 2.0f, batchData.position.z),
+		                       glm::vec3(batchData.position.x + batchData.size.x / 2.0f, batchData.position.y + batchData.size.y / 2.0f, batchData.position.z),
+		                       glm::vec3(batchData.position.x - batchData.size.x / 2.0f, batchData.position.y + batchData.size.y / 2.0f, batchData.position.z) };
 
-	glm::vec3 positions[4] = {
-		glm::vec3(position.x - size.x / 2.0f, position.y - size.y / 2.0f, position.z),
-		glm::vec3(position.x + size.x / 2.0f, position.y - size.y / 2.0f, position.z),
-		glm::vec3(position.x + size.x / 2.0f, position.y + size.y / 2.0f, position.z),
-		glm::vec3(position.x - size.x / 2.0f, position.y + size.y / 2.0f, position.z)
-	};
+	// apply rotation (2D rotation around the center of the quad)
+	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(batchData.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	for (int i = 0; i < 4; i++)
 	{
-		m_data->quadBufferPtr->position = positions[i];
-		m_data->quadBufferPtr->color = color;
-		m_data->quadBufferPtr->texCoords = (useBasicUVs) ? basicUVs[i] : m_uvs[i];
-		m_data->quadBufferPtr->texIndex = static_cast<float>(textureIndex);
+		positions[i] -= glm::vec3(batchData.position.x, batchData.position.y, 0.0f);
+		positions[i] = rotation * glm::vec4(positions[i], 1.0f);
+		positions[i] += glm::vec3(batchData.position.x, batchData.position.y, 0.0f);
+	}
+
+	// Apply flip policy (cant just swap becuase of backface culling)
+	if (batchData.flipPolicy == FlipPolicy::Horizontal || batchData.flipPolicy == FlipPolicy::Both)
+	{
+		std::swap(positions[0], positions[1]);
+		std::swap(positions[2], positions[3]);
+	}
+	if (batchData.flipPolicy == FlipPolicy::Vertical || batchData.flipPolicy == FlipPolicy::Both)
+	{
+		std::swap(positions[0], positions[3]);
+		std::swap(positions[1], positions[2]);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		m_data->quadBufferPtr->position  = positions[i];
+		m_data->quadBufferPtr->color     = batchData.color;
+		m_data->quadBufferPtr->texCoords = useBasicUVs ? basicUVs[i] : m_uvs[i];
+		m_data->quadBufferPtr->texIndex  = static_cast<float>(textureIndex);
 		m_data->quadBufferPtr++;
 	}
 
@@ -263,20 +259,15 @@ void BatchRenderer::SetActiveRegion(Texture* texture, int regionIndex, int sprit
 	float uv_x = (regionIndex % numberOfRegions) / (float)numberOfRegions;
 	float uv_y = (regionIndex / (float)numberOfRegions) * (float)numberOfRegions;
 
-	glm::vec2 uv_down_left = glm::vec2(uv_x, uv_y);
+	glm::vec2 uv_down_left  = glm::vec2(uv_x, uv_y);
 	glm::vec2 uv_down_right = glm::vec2(uv_x + 1.0f / numberOfRegions, uv_y);
-	glm::vec2 uv_up_right = glm::vec2(uv_x + 1.0f / numberOfRegions, (uv_y + 1.0f));
-	glm::vec2 uv_up_left = glm::vec2(uv_x, (uv_y + 1.0f));
+	glm::vec2 uv_up_right   = glm::vec2(uv_x + 1.0f / numberOfRegions, (uv_y + 1.0f));
+	glm::vec2 uv_up_left    = glm::vec2(uv_x, (uv_y + 1.0f));
 
 	m_uvs.push_back(uv_down_left);
 	m_uvs.push_back(uv_down_right);
 	m_uvs.push_back(uv_up_right);
 	m_uvs.push_back(uv_up_left);
-}
-
-void BatchRenderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
-{
-	DrawQuad(glm::vec3(position, -0.9f), size, color);
 }
 
 void BatchRenderer::RemoveQuad(const GameObject& object)
@@ -332,7 +323,7 @@ void BatchRenderer::Flush()
 	glBindVertexArray(m_data->quadVA);
 	glDrawElements(GL_TRIANGLES, m_data->indexCount, GL_UNSIGNED_INT, nullptr);
 
-	m_data->indexCount = 0;
+	m_data->indexCount       = 0;
 	m_data->textureSlotIndex = 1;
 }
 
@@ -357,20 +348,25 @@ void BatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter)
 		if (glm::distance(camPos, glm::vec2(object->GetPos())) > distanceFromCenter)
 			continue;
 
-		if (Texture* texture = object->GetTexture()) // Check if texture is valid memory
-		{
-			DrawQuad(object->GetPos(), object->GetScale(), { object->GetColor(), 1.0f }, texture, object->GetFrame(), object->GetSpriteWidth());
-		}
-		else
-		{
-			DrawQuad(object->GetPos(), object->GetScale(), { object->GetColor(), 1.0f });
-		}
+		BatchData batchData = 
+		{ 
+			object->GetPos(),
+			object->GetScale(),
+			{ object->GetColor(), 1.0f },
+			object->GetRotation(),
+			object->GetTexture(),
+			object->GetFlipPolicy(),
+			object->GetFrame(),
+			object->GetSpriteWidth()
+		};
+		
+		DrawQuad(batchData);
 
-		index++;
-	}
+	index++;
+}
 
-	EndBatch();
-	Flush();
+EndBatch();
+Flush();
 }
 
 void BatchRenderer::ShutDown()

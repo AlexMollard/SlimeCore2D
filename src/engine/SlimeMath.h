@@ -1,7 +1,7 @@
 #pragma once
 #include "glm.hpp"
 
-namespace Math
+namespace SlimeMath
 {
 	static float Lerp(float pointOne, float pointTwo, float time)
 	{

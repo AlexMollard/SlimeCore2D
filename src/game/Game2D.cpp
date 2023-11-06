@@ -4,9 +4,18 @@
 #include "MapGenerator.h"
 #include "engine/ObjectManager.h"
 #include "engine/PhysicsScene.h"
+#include <engine/Noise.h>
+
+static inline float randFloat()
+{
+	return rand() / (float)RAND_MAX;
+}
 
 Game2D::Game2D()
 {
+	m_screenCamera.SetPosition(glm::vec2(0.0f, 0.0f));
+	m_screenCamera.SetFOV(3.5f);
+
 	m_map = new MapGenerator(&m_objectManager, &m_physicsScene, &m_camera, &m_mapBatchRenderer, &m_treeBatchRenderer, 100);
 	Input::GetInstance()->SetCamera(&m_camera);
 
@@ -25,31 +34,38 @@ Game2D::Game2D()
 
 	m_cloudManager.Init(&m_cloudBatchRenderer, 35);
 
-	Texture* gradient = m_gradientBatchRenderer.LoadTexture(ResourceManager::GetTexturePath("gradient"));
-	m_gradientQuad.SetPos(0, 0, -1); // Render in front of everything
-	m_gradientQuad.SetTexture(gradient);
-	m_gradientBatchRenderer.AddObject(&m_gradientQuad);
-
-	GameObject* waterQuad = m_objectManager.CreateQuad(glm::vec3(0, 0, 1), glm::vec2(RES_WIDTH, RES_HEIGHT));
-	Texture* waterTexture = new Texture(m_waterRenderTarget.GetTextureID());
-
-	waterQuad->SetTexture(waterTexture);
+	m_waterTexture = new Texture(m_waterRenderTarget.GetTextureID());
+	GameObject* waterQuad = m_objectManager.CreateQuad(glm::vec3(0, 0, 1), glm::vec2(RES_WIDTH, RES_HEIGHT), m_waterTexture);
+	waterQuad->SetSpriteWidth(RES_WIDTH);
+	waterQuad->SetTextureWidth(RES_WIDTH);
+	waterQuad->SetRotation(180.0f);
+	waterQuad->SetFlipPolicy(FlipPolicy::Horizontal);
 	m_waterBatchRenderer.AddObject(waterQuad);
+
+	GameObject* waterBGQuad = m_objectManager.CreateQuad(glm::vec3(0, 0, 1), glm::vec2(RES_WIDTH, RES_HEIGHT));
+	waterBGQuad->SetColor(glm::vec3(0.16f, 0.30f, 0.5f));
+	m_waterBGBatchRenderer.AddObject(waterBGQuad);
+
+	// Generate 3 perlin noise textures each zooming in more than the last
+	// Using FNL
+	// type, width, height, scale, offsetX, offsetY 
+	m_perlinNoiseTextures[0].GenerateNoise(NoiseType::Simplex, RES_WIDTH, RES_HEIGHT, 1.01f, randFloat(), randFloat());
+	m_perlinNoiseTextures[1].GenerateNoise(NoiseType::Simplex, RES_WIDTH, RES_HEIGHT, 1.05f, randFloat(), randFloat());
+	m_perlinNoiseTextures[2].GenerateNoise(NoiseType::Simplex, RES_WIDTH, RES_HEIGHT, 1.1f, randFloat(), randFloat());
 }
 
 Game2D::~Game2D()
 {
+	delete m_waterTexture;
+	m_waterTexture = nullptr;
+
 	delete m_map;
 	m_map = nullptr;
 }
 
 void Game2D::Update(float deltaTime)
 {
-	m_gradientAmount = (m_isGradientIncreasing) ? m_gradientAmount + deltaTime : m_gradientAmount - deltaTime;
-	if (m_gradientAmount > 1.5f)
-		m_isGradientIncreasing = false;
-	else if (m_gradientAmount < -0.5f)
-		m_isGradientIncreasing = true;
+	m_time += deltaTime;
 
 	m_camera.Update(deltaTime);
 	m_player.Update(deltaTime);
@@ -65,15 +81,24 @@ void Game2D::Draw()
 
 	// grab the current frame buffer for the water reflection
 	m_waterRenderTarget.Bind();
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	m_renderer.Draw(&m_mapBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_player.SetPos(glm::vec3(m_player.GetPos().x, m_player.GetPos().y + 2.25f, m_player.GetPos().z));
+	m_waterBGBatchRenderer.AddTextureSlot(&m_perlinNoiseTextures[0]);
+	m_waterBGBatchRenderer.AddTextureSlot(&m_perlinNoiseTextures[1]);
+	m_waterBGBatchRenderer.AddTextureSlot(&m_perlinNoiseTextures[2]);
+	m_renderer.Draw(&m_waterBGBatchRenderer, ShaderType::BASIC, CameraType::SCREENSPACE, m_time);
 	m_renderer.Draw(&m_batchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
-	m_renderer.Draw(&m_treeBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
-	m_renderer.Draw(&m_cloudBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
-	m_renderer.Draw(&m_uiBatchRenderer, ShaderType::UI, CameraType::ORTHOGRAPHIC);
+	m_player.SetPos(glm::vec3(m_player.GetPos().x, m_player.GetPos().y - 2.25f, m_player.GetPos().z));
 	m_waterRenderTarget.Unbind();
 
+	glClearColor(0.16f, 0.30f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	m_renderer.Draw(&m_waterBatchRenderer, ShaderType::WATER, CameraType::SCREENSPACE);
-	m_renderer.Draw(&m_gradientBatchRenderer, ShaderType::GRADIENT, CameraType::ORTHOGRAPHIC, m_gradientAmount);
+	m_renderer.Draw(&m_waterBatchRenderer, ShaderType::WATER, CameraType::SCREENSPACE, m_time);
+
+	m_renderer.Draw(&m_mapBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_renderer.Draw(&m_treeBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_renderer.Draw(&m_batchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_renderer.Draw(&m_cloudBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_renderer.Draw(&m_uiBatchRenderer, ShaderType::UI, CameraType::ORTHOGRAPHIC);
 }

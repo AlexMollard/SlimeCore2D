@@ -1,10 +1,11 @@
 #include <glew.h>
 #include <iostream>
+#include "engine/CommonEnums.h"
 
 class RenderTarget
 {
 public:
-    RenderTarget(unsigned int width, unsigned int height);
+    RenderTarget(unsigned int width, unsigned int height, FlipPolicy flipPolicy = FlipPolicy::None);
 
     ~RenderTarget();
 
@@ -23,7 +24,7 @@ private:
     unsigned int m_width = 0;
     unsigned int m_height = 0;
 
-    void Create();
+    void Create(FlipPolicy flipPolicy);
 
     void Destroy();
 };

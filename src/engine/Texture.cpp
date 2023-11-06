@@ -3,6 +3,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+
+#define FNL_IMPL
+#include "Noise.h"
+
 Texture::Texture(std::string dir)
 {
 	// Create and bind texture ID
@@ -117,4 +121,59 @@ void Texture::SetHeight(int newHeight)
 void Texture::SetChannels(int newChannels) 
 {
 	m_channels = newChannels;
+}
+
+
+void Texture::GenerateNoise(NoiseType noiseType, int width, int height, float scale, float offsetX, float offsetY) 
+{
+	fnl_state noise  = fnlCreateState();
+
+	switch (noiseType)
+	{
+	case NoiseType::Perlin: 
+		noise.noise_type = FNL_NOISE_PERLIN;
+		break;
+	case NoiseType::Simplex: 
+		noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
+		break;
+	case NoiseType::Cellular: 
+		noise.noise_type = FNL_NOISE_CELLULAR;
+		break;
+	default: 
+		noise.noise_type = FNL_NOISE_PERLIN;
+		break;
+	}
+
+	float* noiseMap = new float[width * height * 4];
+
+	for (int y = 0; y < height; y++) 
+	{
+		for (int x = 0; x < width; x++) 
+		{
+			float noiseValue = fnlGetNoise3D(&noise, (float)x * scale + offsetX, (float)y * scale + offsetY, 0.0f);
+			noiseMap[(y * width + x) * 4 + 0] = noiseValue;
+			noiseMap[(y * width + x) * 4 + 1] = noiseValue;
+			noiseMap[(y * width + x) * 4 + 2] = noiseValue;
+			noiseMap[(y * width + x) * 4 + 3] = 1.0f;
+		}
+	}
+
+	// Create and bind a new texture
+	glGenTextures(1, &m_textureId);
+	glBindTexture(GL_TEXTURE_2D, m_textureId);
+
+	// Set the texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Upload the noise data to the texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, noiseMap);
+
+	// Unbind the texture
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Don't forget to delete the noiseMap when you're done with it!
+	delete[] noiseMap;
 }

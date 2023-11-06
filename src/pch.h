@@ -8,8 +8,8 @@
 #endif
 
 // RENDERING CONSTANTS
-constexpr size_t RES_WIDTH = 1536;
-constexpr size_t RES_HEIGHT = 852;
+constexpr size_t RES_WIDTH = 1920;
+constexpr size_t RES_HEIGHT = 1080;
 
 constexpr size_t MAX_QUAD_COUNT = 2000;
 constexpr size_t MAX_VERTEX_COUNT = MAX_QUAD_COUNT * 4;

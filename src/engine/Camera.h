@@ -14,7 +14,7 @@ public:
 	void SetPosition(glm::vec2 newPos);
 	glm::vec2 GetPosition();
 
-	glm::mat4 GetTransform();
+	glm::mat4& GetTransform();
 	void UpdateTransform();
 
 	void SetAspectRatio(glm::vec2 newAspectRatio);

@@ -44,14 +44,6 @@ int Window::Window_intit(int width, int height, const char* name)
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	glClearColor(0.16f, 0.30f, 0.5f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glfwSwapInterval(0); // V-Sync
-
 	// Initializing Glew
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -69,8 +61,6 @@ void Window::Update_Window()
 {
 	glfwSwapBuffers(window);
 	glfwPollEvents();
-
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);

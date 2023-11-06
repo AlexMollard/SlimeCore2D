@@ -72,12 +72,12 @@ public:
 
 		Shader* shader = m_shaderMap[ShaderTypeToString(shaderType)];
 		shader->Use();
-		shader->SetCommonUniforms(m_camera);
+		shader->SetCommonUniforms(camera);
 
 		SetShaderUniforms(shader, shaderType, std::forward<Args>(args)...);
 
-		glm::vec2 camPos         = m_camera->GetPosition();
-		float distanceFromCenter = -m_camera->GetAspectRatio().x + 6;
+		glm::vec2 camPos         = camera->GetPosition();
+		float distanceFromCenter = -camera->GetAspectRatio().x + 6;
 
 		batchRenderer->Render(camPos, distanceFromCenter);
 	}
@@ -126,6 +126,8 @@ void Renderer2D::SetShaderUniforms(Shader* shader, ShaderType shaderType, T&&...
 	}
 	case ShaderType::WATER:
 	{
+		(shader->SetUniform("LerpProgress", std::forward<T>(optionalParams)), ...);
+
 		break;
 	}
 	default:

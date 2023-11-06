@@ -23,10 +23,11 @@
     <ClInclude Include="engine\BoundingBox.h" />
     <ClInclude Include="engine\Camera.h" />
     <ClInclude Include="engine\CollisionManager.h" />
+    <ClInclude Include="engine\CommonEnums.h" />
     <ClInclude Include="engine\GameObject.h" />
     <ClInclude Include="engine\Input.h" />
     <ClInclude Include="engine\Keycode.h" />
-    <ClInclude Include="engine\Math.h" />
+    <ClInclude Include="engine\SlimeMath.h" />
     <ClInclude Include="engine\ObjectManager.h" />
     <ClInclude Include="engine\PhysicsScene.h" />
     <ClInclude Include="engine\Renderer2D.h" />
@@ -35,6 +36,8 @@
     <ClInclude Include="engine\Texture.h" />
     <ClInclude Include="engine\Window.h" />
     <ClInclude Include="engine\ResourceManager.h" />
+    <ClInclude Include="engine\RenderTarget.h" />
+    <ClInclude Include="engine\Noise.h" />
     <ClInclude Include="game\Cell.h" />
     <ClInclude Include="game\Cloud.h" />
     <ClInclude Include="game\CloudManager.h" />
@@ -43,7 +46,6 @@
     <ClInclude Include="game\Player.h" />
     <ClInclude Include="game\MiniMap.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="RenderTarget.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BatchRenderer.cpp" />
@@ -59,6 +61,8 @@
     <ClCompile Include="engine\Shader.cpp" />
     <ClCompile Include="engine\Texture.cpp" />
     <ClCompile Include="engine\Window.cpp" />
+    <ClCompile Include="engine\RenderTarget.cpp" />
+    <ClCompile Include="engine\ResourceManager.cpp" />
     <ClCompile Include="game\Cloud.cpp" />
     <ClCompile Include="game\CloudManager.cpp" />
     <ClCompile Include="game\Game2D.cpp" />
@@ -66,8 +70,6 @@
     <ClCompile Include="game\Player.cpp" />
     <ClCompile Include="game\SlimeCore2D.cpp" />
     <ClCompile Include="game\MiniMap.cpp" />
-    <ClCompile Include="engine\ResourceManager.cpp" />
-    <ClCompile Include="RenderTarget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

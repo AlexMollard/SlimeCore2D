@@ -196,3 +196,13 @@ void GameObject::SetRender(bool value)
 {
 	m_render = value;
 }
+
+FlipPolicy GameObject::GetFlipPolicy() const
+{
+	return m_flipPolicy;
+}
+
+void GameObject::SetFlipPolicy(FlipPolicy val)
+{
+	m_flipPolicy = val;
+}

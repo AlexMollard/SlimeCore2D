@@ -4,10 +4,24 @@
 #include "fwd.hpp"
 #include "glew.h"
 #include <array>
+#include "CommonEnums.h"
 
 class GameObject;
 class Texture;
 struct RendererData;
+
+struct BatchData
+{
+	glm::vec3 position = glm::vec3(0.0f);
+	glm::vec2 size = glm::vec2(1.0f);
+	glm::vec4 color = glm::vec4(1.0f);
+	float rotation = 0.0f;
+	Texture* texture = nullptr;
+	FlipPolicy flipPolicy = FlipPolicy::None;
+
+	int spriteFrame = 0;
+	int spriteWidth = 0;
+};
 
 class BatchRenderer
 {
@@ -19,9 +33,7 @@ public:
 
 	Texture* LoadTexture(const std::string& dir);
 
-	void DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
-	void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);;
-	void DrawQuad(glm::vec3 position, glm::vec2 size, glm::vec4 color, Texture* texture, int frame = 0, int spriteWidth = 16);
+	void DrawQuad(const BatchData& batchData);
 
 	uint32_t GetTextureIndex(Texture* texture);
 	uint32_t AddTextureSlot(Texture* texture);

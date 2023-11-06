@@ -45,7 +45,7 @@
     <ClInclude Include="engine\Keycode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Math.h">
+    <ClInclude Include="engine\SlimeMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\ObjectManager.h">
@@ -87,13 +87,22 @@
     <ClInclude Include="game\Player.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceManager.h">
+    <ClInclude Include="engine\BatchRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MiniMap.h">
+    <ClInclude Include="engine\ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BatchRenderer.h">
+    <ClInclude Include="game\MiniMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTarget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\CommonEnums.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Noise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -152,13 +161,16 @@
     <ClCompile Include="game\SlimeCore2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
+    <ClCompile Include="engine\BatchRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MiniMap.cpp">
+    <ClCompile Include="game\MiniMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BatchRenderer.cpp">
+    <ClCompile Include="engine\ResourceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderTarget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
