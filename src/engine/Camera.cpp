@@ -2,7 +2,7 @@
 #include "Camera.h"
 #include "Input.h"
 
-Camera::Camera(float aspectX, float aspectY, float near, float far)
+Camera::Camera(float aspectX, float aspectY, float near, float far, bool moveCamera) : m_cameraMove(moveCamera)
 {
 	m_transform = glm::ortho<float>(-aspectX, aspectX, -aspectY, aspectY, near, far);
 	m_defaultTransform = m_transform;
@@ -19,7 +19,10 @@ Camera::~Camera()
 
 void Camera::Update(float deltaTime)
 {
-	CameraMoveMent(deltaTime);
+	if (m_cameraMove)
+	{
+		CameraMoveMent(deltaTime);
+	}
 }
 
 void Camera::CameraMoveMent(float deltaTime)

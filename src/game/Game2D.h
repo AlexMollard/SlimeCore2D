@@ -4,6 +4,7 @@
 #include "engine/PhysicsScene.h"
 #include "engine/ObjectManager.h"
 #include "CloudManager.h"
+#include "RenderTarget.h"
 
 class Renderer2D;
 class Input;
@@ -24,11 +25,15 @@ private:
 
 	glm::vec4 sunColour = glm::vec4(1.0f, 0.7f, 0.8f, 1.0f);
 
-	Camera m_camera = Camera(-16, -9, -10, 10);
+	Camera m_camera = Camera(-16, -9, -10, 10, true);
+	Camera m_screenCamera = Camera(-16, -9, -10, 10, false);
 	Player m_player;
 	GameObject m_gradientQuad;
 
-	Renderer2D m_renderer = Renderer2D(&m_camera);
+	Renderer2D m_renderer            = Renderer2D(&m_camera, &m_screenCamera);
+	RenderTarget m_waterRenderTarget = RenderTarget(RES_WIDTH, RES_HEIGHT);
+
+	BatchRenderer m_waterBatchRenderer = BatchRenderer();
 	BatchRenderer m_mapBatchRenderer = BatchRenderer();
 	BatchRenderer m_treeBatchRenderer = BatchRenderer();
 	BatchRenderer m_cloudBatchRenderer = BatchRenderer();

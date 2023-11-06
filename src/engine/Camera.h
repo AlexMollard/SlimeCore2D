@@ -5,7 +5,7 @@
 class Camera
 {
 public:
-	Camera(float aspectX, float aspectY, float near, float far);
+	Camera(float aspectX, float aspectY, float near, float far, bool moveCamera);
 	~Camera();
 
 	void Update(float deltaTime);
@@ -38,4 +38,6 @@ private:
 
 	// 1.0f is default
 	float m_fieldOfView = 1.0f;
+
+	bool m_cameraMove = false;
 };

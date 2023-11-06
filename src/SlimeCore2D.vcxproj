@@ -43,6 +43,7 @@
     <ClInclude Include="game\Player.h" />
     <ClInclude Include="game\MiniMap.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RenderTarget.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BatchRenderer.cpp" />
@@ -66,6 +67,7 @@
     <ClCompile Include="game\SlimeCore2D.cpp" />
     <ClCompile Include="game\MiniMap.cpp" />
     <ClCompile Include="engine\ResourceManager.cpp" />
+    <ClCompile Include="RenderTarget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

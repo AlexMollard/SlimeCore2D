@@ -20,20 +20,24 @@ std::string ShaderTypeToString(ShaderType type)
 			return "UI";
 		case ShaderType::GRADIENT:
 			return "gradient";
+		case ShaderType::WATER:
+			return "water";
 		default:
 			return "basic";
 	}
 }
 
-Renderer2D::Renderer2D(Camera* camera) : m_camera(camera)
+Renderer2D::Renderer2D(Camera* camera, Camera* screenCamera) : m_camera(camera), m_screenCamera(screenCamera)
 {
-	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::BASIC), new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str()));
-	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::UI), new Shader(ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("UIFragment").c_str()));
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::BASIC),    new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str()));
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::UI),       new Shader(ResourceManager::GetShaderPath("UIVertex").c_str(),    ResourceManager::GetShaderPath("UIFragment").c_str()));
 	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::GRADIENT), new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("GradientFragment").c_str()));
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::WATER),    new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("WaterFragment").c_str()));
 
-	AddTextureSlotsToShader(GetShader(ShaderType::BASIC));
-	AddTextureSlotsToShader(GetShader(ShaderType::UI));
-	AddTextureSlotsToShader(GetShader(ShaderType::GRADIENT));
+	AddTextureSlotsToShader<MAX_TEXTURE_COUNT>(GetShader(ShaderType::BASIC));
+	AddTextureSlotsToShader<MAX_TEXTURE_COUNT>(GetShader(ShaderType::UI));
+	AddTextureSlotsToShader<1>(GetShader(ShaderType::GRADIENT));
+	AddTextureSlotsToShader<3>(GetShader(ShaderType::WATER));
 }
 
 Renderer2D::~Renderer2D()
@@ -47,13 +51,14 @@ Renderer2D::~Renderer2D()
 	m_camera = nullptr;
 }
 
+template<int textureCount>
 void Renderer2D::AddTextureSlotsToShader(Shader* shader)
 {
 	shader->Use();
 	const auto loc = glGetUniformLocation(shader->GetID(), "Textures");
-	std::array<int, MAX_TEXTURE_COUNT> samplers{};
+	std::array<int, textureCount> samplers{};
 	std::iota(samplers.begin(), samplers.end(), 0);
-	glUniform1iv(loc, MAX_TEXTURE_COUNT, samplers.data());
+	glUniform1iv(loc, textureCount, samplers.data());
 }
 
 Shader* Renderer2D::GetShader(const char* shaderName)

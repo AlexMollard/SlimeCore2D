@@ -31,7 +31,13 @@ Texture::Texture(std::string dir)
 	stbi_image_free(data);
 }
 
-Texture::Texture(unsigned int id) : m_textureId(id) {}
+Texture::Texture(unsigned int id) : m_textureId(id)
+{
+	glBindTexture(GL_TEXTURE_2D, m_textureId);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &m_width);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &m_height);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
 
 Texture::~Texture()
 {
@@ -91,4 +97,24 @@ int Texture::GetWidth()
 int Texture::GetHeight()
 {
 	return m_height;
+}
+
+int Texture::GetChannels() 
+{
+	return m_channels;
+}
+
+void Texture::SetWidth(int newWidth) 
+{
+	m_width = newWidth;
+}
+
+void Texture::SetHeight(int newHeight) 
+{
+	m_height = newHeight;
+}
+
+void Texture::SetChannels(int newChannels) 
+{
+	m_channels = newChannels;
 }

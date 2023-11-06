@@ -12,12 +12,17 @@ public:
 	~Texture();
 
 	void load(std::string dir);
-	void Bind();;
-	unsigned int GetID();;
-	void SetID(unsigned int newID);;
+	void Bind();
+	unsigned int GetID();
+	void SetID(unsigned int newID);
 
 	int GetWidth();
 	int GetHeight();
+	int GetChannels();
+
+	void SetWidth(int newWidth);
+	void SetHeight(int newHeight);
+	void SetChannels(int newChannels);
 
 protected:
 	unsigned int m_textureId = 0;

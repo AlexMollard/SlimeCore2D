@@ -14,12 +14,21 @@
 
 class BatchRenderer;
 
+enum class CameraType
+{
+	ORTHOGRAPHIC, // default
+	SCREENSPACE,  // UI and other screen space elements
+	PERSPECTIVE,  // 3D not implemented yet
+	COUNT
+};
+
 // If you add a shader here, make sure to add it to ShaderTypeToString() in Renderer2D.cpp
 enum class ShaderType
 {
 	BASIC,
 	UI,
-	GRADIENT
+	GRADIENT,
+	WATER
 };
 
 std::string ShaderTypeToString(ShaderType type);
@@ -27,27 +36,40 @@ std::string ShaderTypeToString(ShaderType type);
 #ifdef DEBUG_UNIFORMS
 #include <typeinfo> // for typeid
 
-	template<typename... T>
-	static void PrintIncomingVariables(ShaderType shaderType, T&&... args)
-	{
-		std::cout << ShaderTypeToString(shaderType) << ": " << std::endl;
-		((std::cout << "Type T: " << typeid(T).name()), ...);
-		std::cout << "." << std::endl;
-	}
+template<typename... T>
+static void PrintIncomingVariables(ShaderType shaderType, T&&... args)
+{
+	std::cout << ShaderTypeToString(shaderType) << ": " << std::endl;
+	((std::cout << "Type T: " << typeid(T).name()), ...);
+	std::cout << "." << std::endl;
+}
 #else
-    template<typename... T>
-	static void PrintIncomingVariables(ShaderType shaderType, T&&... args){};
+template<typename... T>
+static void PrintIncomingVariables(ShaderType shaderType, T&&... args){};
 #endif // DEBUG_UNIFORMS
 
 class Renderer2D
 {
 public:
-	Renderer2D(Camera* camera);
+	Renderer2D(Camera* camera, Camera* screenCamera);
 	~Renderer2D();
 
 	template<typename... Args>
-	void Draw(BatchRenderer* batchRenderer, ShaderType shaderType, Args&&... args)
+	void Draw(BatchRenderer* batchRenderer, ShaderType shaderType, CameraType cameraType, Args&&... args)
 	{
+		Camera* camera = nullptr;
+
+		switch (cameraType)
+		{
+			case CameraType::ORTHOGRAPHIC:
+				camera = m_camera;
+				break;
+			case CameraType::SCREENSPACE: 
+				camera = m_screenCamera;
+				break;
+			default: break;
+		}
+
 		Shader* shader = m_shaderMap[ShaderTypeToString(shaderType)];
 		shader->Use();
 		shader->SetCommonUniforms(m_camera);
@@ -64,12 +86,14 @@ public:
 	Shader* GetShader(ShaderType shaderType);
 
 private:
+	template<int textureCount>
 	void AddTextureSlotsToShader(Shader* shader);
 
 	ShaderType m_shaderType = ShaderType::BASIC;
 
 	std::map<std::string, Shader*> m_shaderMap;
-	Camera* m_camera = nullptr;
+	Camera* m_camera       = nullptr;
+	Camera* m_screenCamera = nullptr;
 
 	template<typename... T>
 	void SetShaderUniforms(Shader* shader, ShaderType shaderType, T&&... optionalParams) const;
@@ -98,6 +122,10 @@ void Renderer2D::SetShaderUniforms(Shader* shader, ShaderType shaderType, T&&...
 	case ShaderType::GRADIENT:
 	{
 		(shader->SetUniform("GradientAmount", std::forward<T>(optionalParams)), ...);
+		break;
+	}
+	case ShaderType::WATER:
+	{
 		break;
 	}
 	default:

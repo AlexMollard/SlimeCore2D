@@ -25,6 +25,8 @@ public:
 
 	uint32_t GetTextureIndex(Texture* texture);
 	uint32_t AddTextureSlot(Texture* texture);
+	uint32_t AddTextureSlot(GLuint textureID);
+
 
 	void RemoveQuad(const GameObject& object);
 	int GetObjectIndex(const GameObject& object);

@@ -29,6 +29,12 @@ Game2D::Game2D()
 	m_gradientQuad.SetPos(0, 0, -1); // Render in front of everything
 	m_gradientQuad.SetTexture(gradient);
 	m_gradientBatchRenderer.AddObject(&m_gradientQuad);
+
+	GameObject* waterQuad = m_objectManager.CreateQuad(glm::vec3(0, 0, 1), glm::vec2(RES_WIDTH, RES_HEIGHT));
+	Texture* waterTexture = new Texture(m_waterRenderTarget.GetTextureID());
+
+	waterQuad->SetTexture(waterTexture);
+	m_waterBatchRenderer.AddObject(waterQuad);
 }
 
 Game2D::~Game2D()
@@ -56,11 +62,18 @@ void Game2D::Update(float deltaTime)
 
 void Game2D::Draw()
 {
-	m_renderer.Draw(&m_mapBatchRenderer, ShaderType::BASIC, sunColour);
-	m_renderer.Draw(&m_batchRenderer, ShaderType::BASIC, sunColour);
-	m_renderer.Draw(&m_treeBatchRenderer, ShaderType::BASIC, sunColour);
-	m_renderer.Draw(&m_cloudBatchRenderer, ShaderType::BASIC, sunColour);
-	m_renderer.Draw(&m_uiBatchRenderer, ShaderType::UI);
 
-	m_renderer.Draw(&m_gradientBatchRenderer, ShaderType::GRADIENT, m_gradientAmount);
+	// grab the current frame buffer for the water reflection
+	m_waterRenderTarget.Bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_renderer.Draw(&m_mapBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_renderer.Draw(&m_batchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_renderer.Draw(&m_treeBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_renderer.Draw(&m_cloudBatchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
+	m_renderer.Draw(&m_uiBatchRenderer, ShaderType::UI, CameraType::ORTHOGRAPHIC);
+	m_waterRenderTarget.Unbind();
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_renderer.Draw(&m_waterBatchRenderer, ShaderType::WATER, CameraType::SCREENSPACE);
+	m_renderer.Draw(&m_gradientBatchRenderer, ShaderType::GRADIENT, CameraType::ORTHOGRAPHIC, m_gradientAmount);
 }

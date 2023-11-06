@@ -240,6 +240,19 @@ uint32_t BatchRenderer::AddTextureSlot(Texture* texture)
 	return m_data->textureSlotIndex++;
 }
 
+uint32_t BatchRenderer::AddTextureSlot(GLuint textureID)
+{
+	if (m_data->textureSlotIndex >= MAX_TEXTURE_COUNT)
+	{
+		EndBatch();
+		Flush();
+		BeginBatch();
+	}
+
+	m_data->textureSlots[m_data->textureSlotIndex] = textureID;
+	return m_data->textureSlotIndex++;
+}
+
 void BatchRenderer::SetActiveRegion(Texture* texture, int regionIndex, int spriteWidth)
 {
 	m_uvs.clear();
