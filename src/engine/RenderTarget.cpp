@@ -23,6 +23,22 @@ void RenderTarget::Unbind()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void RenderTarget::Clear(bool color, bool depth, glm::vec4 clearColor) 
+{
+	GLbitfield mask = 0;
+	if (color)
+	{
+		mask |= GL_COLOR_BUFFER_BIT;
+		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+	}
+	if (depth)
+	{
+		mask |= GL_DEPTH_BUFFER_BIT;
+		glClearDepth(1.0f);
+	}
+	glClear(mask);
+}
+
 unsigned int RenderTarget::GetID() const
 {
 	return m_fbo;

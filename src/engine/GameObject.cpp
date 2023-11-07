@@ -14,7 +14,6 @@ void GameObject::Update(float deltaTime) {}
 void GameObject::Create(glm::vec3 pos, glm::vec3 color, glm::vec2 scale, int id)
 {
 	SetPos(pos);
-	SetSpawn(pos);
 	n_defaultColor = color;
 	SetColor(color);
 	SetScale(scale);
@@ -24,12 +23,6 @@ void GameObject::Create(glm::vec3 pos, glm::vec3 color, glm::vec2 scale, int id)
 void GameObject::Respawn()
 {
 	SetVelocity(glm::vec2(0));
-	SetPos(m_spawnPoint);
-}
-
-void GameObject::SetSpawn(glm::vec3 newSpawn)
-{
-	m_spawnPoint = newSpawn;
 }
 
 glm::vec3 GameObject::GetColor()
@@ -57,32 +50,6 @@ Shader* GameObject::GetShader()
 	return m_shader;
 }
 
-void GameObject::SetRotate(float rotation)
-{
-	SetRotation(rotation);
-	float updatedRotation = rotation * 3.141592f / 180.0f;
-
-	float sin = glm::sin(updatedRotation);
-	float cos = glm::cos(updatedRotation);
-
-	float tx = 0;
-	float ty = 1;
-	glm::vec2 newNormal;
-	newNormal.x = (cos * tx) - (sin * ty);
-	newNormal.y = (sin * tx) + (cos * ty);
-	SetNormal(newNormal);
-
-	glm::mat4 tempModel(1);
-
-	tempModel = glm::rotate(tempModel, updatedRotation, glm::vec3(0, 0, 1));
-
-	tempModel[0] *= GetScale()[0];
-	tempModel[1] *= GetScale()[1];
-
-	SetModel(tempModel);
-	SetPos(GetPosition());
-}
-
 Texture* GameObject::GetTexture()
 {
 	return m_texture;
@@ -91,16 +58,6 @@ Texture* GameObject::GetTexture()
 void GameObject::SetTexture(Texture* tex)
 {
 	m_texture = tex;
-
-	if (m_texture != nullptr)
-	{
-		if (!m_hasAnimation)
-			SetScale(glm::vec2(m_texture->GetWidth() / 16, m_texture->GetHeight() / 16));
-		else
-			SetScale(glm::vec2(m_spriteWidth, m_texture->GetHeight()) / glm::vec2(m_spriteWidth));
-
-		SetTextureWidth(m_texture->GetWidth());
-	}
 }
 
 void GameObject::SetFrame(int Frame)
@@ -112,7 +69,7 @@ void GameObject::AdvanceFrame()
 {
 	m_frame++;
 
-	if (m_frame >= m_textureWidth / m_spriteWidth)
+	if (m_frame >= m_texture->GetWidth() / m_spriteWidth)
 	{
 		m_frame = 0;
 	}
@@ -131,21 +88,6 @@ int GameObject::GetSpriteWidth()
 void GameObject::SetSpriteWidth(int newWidth)
 {
 	m_spriteWidth = newWidth;
-	if (m_textureWidth > m_spriteWidth)
-		m_hasAnimation = true;
-}
-
-int GameObject::GetTextureWidth()
-{
-	return m_textureWidth;
-}
-
-void GameObject::SetTextureWidth(int newWidth)
-{
-	m_textureWidth = newWidth;
-
-	if (m_textureWidth > m_spriteWidth)
-		m_hasAnimation = true;
 }
 
 bool GameObject::GetHasAnimation()
@@ -205,4 +147,14 @@ FlipPolicy GameObject::GetFlipPolicy() const
 void GameObject::SetFlipPolicy(FlipPolicy val)
 {
 	m_flipPolicy = val;
+}
+
+glm::vec2 GameObject::GetAnchorPoint() const
+{
+	return m_anchorPoint;
+}
+
+void GameObject::SetAnchorPoint(glm::vec2 val)
+{
+	m_anchorPoint = val;
 }

@@ -46,6 +46,7 @@
     <ClInclude Include="game\Player.h" />
     <ClInclude Include="game\MiniMap.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="engine\QuadBatchRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BatchRenderer.cpp" />
@@ -70,6 +71,7 @@
     <ClCompile Include="game\Player.cpp" />
     <ClCompile Include="game\SlimeCore2D.cpp" />
     <ClCompile Include="game\MiniMap.cpp" />
+    <ClCompile Include="engine\QuadBatchRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

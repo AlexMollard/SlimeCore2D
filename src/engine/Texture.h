@@ -2,6 +2,7 @@
 #include "glew.h"
 #include "glfw3.h"
 #include <string>
+#include "fwd.hpp"
 
 enum class NoiseType
 {
@@ -32,6 +33,7 @@ public:
 	void SetChannels(int newChannels);
 
 	void GenerateNoise(NoiseType noiseType, int width, int height, float scale, float offsetX, float offsetY);
+	void GenerateColor(NoiseType noiseType, int width, int height, glm::vec4 color);
 
 protected:
 	unsigned int m_textureId = 0;

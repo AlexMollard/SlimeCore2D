@@ -102,3 +102,11 @@ void Camera::SetFOV(float newFOV)
 	m_fieldOfView = (newFOV >= 0.01f) ? newFOV : 0.01f;
 	SetAspectRatio(m_aspectRatioBeforeFieldOfView);
 }
+
+void Camera::UpdateTransformToPutZeroTopLeft() 
+{
+	// This will make it so that the top left of the screen is 0,0
+	// And pixel size of 1920 x 1080 is 1,1
+	m_transform = glm::ortho<float>(0.0f, -1920, -1080, 0.0f, m_nearPlane, m_farPlane);
+	m_defaultTransform = m_transform;
+}

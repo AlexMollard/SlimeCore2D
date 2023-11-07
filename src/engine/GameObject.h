@@ -15,7 +15,6 @@ public:
 	virtual void Create(glm::vec3 pos, glm::vec3 color, glm::vec2 scale, int id);
 
 	void Respawn();
-	void SetSpawn(glm::vec3 newSpawn);
 
 	glm::vec3 GetColor();
 	void SetColor(glm::vec3 newColor);
@@ -27,8 +26,6 @@ public:
 	Texture* GetTexture();
 	void SetTexture(Texture* tex);
 
-	void SetRotate(float rotation);
-
 	// Sprite Stuff (Probably should be in own class)
 	void SetFrame(int Frame);
 	void AdvanceFrame();
@@ -36,9 +33,6 @@ public:
 
 	int GetSpriteWidth();
 	void SetSpriteWidth(int newWidth);
-
-	int GetTextureWidth();
-	void SetTextureWidth(int newWidth);
 
 	bool GetHasAnimation();
 	void SetHasAnimation(bool value);
@@ -56,10 +50,14 @@ public:
 	FlipPolicy GetFlipPolicy() const;
 	void SetFlipPolicy(FlipPolicy val);
 
+	glm::vec2 GetAnchorPoint() const;
+	void SetAnchorPoint(glm::vec2 val);
+
 protected:
 	glm::vec3 m_color = glm::vec3(1);
 	glm::vec3 n_defaultColor = glm::vec3(1);
-	glm::vec3 m_spawnPoint = glm::vec3(0);
+
+	glm::vec2 m_anchorPoint = glm::vec2(0.5f);
 
 	bool m_render = true;
 	bool m_isMemoryManaged = false;
@@ -72,7 +70,6 @@ protected:
 	// Sprite Stuff
 	int m_frame = 0;
 	int m_spriteWidth = 16;
-	int m_textureWidth = 16;
 	float m_frameRate = 0.5f;
 	float m_frameRateTimer = 0.0f;
 	bool m_hasAnimation = false;

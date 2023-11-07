@@ -412,10 +412,12 @@ void MapGenerator::SetTreeTiles(int forestCount)
 
 							auto tempTree = m_objManager->CreateQuad(newPos, glm::vec2(1), m_tree0);
 							tempTree->SetSpriteWidth(32);
+							tempTree->SetScale({ 2, 4 });
 							auto shadow = m_objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), m_tree0Shadow);
 							shadow->SetParent(tempTree);
 							shadow->UpdatePos();
 							shadow->SetSpriteWidth(32);
+							shadow->SetScale({ 2, 4 });
 
 							m_treeShadowObjects.push_back(shadow);
 
@@ -433,10 +435,13 @@ void MapGenerator::SetTreeTiles(int forestCount)
 
 							auto tempTree = m_objManager->CreateQuad(newPos, glm::vec2(1), m_tree0);
 							tempTree->SetSpriteWidth(32);
+							tempTree->SetScale({ 2, 4 });
 							auto shadow = m_objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), m_tree0Shadow);
 							shadow->SetParent(tempTree);
 							shadow->UpdatePos();
 							shadow->SetSpriteWidth(32);
+							shadow->SetScale({ 2, 4 });
+
 
 							m_treeShadowObjects.push_back(shadow);
 							m_treeCell.push_back(&cell);

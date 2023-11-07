@@ -1,6 +1,8 @@
 #include <glew.h>
 #include <iostream>
 #include "engine/CommonEnums.h"
+#include "glm.hpp"
+
 
 class RenderTarget
 {
@@ -12,6 +14,8 @@ public:
     void Bind();
 
     void Unbind();
+
+    static void Clear(bool color, bool depth, glm::vec4 clearColor = glm::vec4(0.0f));
 
     unsigned int GetID() const;
     unsigned int GetTextureID() const;

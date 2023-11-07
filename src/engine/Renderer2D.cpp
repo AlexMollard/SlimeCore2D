@@ -43,7 +43,7 @@ Renderer2D::Renderer2D(Camera* camera, Camera* screenCamera) : m_camera(camera),
 	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::BASIC),    new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str()));
 	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::UI),       new Shader(ResourceManager::GetShaderPath("UIVertex").c_str(),    ResourceManager::GetShaderPath("UIFragment").c_str()));
 	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::GRADIENT), new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("GradientFragment").c_str()));
-	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::WATER),    new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("WaterFragment").c_str()));
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::WATER),    new Shader(ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("WaterFragment").c_str()));
 
 	AddTextureSlotsToShader<MAX_TEXTURE_COUNT>(GetShader(ShaderType::BASIC));
 	AddTextureSlotsToShader<MAX_TEXTURE_COUNT>(GetShader(ShaderType::UI));

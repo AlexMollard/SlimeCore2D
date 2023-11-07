@@ -6,34 +6,39 @@ in vec4 Color;
 in vec2 TexCoord;
 in float TexIndex;
 
-uniform sampler2D Textures[5]; // White, render target, simplex noise, simplex noise soomed in, simplex noise soomed in more
+uniform sampler2D Textures[6];
 
 uniform float LerpProgress;
 
+float lerp(float a, float b, float t)
+{
+	return a + (b - a) * t;
+}
+
+// This is the water shader that is used to render the water
 void main()
 {
-	if (texture(Textures[1], TexCoord).a < 0.01)
+	int index = int(TexIndex);
+
+	if (texture(Textures[index], TexCoord).a < 0.01)
 		discard;
 
-	// Apply a water effect
-	vec4 simplexNoise = texture(Textures[2], TexCoord);
-	vec4 simplexNoiseZoomed = texture(Textures[3], TexCoord);
-	vec4 simplexNoiseZoomedMore = texture(Textures[4], TexCoord);
+	// This noise texture contains 3 channels of noise each progressively more zoomed in
+	vec4 noiseTexture = texture(Textures[index + 1], TexCoord);
 
-	// mix and lerp the colors
-	vec4 waterColor = mix(Color, vec4(0.0, 0.0, 1.0, 1.0), simplexNoise.r);
-	vec4 waterColorZoomed = mix(Color, vec4(0.0, 0.0, 1.0, 1.0), simplexNoiseZoomed.r);
-	vec4 waterColorZoomedMore = mix(Color, vec4(0.0, 0.0, 1.0, 1.0), simplexNoiseZoomedMore.r);
+	// This is the noise texture that is used to distort the water
+	vec2 noise = vec2(noiseTexture.r, noiseTexture.g);
 
-	// Apply the lerp progress
-	waterColor = mix(Color, waterColor, LerpProgress);
-	waterColorZoomed = mix(Color, waterColorZoomed, LerpProgress);
-	waterColorZoomedMore = mix(Color, waterColorZoomedMore, LerpProgress);
+	// We want to distort the texture coordinates based on the noise
+	vec2 distortedTexCoord = TexCoord + noise * 0.01;
 
-	// Apply the water effect
-	FragColor = mix(waterColor, waterColorZoomed, simplexNoiseZoomed.r);
-	FragColor = mix(FragColor, waterColorZoomedMore, simplexNoiseZoomedMore.r);
+	// We want to lerp between the distorted texture coordinates and the original texture coordinates
+	vec2 finalTexCoord = mix(TexCoord, distortedTexCoord, LerpProgress);
 
-	// Apply the lerp progress
-	FragColor = mix(Color, FragColor, LerpProgress);
+	// We want to sample the texture at the final texture coordinates
+	vec4 finalColor = texture(Textures[index], finalTexCoord);
+
+	// We want to lerp between the original color and the final color
+	FragColor = mix(Color, finalColor, LerpProgress) * Color;
+
 }

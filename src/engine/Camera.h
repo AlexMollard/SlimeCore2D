@@ -26,6 +26,8 @@ public:
 	float GetFOV();
 	void SetFOV(float newFOV);
 
+	void UpdateTransformToPutZeroTopLeft();
+
 private:
 	glm::vec2 m_position = glm::vec2(0);
 	glm::mat4 m_defaultTransform = glm::mat4(1);

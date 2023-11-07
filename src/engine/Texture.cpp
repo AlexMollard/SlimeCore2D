@@ -2,7 +2,7 @@
 #include "Texture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
+#include "glm.hpp"
 
 #define FNL_IMPL
 #include "Noise.h"
@@ -144,17 +144,28 @@ void Texture::GenerateNoise(NoiseType noiseType, int width, int height, float sc
 		break;
 	}
 
-	float* noiseMap = new float[width * height * 4];
+	float* noiseMap = new float[width * height * 3]; // RGB each channel being a diffrent scale of noise
+
+	noise.seed = rand() % 1000000;
+	noise.frequency = scale;
+	noise.octaves   = 1;
+	noise.lacunarity = 2.0f;
+	noise.gain      = 0.5f;
+	noise.cellular_distance_func = FNL_CELLULAR_DISTANCE_EUCLIDEAN;
+	noise.cellular_return_type   = FNL_CELLULAR_RETURN_VALUE_DISTANCE2;
 
 	for (int y = 0; y < height; y++) 
 	{
 		for (int x = 0; x < width; x++) 
 		{
-			float noiseValue = fnlGetNoise3D(&noise, (float)x * scale + offsetX, (float)y * scale + offsetY, 0.0f);
-			noiseMap[(y * width + x) * 4 + 0] = noiseValue;
-			noiseMap[(y * width + x) * 4 + 1] = noiseValue;
-			noiseMap[(y * width + x) * 4 + 2] = noiseValue;
-			noiseMap[(y * width + x) * 4 + 3] = 1.0f;
+			noise.frequency                   = scale * 0.33f;
+			noiseMap[(y * width + x) * 3 + 0] = fnlGetNoise2D(&noise, x + offsetX, y + offsetY);
+			
+			noise.frequency                   = scale * 0.66f;
+			noiseMap[(y * width + x) * 3 + 1] = fnlGetNoise2D(&noise, x + offsetX, y + offsetY);
+			
+			noise.frequency = scale;
+			noiseMap[(y * width + x) * 3 + 2] = fnlGetNoise2D(&noise, x + offsetX, y + offsetY);
 		}
 	}
 
@@ -169,11 +180,16 @@ void Texture::GenerateNoise(NoiseType noiseType, int width, int height, float sc
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Upload the noise data to the texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, noiseMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, noiseMap);
 
 	// Unbind the texture
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Don't forget to delete the noiseMap when you're done with it!
 	delete[] noiseMap;
+}
+
+void Texture::GenerateColor(NoiseType noiseType, int width, int height, glm::vec4 color) 
+{
+
 }
