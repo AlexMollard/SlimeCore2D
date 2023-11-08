@@ -43,6 +43,29 @@ Texture::Texture(unsigned int id) : m_textureId(id)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+ Texture::Texture(float* data, int width, int height) 
+ {
+	 // Create and bind texture ID
+	 glGenTextures(1, &m_textureId);
+	 glBindTexture(GL_TEXTURE_2D, m_textureId);
+
+	 // Set Wrapping mode
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	 // Set texture filtering
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	 // Load Image and generate mipmaps
+	 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, data);
+
+	 m_width = width;
+	 m_height = height;
+
+	 glBindTexture(GL_TEXTURE_2D, 0);
+ }
+
 Texture::~Texture()
 {
 	if (m_textureId != 0)

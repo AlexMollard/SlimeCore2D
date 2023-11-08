@@ -29,6 +29,7 @@ private:
 	Camera m_screenCamera = Camera(16, 9, -10, 10, false);
 	Player m_player;
 
+	Texture* m_miniMapTexture = nullptr;
 	Texture m_noiseTextures;
 
 	Renderer2D m_renderer            = Renderer2D(&m_camera, &m_screenCamera);

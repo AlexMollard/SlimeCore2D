@@ -37,6 +37,8 @@ public:
 	void SetResultValues();
 
 	Cell** GetAllCells();
+
+	Texture* GenerateMiniMap();
 private:
 	int m_mapSize = 0;
 	int m_seed = rand() % 9999999;

@@ -28,6 +28,11 @@ public:
 	uint32_t AddTextureSlot(Texture* texture) override;
 	uint32_t AddTextureSlot(GLuint textureID) override;
 
+	float GetZOffset() const;
+	void SetZOffset(float val);
+
+	bool GetOcclusionCulling() const;
+	void SetOcclusionCulling(bool val);
 private:
 	void DrawQuad(const QuadBatchData& batchData);
 	void SetSpriteUvs(Texture* texture, int regionIndex, int spriteWidth);
@@ -39,6 +44,9 @@ private:
 	void Flush() override;
 
 	std::vector<glm::vec2> m_uvs;
+
+	float m_zOffset = 0.0f;
+	bool m_occulsionCulling = true;
 
 	const glm::vec2 basicUVs[4] = { glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f) };
 };

@@ -198,6 +198,8 @@ void QuadBatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter
 	BeginBatch();
 
 	int index = 0;
+
+	// We want to iterate backwards so that way first quad in is the first to be rendered
 	for (auto& object : GetObjectPool())
 	{
 		if (object == nullptr || index == GetObjectPool().size()) // This must be in order so if this object is null everyone after it should also be null.
@@ -211,12 +213,13 @@ void QuadBatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter
 		if (!object->GetRender())
 			continue;
 
-		// 		if (glm::distance(camPos, glm::vec2(object->GetPos())) > distanceFromCenter)
-		// 			continue;
+		if (m_occulsionCulling && glm::distance(camPos, glm::vec2(object->GetPos())) > distanceFromCenter)
+			continue;
 
 		QuadBatchData batchData = { object->GetPos(),     object->GetAnchorPoint(), object->GetScale(), { object->GetColor(), 1.0f }, object->GetRotation(),
 			                        object->GetTexture(), object->GetFlipPolicy(),  object->GetHasAnimation(), object->GetFrame(),           object->GetSpriteWidth() };
 
+		batchData.position.z += m_zOffset;
 		DrawQuad(batchData);
 
 		index++;
@@ -314,4 +317,24 @@ uint32_t QuadBatchRenderer::AddTextureSlot(GLuint textureID)
 
 	data->textureSlots[data->textureSlotIndex] = textureID;
 	return data->textureSlotIndex++;
+}
+
+float QuadBatchRenderer::GetZOffset() const
+{
+	return m_zOffset;
+}
+
+void QuadBatchRenderer::SetZOffset(float val)
+{
+	m_zOffset = val;
+}
+
+bool QuadBatchRenderer::GetOcclusionCulling() const
+{
+	return m_occulsionCulling;
+}
+
+void QuadBatchRenderer::SetOcclusionCulling(bool val)
+{
+	m_occulsionCulling = val;
 }

@@ -867,6 +867,71 @@ Cell** MapGenerator::GetAllCells()
 	return m_cells;
 }
 
+Texture* MapGenerator::GenerateMiniMap()
+{
+	float* miniMap = new float[m_mapSize * m_mapSize * 4]; // 4 = RGBA
+
+	for (int x = 0; x < m_mapSize; x++)
+	{
+		for (int y = 0; y < m_mapSize; y++)
+		{
+			int index = (x + y * m_mapSize) * 4;
+
+			switch (m_cells[x][y].GetCellType())
+			{
+			case type::Water:
+				miniMap[index + 0] = 0.2f;
+				miniMap[index + 1] = 0.3f;
+				miniMap[index + 2] = 0.7f;
+				miniMap[index + 3] = 1.0f;
+				break;
+
+			case type::Ground:
+				miniMap[index + 0] = 0.2f;
+				miniMap[index + 1] = 0.7f;
+				miniMap[index + 2] = 0.3f;
+				miniMap[index + 3] = 1.0f;
+				break;
+
+			case type::Stone:
+				miniMap[index + 0] = 0.5f;
+				miniMap[index + 1] = 0.5f;
+				miniMap[index + 2] = 0.5f;
+				miniMap[index + 3] = 1.0f;
+				break;
+
+			case type::Wall:
+				miniMap[index + 0] = 0.1f;
+				miniMap[index + 1] = 0.35f;
+				miniMap[index + 2] = 0.15f;
+				miniMap[index + 3] = 1.0f;
+				break;
+
+			case type::Tree:
+				miniMap[index + 0] = 0.1f;
+				miniMap[index + 1] = 0.5f;
+				miniMap[index + 2] = 0.1f;
+				miniMap[index + 3] = 1.0f;
+				break;
+
+			default:
+				miniMap[index + 0] = 1.0f;
+				miniMap[index + 1] = 0.0f;
+				miniMap[index + 2] = 0.0f;
+				miniMap[index + 3] = 1.0f;
+				break;
+			}
+		}
+	}
+
+	Texture* miniMapTexture = new Texture(miniMap, m_mapSize, m_mapSize);
+	
+	delete miniMap;
+	miniMap = nullptr;
+
+	return miniMapTexture;
+}
+
 Texture* MapGenerator::GetTexture(type tileType)
 {
 	switch (tileType)

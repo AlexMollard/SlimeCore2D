@@ -16,6 +16,7 @@ class Texture
 public:
 	Texture(std::string dir);
 	Texture(unsigned int id);
+	Texture(float* data, int width, int height);
 	Texture() = default;
 	~Texture();
 
