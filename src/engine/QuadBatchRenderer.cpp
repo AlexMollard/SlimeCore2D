@@ -200,8 +200,10 @@ void QuadBatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter
 	int index = 0;
 
 	// We want to iterate backwards so that way first quad in is the first to be rendered
-	for (auto& object : GetObjectPool())
+	size_t objectCount = GetObjectPool().size();
+	for (int i = objectCount - 1; i >= 0; --i)
 	{
+		GameObject* object = GetObjectPool()[i];
 		if (object == nullptr || index == GetObjectPool().size()) // This must be in order so if this object is null everyone after it should also be null.
 		{
 			EndBatch();
@@ -217,7 +219,7 @@ void QuadBatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter
 			continue;
 
 		QuadBatchData batchData = { object->GetPos(),     object->GetAnchorPoint(), object->GetScale(), { object->GetColor(), 1.0f }, object->GetRotation(),
-			                        object->GetTexture(), object->GetFlipPolicy(),  object->GetHasAnimation(), object->GetFrame(),           object->GetSpriteWidth() };
+					                        object->GetTexture(), object->GetFlipPolicy(),  object->GetHasAnimation(), object->GetFrame(),           object->GetSpriteWidth() };
 
 		batchData.position.z += m_zOffset;
 		DrawQuad(batchData);
