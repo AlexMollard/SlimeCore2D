@@ -6,39 +6,66 @@ in vec4 Color;
 in vec2 TexCoord;
 in float TexIndex;
 
-uniform sampler2D Textures[6];
+uniform sampler2D Textures[5];
 
-uniform float LerpProgress;
+int sceneTexture = 1;
+int waterNormalMap = 2;
+int waterDepthMap = 3;
+int causticsTexture = 4;
 
-float lerp(float a, float b, float t)
-{
-	return a + (b - a) * t;
-}
+uniform float time; // Current time.
+uniform vec2 lightDirection; // Direction of the light source.
 
-// This is the water shader that is used to render the water
-void main()
-{
-	int index = int(TexIndex);
+const float waveSpeed = 0.02; // Speed of the waves.
+const float waveAmplitude = 5.0; // Amplitude of the waves.
+const float reflectionStrength = 0.3; // Strength of reflections.
+const float refractionStrength = 0.1; // Strength of refractions.
+const float causticsSpeed = 0.01; // Speed of caustics animation.
 
-	if (texture(Textures[index], TexCoord).a < 0.01)
-		discard;
+void main() {
+    // Calculate the offset for scrolling the water texture.
+    vec2 offset = vec2(0.0, time * waveSpeed);
 
-	// This noise texture contains 3 channels of noise each progressively more zoomed in
-	vec4 noiseTexture = texture(Textures[index + 1], TexCoord);
+    // Calculate the distorted texture coordinates for the water.
+    vec2 distortedCoords = TexCoord + offset;
 
-	// This is the noise texture that is used to distort the water
-	vec2 noise = vec2(noiseTexture.r, noiseTexture.g);
+    // Apply wave distortion using the water normal map.
+    vec3 normal = texture(Textures[waterNormalMap], distortedCoords).xyz;
+    vec2 normalOffset = (normal.xy * 2.0 - 1.0) * waveAmplitude;
+    distortedCoords += normalOffset;
 
-	// We want to distort the texture coordinates based on the noise
-	vec2 distortedTexCoord = TexCoord + noise * 0.01;
+    // Sample the water texture using the distorted coordinates.
+    vec4 waterColor = texture(Textures[sceneTexture], distortedCoords);
 
-	// We want to lerp between the distorted texture coordinates and the original texture coordinates
-	vec2 finalTexCoord = mix(TexCoord, distortedTexCoord, LerpProgress);
+    // Calculate reflection texture coordinates.
+    vec2 reflectionCoords = vec2(TexCoord.x, 1.0 - TexCoord.y);
 
-	// We want to sample the texture at the final texture coordinates
-	vec4 finalColor = texture(Textures[index], finalTexCoord);
+    // Sample the reflected scene texture.
+    vec4 reflectionColor = texture(Textures[sceneTexture], reflectionCoords);
 
-	// We want to lerp between the original color and the final color
-	FragColor = mix(Color, finalColor, LerpProgress) * Color;
+    // Calculate refraction texture coordinates.
+    vec2 refractionCoords = TexCoord - 0.02 * normalize(lightDirection);
 
+    // Sample the refracted scene texture.
+    vec4 refractionColor = texture(Textures[sceneTexture], refractionCoords);
+
+    // Apply depth-based refraction.
+    float depth = texture(Textures[waterDepthMap], TexCoord).r;
+    vec2 depthOffset = (normal.xy * 2.0 - 1.0) * depth;
+    refractionCoords += depthOffset;
+
+    // Sample the refracted scene texture with depth-based offset.
+    refractionColor = texture(Textures[sceneTexture], refractionCoords);
+
+    // Calculate caustics animation.
+    vec2 causticsOffset = vec2(causticsSpeed * time, 0.0);
+    vec4 caustics = texture(Textures[causticsTexture], TexCoord + causticsOffset);
+
+    // Combine the water color, reflection, refraction, and caustics.
+    vec4 finalColor = mix(waterColor, reflectionColor, reflectionStrength);
+    finalColor = mix(finalColor, refractionColor, refractionStrength);
+    finalColor.rgb += caustics.rgb;
+
+    // Set the final color to the combined color.
+    FragColor = finalColor;
 }

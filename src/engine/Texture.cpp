@@ -189,7 +189,37 @@ void Texture::GenerateNoise(NoiseType noiseType, int width, int height, float sc
 	delete[] noiseMap;
 }
 
-void Texture::GenerateColor(NoiseType noiseType, int width, int height, glm::vec4 color) 
+void Texture::GenerateColor(glm::vec4 colour, int width, int height) 
 {
+	float* colorMap = new float[width * height * 4]; // RGBA
 
+	for (int y = 0; y < height; y++) 
+	{
+		for (int x = 0; x < width; x++) 
+		{
+			colorMap[(y * width + x) * 4 + 0] = colour.r;
+			colorMap[(y * width + x) * 4 + 1] = colour.g;
+			colorMap[(y * width + x) * 4 + 2] = colour.b;
+			colorMap[(y * width + x) * 4 + 3] = colour.a;
+		}
+	}
+
+	// Create and bind a new texture
+	glGenTextures(1, &m_textureId);
+	glBindTexture(GL_TEXTURE_2D, m_textureId);
+
+	// Set the texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Upload the pixel colour data to the texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, colorMap);
+
+	// Unbind the texture
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Don't forget to delete the colorMap when you're done with it!
+	delete[] colorMap;
 }

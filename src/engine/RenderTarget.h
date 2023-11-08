@@ -20,6 +20,8 @@ public:
     unsigned int GetID() const;
     unsigned int GetTextureID() const;
 
+    glm::vec2 GetSize() const { return glm::vec2(m_width, m_height); }
+
 private:
     unsigned int m_fbo = 0;
     unsigned int m_texture = 0;

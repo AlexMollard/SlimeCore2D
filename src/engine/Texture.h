@@ -33,7 +33,7 @@ public:
 	void SetChannels(int newChannels);
 
 	void GenerateNoise(NoiseType noiseType, int width, int height, float scale, float offsetX, float offsetY);
-	void GenerateColor(NoiseType noiseType, int width, int height, glm::vec4 color);
+	void GenerateColor(glm::vec4 colour, int width, int height);
 
 protected:
 	unsigned int m_textureId = 0;

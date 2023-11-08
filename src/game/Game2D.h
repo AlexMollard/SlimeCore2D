@@ -21,6 +21,7 @@ public:
 
 private:
 	float m_time = 0.0f;
+	glm::vec2 m_lightDirection = glm::vec2(1.0f, -1.0f);
 
 	glm::vec4 sunColour = glm::vec4(1.0f, 0.7f, 0.8f, 1.0f);
 
@@ -33,7 +34,6 @@ private:
 	Renderer2D m_renderer            = Renderer2D(&m_camera, &m_screenCamera);
 	RenderTarget m_waterRenderTarget = RenderTarget(RES_WIDTH, RES_HEIGHT, FlipPolicy::Both);
 
-	QuadBatchRenderer m_waterBGBatchRenderer = QuadBatchRenderer();
 	QuadBatchRenderer m_waterBatchRenderer   = QuadBatchRenderer();
 	QuadBatchRenderer m_mapBatchRenderer     = QuadBatchRenderer();
 	QuadBatchRenderer m_treeBatchRenderer    = QuadBatchRenderer();

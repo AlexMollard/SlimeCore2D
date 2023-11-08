@@ -44,16 +44,6 @@ Game2D::Game2D()
 	waterQuad->SetSpriteWidth(RES_WIDTH);
 	waterQuad->SetScale(glm::vec2(RES_WIDTH, RES_HEIGHT));
 	m_waterBatchRenderer.AddObject(waterQuad);
-
-	// Generate 3 perlin noise textures each zooming in more than the last
-	m_noiseTextures.GenerateNoise(NoiseType::Simplex, RES_WIDTH, RES_HEIGHT, 0.1f, randFloat(), randFloat());
-
-	GameObject* waterBGQuad = m_objectManager.CreateQuad(glm::vec3(0, 0, 2), glm::vec2(RES_WIDTH, RES_HEIGHT));
-	waterBGQuad->SetAnchorPoint({0.0f,0.0f});
-	waterBGQuad->SetColor(glm::vec3(0.16f, 0.30f, 0.5f));
-	Texture* waterBGtex = m_waterBGBatchRenderer.LoadTexture(ResourceManager::GetTexturePath("Water"));
-	waterBGQuad->SetTexture(waterBGtex);
-	m_waterBGBatchRenderer.AddObject(waterBGQuad);
 }
 
 Game2D::~Game2D()
@@ -86,16 +76,13 @@ void Game2D::Draw()
 	RenderTarget::Clear(true, true);
 	
 	// Draw player offset for reflection in water
-	m_player.SetPos(glm::vec3(m_player.GetPos().x, m_player.GetPos().y + 2.25f, m_player.GetPos().z));
+	m_camera.SetPosition({ m_camera.GetPosition().x, m_camera.GetPosition().y - 2.25f });
 	m_renderer.Draw(&m_batchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, sunColour);
-	m_player.SetPos(glm::vec3(m_player.GetPos().x, m_player.GetPos().y - 2.25f, m_player.GetPos().z));
+	m_camera.SetPosition({ m_camera.GetPosition().x, m_camera.GetPosition().y + 2.25f });
 	
 	m_waterRenderTarget.Unbind();
 	
 	RenderTarget::Clear(true, true, { 0.16f, 0.30f, 0.5f, 1.0f });
-	
-	m_waterBGBatchRenderer.AddTextureSlot(&m_noiseTextures);
-	m_renderer.Draw(&m_waterBGBatchRenderer, ShaderType::WATER, CameraType::SCREENSPACE, m_time);
 
 	m_renderer.Draw(&m_waterBatchRenderer, ShaderType::UI, CameraType::SCREENSPACE, m_time);
 

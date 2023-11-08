@@ -126,7 +126,8 @@ void Renderer2D::SetShaderUniforms(Shader* shader, ShaderType shaderType, T&&...
 	}
 	case ShaderType::WATER:
 	{
-		(shader->SetUniform("LerpProgress", std::forward<T>(optionalParams)), ...);
+		(shader->SetUniform("time", std::forward<T>(optionalParams)), ...);
+		(shader->SetUniform("lightDirection", std::forward<T>(optionalParams)), ...);
 
 		break;
 	}
