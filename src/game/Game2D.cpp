@@ -53,13 +53,18 @@ Game2D::Game2D()
 	GameObject* miniMapBorderQuad = m_objectManager.CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1), glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
 	miniMapBorderQuad->SetColor(glm::vec3(0.1f,0.1f,0.1f));
 	miniMapBorderQuad->SetAnchorPoint({ 1.0f, 0.0f });
+	m_uiBatchRenderer.AddObject(miniMapBorderQuad);
 
 	m_miniMapTexture = m_map->GenerateMiniMap();
 	GameObject* miniMapQuad = m_objectManager.CreateQuad(glm::vec3(1920 - miniMapPadding, miniMapPadding, 1), glm::vec2(miniMapWidth, miniMapHeight), m_miniMapTexture);
 	miniMapQuad->SetAnchorPoint({ 1.0f, 0.0f });
-
 	m_uiBatchRenderer.AddObject(miniMapQuad);
-	m_uiBatchRenderer.AddObject(miniMapBorderQuad);
+
+	Texture* fishytex = m_uiBatchRenderer.LoadTexture(ResourceManager::GetTexturePath("fishy"));
+	GameObject* fishy = m_objectManager.CreateQuad(glm::vec3(1920 / 2, 1080 / 2, 1), glm::vec2(fishytex->GetWidth() * 4, fishytex->GetHeight() * 4), fishytex);
+	fishy->SetAnchorPoint({ 0.5f, 0.5f });
+	fishy->SetFlipPolicy(FlipPolicy::Vertical);
+	m_uiBatchRenderer.AddObject(fishy);
 
 	m_uiBatchRenderer.SetZOffset(-10.0f);
 	m_uiBatchRenderer.SetOcclusionCulling(false);
