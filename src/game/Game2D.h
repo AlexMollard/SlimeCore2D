@@ -30,6 +30,7 @@ private:
 	Player m_player;
 
 	Texture* m_miniMapTexture = nullptr;
+	Texture* m_miniMapMask = nullptr;
 	Texture m_noiseTextures;
 
 	Renderer2D m_renderer            = Renderer2D(&m_camera, &m_screenCamera);

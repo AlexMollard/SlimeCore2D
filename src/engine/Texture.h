@@ -36,6 +36,8 @@ public:
 	void GenerateNoise(NoiseType noiseType, int width, int height, float scale, float offsetX, float offsetY);
 	void GenerateColor(glm::vec4 colour, int width, int height);
 
+	void GenerateRoundedMask(float borderRadius, int width, int height);
+
 protected:
 	unsigned int m_textureId = 0;
 	int m_width              = 0;

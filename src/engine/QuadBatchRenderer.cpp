@@ -13,6 +13,7 @@ struct Vertex
 	glm::vec4 color;
 	glm::vec2 texCoords;
 	float texIndex;
+	float maskIndex;
 };
 
 struct RendererData
@@ -52,10 +53,13 @@ QuadBatchRenderer::QuadBatchRenderer()
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, color));
 
 	glEnableVertexArrayAttrib(data->quadVA, 2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, texCoords));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, texCoords));
 
 	glEnableVertexArrayAttrib(data->quadVA, 3);
 	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, texIndex));
+
+	glEnableVertexArrayAttrib(data->quadVA, 4);
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, maskIndex));
 
 	uint32_t indices[MAX_INDEX_COUNT];
 	uint32_t offset = 0;
@@ -148,6 +152,16 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 		}
 	}
 
+	uint32_t maskIndex = 0;
+	if (batchData.maskTexture)
+	{
+		maskIndex = GetTextureIndex(batchData.maskTexture);
+		if (maskIndex == 0)
+		{
+			maskIndex = AddTextureSlot(batchData.maskTexture);
+		}
+	}
+
 	float z                = batchData.position.z;
 	glm::vec2 halfSize     = glm::vec2(batchData.size.x / 2.0f, batchData.size.y / 2.0f);
 	glm::vec2 center       = glm::vec2(batchData.position.x + halfSize.x, batchData.position.y + halfSize.y);
@@ -181,12 +195,14 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 	}
 
 	float tIndex = static_cast<float>(textureIndex);
+	float mIndex = static_cast<float>(maskIndex);
 	for (int i = 0; i < 4; ++i)
 	{
 		data->quadBufferPtr->position  = positions[i];
 		data->quadBufferPtr->color     = batchData.color;
 		data->quadBufferPtr->texCoords = useBasicUVs ? basicUVs[i] : m_uvs[i];
 		data->quadBufferPtr->texIndex  = tIndex;
+		data->quadBufferPtr->maskIndex = mIndex;
 		data->quadBufferPtr++;
 	}
 
@@ -218,8 +234,9 @@ void QuadBatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter
 		if (m_occulsionCulling && glm::distance(camPos, glm::vec2(object->GetPos())) > distanceFromCenter)
 			continue;
 
-		QuadBatchData batchData = { object->GetPos(),     object->GetAnchorPoint(), object->GetScale(), { object->GetColor(), 1.0f }, object->GetRotation(),
-					                        object->GetTexture(), object->GetFlipPolicy(),  object->GetHasAnimation(), object->GetFrame(),           object->GetSpriteWidth() };
+		QuadBatchData batchData = { object->GetPos(),          object->GetAnchorPoint(), object->GetScale(),      { object->GetColor(), 1.0f },
+			                        object->GetRotation(),     object->GetTexture(),     object->GetMaskTexture(),    object->GetFlipPolicy(),
+			                        object->GetHasAnimation(), object->GetFrame(),       object->GetSpriteWidth() };
 
 		batchData.position.z += m_zOffset;
 		DrawQuad(batchData);
@@ -258,12 +275,6 @@ void QuadBatchRenderer::Flush()
 
 	data->indexCount       = 0;
 	data->textureSlotIndex = 1;
-
-	// Unbind all the textures
-	for (uint32_t i = 0; i < data->textureSlotIndex; ++i)
-	{
-		glBindTextureUnit(i, 0);
-	}
 }
 
 void QuadBatchRenderer::ShutDown()

@@ -26,6 +26,9 @@ public:
 	Texture* GetTexture();
 	void SetTexture(Texture* tex);
 
+	Texture* GetMaskTexture();
+	void SetMaskTexture(Texture* tex);
+
 	// Sprite Stuff (Probably should be in own class)
 	void SetFrame(int Frame);
 	void AdvanceFrame();
@@ -63,6 +66,7 @@ protected:
 	bool m_isMemoryManaged = false;
 
 	Texture* m_texture = nullptr;
+	Texture* m_maskTexture = nullptr;
 	Shader* m_shader = nullptr;
 
 	FlipPolicy m_flipPolicy = FlipPolicy::None;

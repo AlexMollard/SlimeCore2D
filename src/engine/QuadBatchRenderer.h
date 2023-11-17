@@ -9,6 +9,7 @@ struct QuadBatchData
 	glm::vec4 color       = glm::vec4(1.0f);
 	float rotation        = 0.0f;
 	Texture* texture      = nullptr;
+	Texture* maskTexture      = nullptr;
 	FlipPolicy flipPolicy = FlipPolicy::None;
 
 	bool hasSpriteAnimation = false;

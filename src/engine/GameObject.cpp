@@ -60,6 +60,16 @@ void GameObject::SetTexture(Texture* tex)
 	m_texture = tex;
 }
 
+Texture* GameObject::GetMaskTexture()
+{
+	return m_maskTexture;
+}
+
+void GameObject::SetMaskTexture(Texture* tex)
+{
+	m_maskTexture = tex;
+}
+
 void GameObject::SetFrame(int Frame)
 {
 	m_frame = Frame;
