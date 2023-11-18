@@ -1,4 +1,5 @@
 #include "Renderer2D.h"
+#include "engine/MemoryDebugging.h"
 
 #include "Math.h"
 #include <algorithm>

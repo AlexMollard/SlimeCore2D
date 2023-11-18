@@ -1,4 +1,5 @@
 #include "BoundingBox.h"
+#include "engine/MemoryDebugging.h"
 
 void BoundingBox::UpdateQuadBoundingBox(glm::vec2 pos, glm::vec2 size)
 {

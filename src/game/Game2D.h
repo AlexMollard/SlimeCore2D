@@ -1,16 +1,10 @@
 #pragma once
-#include "Player.h"
 #include "engine/Constants.h"
+#include "engine/StateMachine/StateMachine.h"
 
-#include "engine/QuadBatchRenderer.h"
 #include "engine/PhysicsScene.h"
 #include "engine/ObjectManager.h"
-#include "CloudManager.h"
-#include "engine/RenderTarget.h"
-
-class Renderer2D;
-class Input;
-class MapGenerator;
+#include "GameScene.h"
 
 class Game2D
 {
@@ -21,35 +15,24 @@ public:
 	void Update(float deltaTime);
 	void Draw();
 
+	float GetTime() const { return m_time; }
+	
+	Camera* GetCamera() { return &m_camera; }
+	Camera* GetScreenCamera() { return &m_screenCamera; }
+
+	Renderer2D* GetRenderer() { return &m_renderer; }
+	PhysicsScene* GetPhysicsScene() { return &m_physicsScene; }
+	ObjectManager* GetObjectManager() { return &m_objectManager; }
+
 private:
 	float m_time = 0.0f;
-	glm::vec2 m_lightDirection = glm::vec2(1.0f, -1.0f);
 
-	glm::vec4 sunColour = glm::vec4(1.0f, 0.7f, 0.8f, 1.0f);
+	StateMachine<GameScene> m_stateMachine;
 
 	Camera m_camera = Camera(-16, -9, -1, 1, true);
 	Camera m_screenCamera = Camera(16, 9, -10, 10, false);
-	Player m_player;
 
-	Texture* m_miniMapTexture = nullptr;
-	Texture* m_miniMapMask = nullptr;
-	Texture m_noiseTextures;
-
-	Renderer2D m_renderer            = Renderer2D(&m_camera, &m_screenCamera);
-	RenderTarget m_waterRenderTarget = RenderTarget(RES_WIDTH, RES_HEIGHT, FlipPolicy::Both);
-
-	QuadBatchRenderer m_waterBatchRenderer   = QuadBatchRenderer();
-	QuadBatchRenderer m_mapBatchRenderer     = QuadBatchRenderer();
-	QuadBatchRenderer m_treeBatchRenderer    = QuadBatchRenderer();
-	QuadBatchRenderer m_cloudBatchRenderer   = QuadBatchRenderer();
-	QuadBatchRenderer m_batchRenderer        = QuadBatchRenderer();
-	QuadBatchRenderer m_uiBatchRenderer      = QuadBatchRenderer();
-	
+	Renderer2D m_renderer = Renderer2D(&m_camera, &m_screenCamera);
 	PhysicsScene m_physicsScene = PhysicsScene();
-	ObjectManager m_objectManager = ObjectManager(&m_renderer);
-	CloudManager m_cloudManager = CloudManager();
-	MapGenerator* m_map = nullptr;
-	Texture* m_waterTexture = nullptr;
-
-	Input* m_inputManager          = Input::GetInstance();
+	ObjectManager m_objectManager;
 };

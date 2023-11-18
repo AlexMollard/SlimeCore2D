@@ -1,5 +1,5 @@
-
 #include "RenderTarget.h"
+#include "engine/MemoryDebugging.h"
 
  RenderTarget::RenderTarget(unsigned int width, unsigned int height, FlipPolicy flipPolicy) : m_width(width), m_height(height)
 {

@@ -1,5 +1,6 @@
-
 #include "ResourceManager.h"
+#include "engine/MemoryDebugging.h"
+
 const std::string ResourceManager::BASE_TEXTURE_PATH = "../resources/textures/";
 const std::string ResourceManager::BASE_SHADER_PATH = "../resources/shaders/";
 

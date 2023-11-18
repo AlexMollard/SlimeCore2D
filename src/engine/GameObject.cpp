@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "engine/MemoryDebugging.h"
 
 #include "gtc/quaternion.hpp"
 #include <string>

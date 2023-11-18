@@ -1,4 +1,6 @@
 #include "BatchRenderer.h"
+#include "engine/MemoryDebugging.h"
+
 #include <iostream>
 #include "engine/GameObject.h"
 

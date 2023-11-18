@@ -1,4 +1,6 @@
 #include "Camera.h"
+#include "engine/MemoryDebugging.h"
+
 #include "Input.h"
 
 Camera::Camera(float aspectX, float aspectY, float near, float far, bool moveCamera) : m_cameraMove(moveCamera)

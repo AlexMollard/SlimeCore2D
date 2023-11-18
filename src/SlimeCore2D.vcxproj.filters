@@ -90,9 +90,6 @@
     <ClInclude Include="engine\ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="game\MiniMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="engine\CommonEnums.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -108,10 +105,16 @@
     <ClInclude Include="engine\Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\StateMachine.h">
+    <ClInclude Include="engine\StateMachine\StateMachine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\MemoryDebugging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\StateMachine\State.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game\GameScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -173,9 +176,6 @@
     <ClCompile Include="engine\BatchRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="game\MiniMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="engine\ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -185,7 +185,7 @@
     <ClCompile Include="engine\QuadBatchRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="engine\StateMachine.cpp">
+    <ClCompile Include="game\GameScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

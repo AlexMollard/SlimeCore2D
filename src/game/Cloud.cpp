@@ -1,5 +1,5 @@
-
 #include "Cloud.h"
+#include "engine/MemoryDebugging.h"
 
 Cloud::Cloud(Texture* cloud, Texture* shadow, float size, glm::vec2 startPos)
 {

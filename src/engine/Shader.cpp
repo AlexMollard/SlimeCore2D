@@ -1,5 +1,6 @@
-
 #include "Shader.h"
+#include "engine/MemoryDebugging.h"
+
 #include "ext.hpp"
 #include <vector>
 #include <fstream>

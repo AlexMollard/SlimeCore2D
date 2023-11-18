@@ -3,7 +3,6 @@
 #include "engine/CommonEnums.h"
 #include "glm.hpp"
 
-
 class RenderTarget
 {
 public:

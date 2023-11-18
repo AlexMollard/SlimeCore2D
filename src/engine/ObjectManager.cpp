@@ -1,10 +1,7 @@
 #include "ObjectManager.h"
-#include "GameObject.h"
+#include "engine/MemoryDebugging.h"
 
-ObjectManager::ObjectManager(Renderer2D* renderer)
-{
-	this->m_renderer = renderer;
-}
+#include "GameObject.h"
 
 ObjectManager::~ObjectManager()
 {

@@ -6,7 +6,7 @@ class GameObject;
 class ObjectManager
 {
 public:
-	ObjectManager(Renderer2D* renderer);
+	ObjectManager() = default;
 	~ObjectManager();
 
 	GameObject* CreateGameObject(glm::vec3 pos, glm::vec2 size, glm::vec3 color);
@@ -21,6 +21,5 @@ public:
 	GameObject* Get(int index);
 	int GetSize();
 protected:
-	Renderer2D* m_renderer = nullptr;
 	std::vector<GameObject*> m_objects;
 };

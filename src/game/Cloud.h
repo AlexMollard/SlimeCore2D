@@ -1,4 +1,6 @@
 #pragma once
+#include "engine/MemoryDebugging.h"
+
 #include "engine/GameObject.h"
 #include <memory>
 class Cloud

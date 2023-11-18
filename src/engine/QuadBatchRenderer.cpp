@@ -1,4 +1,6 @@
 #include "QuadBatchRenderer.h"
+#include "engine/MemoryDebugging.h"
+
 #include "Constants.h"
 
 #include "Texture.h"

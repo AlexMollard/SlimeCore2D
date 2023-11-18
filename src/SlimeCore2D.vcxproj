@@ -27,20 +27,21 @@
     <ClInclude Include="engine\Renderer2D.h" />
     <ClInclude Include="engine\RigidBody.h" />
     <ClInclude Include="engine\Shader.h" />
-    <ClInclude Include="engine\StateMachine.h" />
+    <ClInclude Include="engine\StateMachine\StateMachine.h" />
     <ClInclude Include="engine\Texture.h" />
     <ClInclude Include="engine\Window.h" />
     <ClInclude Include="engine\ResourceManager.h" />
     <ClInclude Include="engine\RenderTarget.h" />
     <ClInclude Include="engine\Noise.h" />
+    <ClInclude Include="game\GameScene.h" />
     <ClInclude Include="game\Cell.h" />
     <ClInclude Include="game\Cloud.h" />
     <ClInclude Include="game\CloudManager.h" />
     <ClInclude Include="game\Game2D.h" />
     <ClInclude Include="game\MapGenerator.h" />
     <ClInclude Include="game\Player.h" />
-    <ClInclude Include="game\MiniMap.h" />
     <ClInclude Include="engine\QuadBatchRenderer.h" />
+    <ClInclude Include="engine\StateMachine\State.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BatchRenderer.cpp" />
@@ -54,18 +55,17 @@
     <ClCompile Include="engine\Renderer2D.cpp" />
     <ClCompile Include="engine\RigidBody.cpp" />
     <ClCompile Include="engine\Shader.cpp" />
-    <ClCompile Include="engine\StateMachine.cpp" />
     <ClCompile Include="engine\Texture.cpp" />
     <ClCompile Include="engine\Window.cpp" />
     <ClCompile Include="engine\RenderTarget.cpp" />
     <ClCompile Include="engine\ResourceManager.cpp" />
+    <ClCompile Include="game\GameScene.cpp" />
     <ClCompile Include="game\Cloud.cpp" />
     <ClCompile Include="game\CloudManager.cpp" />
     <ClCompile Include="game\Game2D.cpp" />
     <ClCompile Include="game\MapGenerator.cpp" />
     <ClCompile Include="game\Player.cpp" />
     <ClCompile Include="game\SlimeCore2D.cpp" />
-    <ClCompile Include="game\MiniMap.cpp" />
     <ClCompile Include="engine\QuadBatchRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>

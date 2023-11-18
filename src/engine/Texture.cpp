@@ -1,6 +1,5 @@
-
-
 #include "Texture.h"
+#include "engine/MemoryDebugging.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 //#define STB_IMAGE_WRITE_IMPLEMENTATION

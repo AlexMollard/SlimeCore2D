@@ -1,5 +1,5 @@
-
 #include "Window.h"
+#include "engine/MemoryDebugging.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
