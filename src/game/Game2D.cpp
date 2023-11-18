@@ -3,6 +3,7 @@
 #include "CloudManager.h"
 #include "MapGenerator.h"
 #include <engine/Noise.h>
+#include "engine/MemoryDebugging.h"
 
 #include "engine/ObjectManager.h"
 #include "engine/PhysicsScene.h"
@@ -78,8 +79,8 @@ Game2D::Game2D()
 
 Game2D::~Game2D()
 {
-	delete m_miniMapTexture;
-	m_miniMapTexture = nullptr;
+ 	delete m_miniMapTexture;
+ 	m_miniMapTexture = nullptr;
 
 	delete m_miniMapMask;
 	m_miniMapMask = nullptr;

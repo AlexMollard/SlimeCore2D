@@ -20,6 +20,7 @@
     <ClInclude Include="engine\GameObject.h" />
     <ClInclude Include="engine\Input.h" />
     <ClInclude Include="engine\Keycode.h" />
+    <ClInclude Include="engine\MemoryDebugging.h" />
     <ClInclude Include="engine\SlimeMath.h" />
     <ClInclude Include="engine\ObjectManager.h" />
     <ClInclude Include="engine\PhysicsScene.h" />
@@ -129,8 +130,8 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <EnableModules>true</EnableModules>
-      <BuildStlModules>true</BuildStlModules>
+      <EnableModules>false</EnableModules>
+      <BuildStlModules>false</BuildStlModules>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <MinimalRebuild>false</MinimalRebuild>
