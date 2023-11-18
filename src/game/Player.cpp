@@ -1,6 +1,7 @@
-#include "pch.h"
+
 #include "Player.h"
 #include "Cell.h"
+#include "engine/ResourceManager.h"
 
 Player::~Player()
 {

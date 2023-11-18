@@ -1,6 +1,12 @@
-#include "pch.h"
+#ifdef _DEBUG
+#define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new       DEBUG_NEW
+#endif
+
+
 #include "engine/Window.h"
 #include "Game2D.h"
+
 
 Input* Input::m_instance = 0;
 

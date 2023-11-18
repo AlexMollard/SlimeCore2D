@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "BoundingBox.h"
 
 void BoundingBox::UpdateQuadBoundingBox(glm::vec2 pos, glm::vec2 size)

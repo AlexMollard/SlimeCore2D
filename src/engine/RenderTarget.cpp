@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "RenderTarget.h"
 
  RenderTarget::RenderTarget(unsigned int width, unsigned int height, FlipPolicy flipPolicy) : m_width(width), m_height(height)

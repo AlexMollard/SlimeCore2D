@@ -5,6 +5,7 @@
 #include "glew.h"
 #include <array>
 #include <vector>
+#include <string>
 
 class GameObject;
 class Texture;

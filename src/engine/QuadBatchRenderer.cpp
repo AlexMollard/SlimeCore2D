@@ -1,6 +1,5 @@
-#include "pch.h"
-
 #include "QuadBatchRenderer.h"
+#include "Constants.h"
 
 #include "Texture.h"
 

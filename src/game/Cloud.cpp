@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "Cloud.h"
 
 Cloud::Cloud(Texture* cloud, Texture* shadow, float size, glm::vec2 startPos)

@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "Game2D.h"
 
 #include "CloudManager.h"
@@ -8,6 +6,7 @@
 
 #include "engine/ObjectManager.h"
 #include "engine/PhysicsScene.h"
+#include "engine/ResourceManager.h"
 
 static inline float randFloat()
 {

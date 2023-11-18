@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Renderer2D.h"
 
 #include "Math.h"
@@ -9,6 +8,7 @@
 #include <numeric>
 #include "BatchRenderer.h"
 #include <tuple>
+#include "ResourceManager.h"
 
 std::string ShaderTypeToString(ShaderType type)
 {

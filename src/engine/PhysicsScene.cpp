@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "PhysicsScene.h"
 
 #include "Renderer2D.h"

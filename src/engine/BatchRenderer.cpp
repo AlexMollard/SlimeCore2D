@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "BatchRenderer.h"
 #include <iostream>
 #include "engine/GameObject.h"

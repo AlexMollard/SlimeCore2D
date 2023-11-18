@@ -1,7 +1,7 @@
-#include "pch.h"
 #include "CloudManager.h"
 #include "engine/BatchRenderer.h"
 #include <format>
+#include <engine/ResourceManager.h>
 
 CloudManager::CloudManager()
 {

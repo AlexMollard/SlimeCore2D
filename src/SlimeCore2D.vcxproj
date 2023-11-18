@@ -16,6 +16,7 @@
     <ClInclude Include="engine\Camera.h" />
     <ClInclude Include="engine\CollisionManager.h" />
     <ClInclude Include="engine\CommonEnums.h" />
+    <ClInclude Include="engine\Constants.h" />
     <ClInclude Include="engine\GameObject.h" />
     <ClInclude Include="engine\Input.h" />
     <ClInclude Include="engine\Keycode.h" />
@@ -25,6 +26,7 @@
     <ClInclude Include="engine\Renderer2D.h" />
     <ClInclude Include="engine\RigidBody.h" />
     <ClInclude Include="engine\Shader.h" />
+    <ClInclude Include="engine\StateMachine.h" />
     <ClInclude Include="engine\Texture.h" />
     <ClInclude Include="engine\Window.h" />
     <ClInclude Include="engine\ResourceManager.h" />
@@ -37,7 +39,6 @@
     <ClInclude Include="game\MapGenerator.h" />
     <ClInclude Include="game\Player.h" />
     <ClInclude Include="game\MiniMap.h" />
-    <ClInclude Include="pch.h" />
     <ClInclude Include="engine\QuadBatchRenderer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -52,6 +53,7 @@
     <ClCompile Include="engine\Renderer2D.cpp" />
     <ClCompile Include="engine\RigidBody.cpp" />
     <ClCompile Include="engine\Shader.cpp" />
+    <ClCompile Include="engine\StateMachine.cpp" />
     <ClCompile Include="engine\Texture.cpp" />
     <ClCompile Include="engine\Window.cpp" />
     <ClCompile Include="engine\RenderTarget.cpp" />
@@ -114,10 +116,10 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -131,6 +133,7 @@
       <BuildStlModules>true</BuildStlModules>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,12 +147,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>

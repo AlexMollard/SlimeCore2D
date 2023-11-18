@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "MapGenerator.h"
 
 #include "gtc/noise.hpp"
@@ -7,6 +7,7 @@
 #include <random>
 #include <time.h>
 #include "engine/BatchRenderer.h"
+#include "engine/ResourceManager.h"
 
 MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, Camera* cam, BatchRenderer* tileBatch, BatchRenderer* treeBatch, int mapSize)
 {

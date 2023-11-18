@@ -1,5 +1,7 @@
 #pragma once
 #include "Player.h"
+#include "engine/Constants.h"
+
 #include "engine/QuadBatchRenderer.h"
 #include "engine/PhysicsScene.h"
 #include "engine/ObjectManager.h"

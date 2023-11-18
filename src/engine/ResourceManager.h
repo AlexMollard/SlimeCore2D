@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "Constants.h"
 
 class ResourceManager {
 public:
