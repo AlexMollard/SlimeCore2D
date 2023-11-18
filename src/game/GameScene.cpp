@@ -52,16 +52,16 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	miniMapBorderQuad->SetAnchorPoint({ 1.0f, 0.0f });
 	m_uiBatchRenderer.AddObject(miniMapBorderQuad);
 
-	m_miniMapMask = new Texture();
-	// miniMapMask->GenerateRoundedMask(miniMapWidth * 0.45f, miniMapWidth, miniMapHeight);
-	m_miniMapMask->GenerateNoise(NoiseType::Perlin, miniMapWidth, miniMapHeight, 0.1, 0.1, 0.1);
-	miniMapBorderQuad->SetMaskTexture(m_miniMapMask);
+	//m_miniMapMask = new Texture();
+	//miniMapMask->GenerateRoundedMask(miniMapWidth * 0.45f, miniMapWidth, miniMapHeight);
+	//m_miniMapMask->GenerateNoise(NoiseType::Perlin, miniMapWidth, miniMapHeight, 0.1, 0.1, 0.1);
+	//miniMapBorderQuad->SetMaskTexture(m_miniMapMask);
 
 	m_miniMapTexture        = m_map->GenerateMiniMap();
 	GameObject* miniMapQuad = objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding, miniMapPadding, 1), glm::vec2(miniMapWidth, miniMapHeight), m_miniMapTexture);
 	miniMapQuad->SetAnchorPoint({ 1.0f, 0.0f });
 	m_uiBatchRenderer.AddObject(miniMapQuad);
-	miniMapQuad->SetMaskTexture(m_miniMapMask);
+	//miniMapQuad->SetMaskTexture(m_miniMapMask);
 
 	Texture* fishytex = m_uiBatchRenderer.LoadTexture(ResourceManager::GetTexturePath("fishy"));
 	GameObject* fishy = objectManager->CreateQuad(glm::vec3(100, 100, 1), glm::vec2(fishytex->GetWidth() * 4, fishytex->GetHeight() * 4), fishytex);
@@ -113,8 +113,8 @@ void GameScene::Exit(StateMachine<GameScene>* stateMachine, Game2D* game)
 	delete m_miniMapTexture;
 	m_miniMapTexture = nullptr;
 
-	delete m_miniMapMask;
-	m_miniMapMask = nullptr;
+	//delete m_miniMapMask;
+	//m_miniMapMask = nullptr;
 
 	delete m_waterTexture;
 	m_waterTexture = nullptr;

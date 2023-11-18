@@ -37,7 +37,7 @@ private:
 	Texture* m_waterTexture = nullptr;
 
 	Texture* m_miniMapTexture = nullptr;
-	Texture* m_miniMapMask    = nullptr;
+	//Texture* m_miniMapMask    = nullptr;
 	Texture m_noiseTextures;
 
 	MapGenerator* m_map = nullptr;

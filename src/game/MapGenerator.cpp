@@ -69,16 +69,16 @@ MapGenerator::~MapGenerator()
 
 int** MapGenerator::Generate()
 {
-	int islandSpawnRadius = (m_mapSize - ((m_islandRadius * 2) + 2));
+	int islandSpawnRadius = (m_mapSize - (static_cast<int>(m_islandRadius * 2.0f) + 2));
 	const int islandCount = 55;
 
 	glm::vec2 randomPoint[islandCount];
-	randomPoint[0] = glm::vec2(m_mapSize / 2);
+	randomPoint[0] = glm::vec2(static_cast<float>(m_mapSize / 2));
 
 	// Setting random island centers
 	for (int i = 1; i < islandCount; i++)
 	{
-		randomPoint[i] = glm::vec2((rand() % islandSpawnRadius) + m_islandRadius - 1, (rand() % islandSpawnRadius) + m_islandRadius - 1);
+		randomPoint[i] = glm::vec2(static_cast<float>(rand() % islandSpawnRadius) + m_islandRadius - 1, static_cast<float>(rand() % islandSpawnRadius) + m_islandRadius - 1);
 	}
 
 	// creating islands from centrers
@@ -109,7 +109,7 @@ int** MapGenerator::Generate()
 	{
 		glm::vec2 tile = glm::vec2((rand() % m_mapSize), (rand() % m_mapSize));
 
-		while (glm::distance(tile, glm::vec2(m_mapSize / 2)) < m_streamWidth * 2)
+		while (glm::distance(tile, glm::vec2(static_cast<float>(m_mapSize / 2))) < static_cast<float>(m_streamWidth * 2))
 		{
 			tile = glm::vec2((rand() % m_mapSize), (rand() % m_mapSize));
 		}
@@ -251,16 +251,16 @@ int** MapGenerator::Generate()
 
 				// Grass
 				if (texValue > 2)
-					m_cells[x][y].GetGameObject()->SetTexture(m_center0);
+					m_cells[x][y].GetGameObject()->SetTexture(m_center[0]);
 
 				if (texValue == 0)
-					m_cells[x][y].GetGameObject()->SetTexture(m_center1);
+					m_cells[x][y].GetGameObject()->SetTexture(m_center[1]);
 
 				if (texValue == 1)
-					m_cells[x][y].GetGameObject()->SetTexture(m_center2);
+					m_cells[x][y].GetGameObject()->SetTexture(m_center[2]);
 
 				if (texValue == 2)
-					m_cells[x][y].GetGameObject()->SetTexture(m_center3);
+					m_cells[x][y].GetGameObject()->SetTexture(m_center[3]);
 			}
 		}
 	}
@@ -300,7 +300,7 @@ void MapGenerator::EatWater(int landAroundMin)
 			{
 				m_cells[x][y].SetCellType(type::Ground);
 				m_cells[x][y].GetGameObject()->SetColor(glm::vec3(1.0f));
-				m_cells[x][y].GetGameObject()->SetTexture(m_center0);
+				m_cells[x][y].GetGameObject()->SetTexture(m_center[0]);
 			}
 			m_cells[x][y].SetPreCellType(m_cells[x][y].GetCellType());
 		}
@@ -344,16 +344,16 @@ void MapGenerator::SetStoneTiles(int VainCount)
 				int texValue = rand() % 8;
 
 				if (texValue > 2)
-					m_cells[x][y].GetGameObject()->SetTexture(m_stone0);
+					m_cells[x][y].GetGameObject()->SetTexture(m_stone[0]);
 
 				if (texValue == 0)
-					m_cells[x][y].GetGameObject()->SetTexture(m_stone1);
+					m_cells[x][y].GetGameObject()->SetTexture(m_stone[1]);
 
 				if (texValue == 1)
-					m_cells[x][y].GetGameObject()->SetTexture(m_stone2);
+					m_cells[x][y].GetGameObject()->SetTexture(m_stone[2]);
 
 				if (texValue == 2)
-					m_cells[x][y].GetGameObject()->SetTexture(m_stone3);
+					m_cells[x][y].GetGameObject()->SetTexture(m_stone[3]);
 			}
 		}
 	}
@@ -412,10 +412,10 @@ void MapGenerator::SetTreeTiles(int forestCount)
 							glm::vec3 newPos = cell.GetGameObject()->GetPos();
 							newPos           = glm::vec3(newPos.x, newPos.y + 1.5f, -0.25f + (y * 0.001f));
 
-							auto tempTree = m_objManager->CreateQuad(newPos, glm::vec2(1), m_tree0);
+							auto tempTree = m_objManager->CreateQuad(newPos, glm::vec2(1), m_tree[0]);
 							tempTree->SetSpriteWidth(32);
 							tempTree->SetScale({ 2, 4 });
-							auto shadow = m_objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), m_tree0Shadow);
+							auto shadow = m_objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), m_treeShadow);
 							shadow->SetParent(tempTree);
 							shadow->UpdatePos();
 							shadow->SetSpriteWidth(32);
@@ -435,10 +435,10 @@ void MapGenerator::SetTreeTiles(int forestCount)
 							glm::vec3 newPos = cell.GetGameObject()->GetPos();
 							newPos           = glm::vec3(newPos.x, newPos.y + 1.5f, -0.25f + (y * 0.001f));
 
-							auto tempTree = m_objManager->CreateQuad(newPos, glm::vec2(1), m_tree0);
+							auto tempTree = m_objManager->CreateQuad(newPos, glm::vec2(1), m_tree[0]);
 							tempTree->SetSpriteWidth(32);
 							tempTree->SetScale({ 2, 4 });
-							auto shadow = m_objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), m_tree0Shadow);
+							auto shadow = m_objManager->CreateQuad(glm::vec3(0, 0, 0.2f), glm::vec2(1), m_treeShadow);
 							shadow->SetParent(tempTree);
 							shadow->UpdatePos();
 							shadow->SetSpriteWidth(32);
@@ -509,44 +509,60 @@ type MapGenerator::SetType(int x, int y)
 
 void MapGenerator::CreateTextures()
 {
-	m_water = new Texture(ResourceManager::GetTexturePath("/Water/WaterOne"));
+	// Water
+	m_water = new Texture(ResourceManager::GetTexturePath(waterPath));
 
-	m_center0 = new Texture(ResourceManager::GetTexturePath("/Grass/floor_0"));
-	m_center1 = new Texture(ResourceManager::GetTexturePath("/Grass/floor_1"));
-	m_center2 = new Texture(ResourceManager::GetTexturePath("/Grass/floor_2"));
-	m_center3 = new Texture(ResourceManager::GetTexturePath("/Grass/floor_3"));
+	// Center textures
+	for (const auto& path : centerPaths)
+	{
+		m_center.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+	}
 
-	m_sprout0 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_0"));
-	m_sprout1 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_1"));
-	m_sprout2 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_2"));
-	m_sprout3 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_3"));
-	m_sprout4 = new Texture(ResourceManager::GetTexturePath("/Grass/Sprouts/sprout_4"));
+	// Sprout textures
+	for (const auto& path : sproutPaths)
+	{
+		m_sprout.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+	}
 
-	m_stone0 = new Texture(ResourceManager::GetTexturePath("/Stone/Stone_0"));
-	m_stone1 = new Texture(ResourceManager::GetTexturePath("/Stone/Stone_1"));
-	m_stone2 = new Texture(ResourceManager::GetTexturePath("/Stone/Stone_2"));
-	m_stone3 = new Texture(ResourceManager::GetTexturePath("/Stone/Stone_3"));
+	// Stone textures
+	for (const auto& path : stonePaths)
+	{
+		m_stone.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+	}
 
-	m_topLeft   = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Top_Left"));
-	m_topCenter = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Top"));
-	m_topRight  = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Top_Right"));
+	// Top textures
+	m_topLeft   = new Texture(ResourceManager::GetTexturePath(topLeftPath));
+	m_topCenter = new Texture(ResourceManager::GetTexturePath(topCenterPath));
+	m_topRight  = new Texture(ResourceManager::GetTexturePath(topRightPath));
 
-	m_innerTopLeft  = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Inner_Top_Left"));
-	m_innerTopRight = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Inner_Top_Right"));
+	// Inner top textures
+	m_innerTopLeft  = new Texture(ResourceManager::GetTexturePath(innerTopLeftPath));
+	m_innerTopRight = new Texture(ResourceManager::GetTexturePath(innerTopRightPath));
 
-	m_middleLeft  = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Left"));
-	m_middleRight = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Right"));
+	// Middle textures
+	m_middleLeft  = new Texture(ResourceManager::GetTexturePath(middleLeftPath));
+	m_middleRight = new Texture(ResourceManager::GetTexturePath(middleRightPath));
 
-	m_innerBottomLeft  = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Inner_Left"));
-	m_innerBottomRight = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Inner_Right"));
+	// Inner bottom textures
+	m_innerBottomLeft  = new Texture(ResourceManager::GetTexturePath(innerBottomLeftPath));
+	m_innerBottomRight = new Texture(ResourceManager::GetTexturePath(innerBottomRightPath));
 
-	m_bottomLeft     = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Bottom_Left"));
-	m_bottomCenter   = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Bottom_Center"));
-	m_bottomCenter2 =  new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Bottom_Center_2"));
-	m_bottomRight = new Texture(ResourceManager::GetTexturePath("/Ledges/Wall_Bottom_Right"));
+	// Bottom textures
+	m_bottomLeft = new Texture(ResourceManager::GetTexturePath(bottomLeftPath));
+	for (const auto& path : bottomCenterPaths)
+	{
+		m_bottomCenter.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+	}
+	m_bottomRight = new Texture(ResourceManager::GetTexturePath(bottomRightPath));
 
-	m_tree0       = new Texture(ResourceManager::GetTexturePath("/Trees/tree_0"));
-	m_tree0Shadow = new Texture(ResourceManager::GetTexturePath("/Trees/tree_0_shadow"));
+	// Tree textures
+	for (const auto& path : treePaths)
+	{
+		m_tree.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+	}
+
+	// Tree shadow texture
+	m_treeShadow = new Texture(ResourceManager::GetTexturePath(treeShadowPath));
 }
 
 void MapGenerator::DeleteTextures()
@@ -554,34 +570,29 @@ void MapGenerator::DeleteTextures()
 	delete m_water;
 	m_water = nullptr;
 
-	delete m_center0;
-	m_center0 = nullptr;
-	delete m_center1;
-	m_center1 = nullptr;
-	delete m_center2;
-	m_center2 = nullptr;
-	delete m_center3;
-	m_center3 = nullptr;
+	for (auto center : m_center)
+	{
+		delete center;
+		center = nullptr;
+	}
 
-	delete m_sprout0;
-	m_sprout0 = nullptr;
-	delete m_sprout1;
-	m_sprout1 = nullptr;
-	delete m_sprout2;
-	m_sprout2 = nullptr;
-	delete m_sprout3;
-	m_sprout3 = nullptr;
-	delete m_sprout4;
-	m_sprout4 = nullptr;
+	for (auto sprout : m_sprout)
+	{
+		if (sprout != nullptr)
+		{
+			delete sprout;
+			sprout = nullptr;
+		}
+	}
 
-	delete m_stone0;
-	m_stone0 = nullptr;
-	delete m_stone1;
-	m_stone1 = nullptr;
-	delete m_stone2;
-	m_stone2 = nullptr;
-	delete m_stone3;
-	m_stone3 = nullptr;
+	for (auto stone : m_stone)
+	{
+		if (stone != nullptr)
+		{
+			delete stone;
+			stone = nullptr;
+		}
+	}
 
 	delete m_topLeft;
 	m_topLeft = nullptr;
@@ -607,17 +618,29 @@ void MapGenerator::DeleteTextures()
 
 	delete m_bottomLeft;
 	m_bottomLeft = nullptr;
-	delete m_bottomCenter;
-	m_bottomCenter = nullptr;
-	delete m_bottomCenter2;
-	m_bottomCenter2 = nullptr;
+
+	for (auto bottomCenter : m_bottomCenter)
+	{
+		if (bottomCenter != nullptr)
+		{
+			delete bottomCenter;
+			bottomCenter = nullptr;
+		}
+	}
+
 	delete m_bottomRight;
 	m_bottomRight = nullptr;
 
-	delete m_tree0;
-	m_tree0 = nullptr;
-	delete m_tree0Shadow;
-	m_tree0Shadow = nullptr;
+	for (auto tree : m_tree)
+	{
+		if (tree != nullptr)
+		{
+			delete tree;
+			tree = nullptr;
+		}
+	}
+	delete m_treeShadow;
+	m_treeShadow = nullptr;
 }
 
 void MapGenerator::RemakeTerrain()
@@ -684,11 +707,11 @@ void MapGenerator::SetGrass()
 
 					switch (rand() % 5)
 					{
-					case 0: currentTexture = m_sprout0; break;
-					case 1: currentTexture = m_sprout1; break;
-					case 2: currentTexture = m_sprout2; break;
-					case 3: currentTexture = m_sprout3; break;
-					case 4: currentTexture = m_sprout4; break;
+					case 0: currentTexture = m_sprout[0]; break;
+					case 1: currentTexture = m_sprout[1]; break;
+					case 2: currentTexture = m_sprout[2]; break;
+					case 3: currentTexture = m_sprout[3]; break;
+					case 4: currentTexture = m_sprout[4]; break;
 					}
 
 					m_grassObjects.push_back(m_objManager->CreateQuad(newPos, glm::vec2(1), currentTexture));
@@ -771,14 +794,14 @@ Texture* MapGenerator::SetWall(bool up, bool right, bool down, bool left, bool f
 		return m_middleRight;
 	}
 
-	return (rand() % 2 == 1) ? m_bottomCenter : m_bottomCenter2;
+	return (rand() % 2 == 1) ? m_bottomCenter[0] : m_bottomCenter[1];
 }
 
 int MapGenerator::GetTotalGroundSurrounding(Cell& cell)
 {
 	int totalGroundTiles = 0;
-	int x                = cell.GetPosition().x;
-	int y                = cell.GetPosition().y;
+	int x                = static_cast<int>(cell.GetPosition().x);
+	int y                = static_cast<int>(cell.GetPosition().y);
 
 	if (x < m_mapSize - 1)
 		if (m_cells[x + 1][y].GetCellType() != type::Water && m_cells[x + 1][y].GetCellType() != type::Wall)
@@ -825,43 +848,43 @@ int MapGenerator::GetTotalGroundSurrounding(Cell& cell)
 
 void MapGenerator::SetResultValues()
 {
-	for (int x = 0; x < m_mapSize; x++)
-	{
-		for (int y = 0; y < m_mapSize; y++)
-		{
-			switch (m_cells[x][y].GetCellType())
-			{
-			case type::Water: m_results[x][y] = 0; break;
-
-			case type::Ground: m_results[x][y] = 1; break;
-
-			case type::Stone: m_results[x][y] = 2; break;
-
-			case type::Wall: m_results[x][y] = 1; break;
-
-			case type::Tree: m_results[x][y] = 3; break;
-
-			default: m_results[x][y] = 1; break;
-			}
-		}
-	}
-
-	for (int x = 0; x < m_mapSize; x++)
-	{
-		for (int y = 0; y < m_mapSize; y++)
-		{
-			switch (m_results[x][y])
-			{
-			case 0: std::cout << "\033[34m" << m_results[x][y] << "\033[0m"; break;
-			case 1: std::cout << "\033[92m" << m_results[x][y] << "\033[0m"; break;
-			case 2: std::cout << "\033[90m" << m_results[x][y] << "\033[0m"; break;
-
-			case 3: std::cout << "\033[32m" << m_results[x][y] << "\033[0m"; break;
-			default: break;
-			}
-		}
-		std::cout << std::endl;
-	}
+// 	for (int x = 0; x < m_mapSize; x++)
+// 	{
+// 		for (int y = 0; y < m_mapSize; y++)
+// 		{
+// 			switch (m_cells[x][y].GetCellType())
+// 			{
+// 			case type::Water: m_results[x][y] = 0; break;
+// 
+// 			case type::Ground: m_results[x][y] = 1; break;
+// 
+// 			case type::Stone: m_results[x][y] = 2; break;
+// 
+// 			case type::Wall: m_results[x][y] = 1; break;
+// 
+// 			case type::Tree: m_results[x][y] = 3; break;
+// 
+// 			default: m_results[x][y] = 1; break;
+// 			}
+// 		}
+// 	}
+// 
+// 	for (int x = 0; x < m_mapSize; x++)
+// 	{
+// 		for (int y = 0; y < m_mapSize; y++)
+// 		{
+// 			switch (m_results[x][y])
+// 			{
+// 			case 0: std::cout << "\033[34m" << m_results[x][y] << "\033[0m"; break;
+// 			case 1: std::cout << "\033[92m" << m_results[x][y] << "\033[0m"; break;
+// 			case 2: std::cout << "\033[90m" << m_results[x][y] << "\033[0m"; break;
+// 
+// 			case 3: std::cout << "\033[32m" << m_results[x][y] << "\033[0m"; break;
+// 			default: break;
+// 			}
+// 		}
+// 		std::cout << std::endl;
+// 	}
 }
 
 Cell** MapGenerator::GetAllCells()
@@ -871,7 +894,7 @@ Cell** MapGenerator::GetAllCells()
 
 Texture* MapGenerator::GenerateMiniMap()
 {
-	float* miniMap = new float[m_mapSize * m_mapSize * 4]; // 4 = RGBA
+	float* miniMap = new float[static_cast<size_t>(m_mapSize) * m_mapSize * 4];
 
 	for (int x = 0; x < m_mapSize; x++)
 	{
@@ -928,7 +951,7 @@ Texture* MapGenerator::GenerateMiniMap()
 
 	Texture* miniMapTexture = new Texture(miniMap, m_mapSize, m_mapSize);
 	
-	delete miniMap;
+	delete[] miniMap;
 	miniMap = nullptr;
 
 	return miniMapTexture;
@@ -939,7 +962,7 @@ Texture* MapGenerator::GetTexture(type tileType)
 	switch (tileType)
 	{
 	case type::Water: return nullptr; break;
-	case type::Ground: return m_center0; break;
+	case type::Ground: return m_center[0]; break;
 	case type::TopLeft: return m_topLeft; break;
 	case type::TopCenter: return m_topCenter; break;
 	case type::TopRight: return m_topRight; break;
@@ -950,7 +973,7 @@ Texture* MapGenerator::GetTexture(type tileType)
 	case type::InnerBottomLeft: return m_innerBottomLeft; break;
 	case type::InnerBottomRight: return m_innerBottomRight; break;
 	case type::BottomLeft: return m_bottomLeft; break;
-	case type::BottomCenter: return m_bottomCenter; break;
+	case type::BottomCenter: return m_bottomCenter[0]; break;
 	case type::BottomRight: return m_bottomRight; break;
 	default: break;
 	}
@@ -960,7 +983,14 @@ Texture* MapGenerator::GetTexture(type tileType)
 
 void MapGenerator::SetTileSprite(int x, int y)
 {
-	bool top = false, right = false, bottom = false, left = false, floorAbove = false, floorBelow = false, floorRight = false, floorLeft = false;
+	bool top = false;
+	bool right = false;
+	bool bottom = false;
+	bool left = false;
+	bool floorAbove = false;
+	bool floorBelow = false;
+	bool floorRight = false;
+	bool floorLeft = false;
 
 	if (x < m_mapSize - 1)
 	{

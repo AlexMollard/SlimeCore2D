@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\ConsoleLog.h" />
     <ClInclude Include="engine\BatchRenderer.h" />
     <ClInclude Include="engine\BoundingBox.h" />
     <ClInclude Include="engine\Camera.h" />
