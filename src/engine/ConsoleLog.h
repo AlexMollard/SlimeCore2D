@@ -1,12 +1,42 @@
 #pragma once
+#include <assert.h>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include <assert.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+class CustomStreamBuffer : public std::streambuf
+{
+public:
+	virtual int_type overflow(int_type c = traits_type::eof())
+	{
+		if (c != traits_type::eof())
+		{
+			// Convert the character to a string and output to the debug window
+			std::string output(1, static_cast<char>(c));
+#ifdef _WIN32
+			OutputDebugStringA(output.c_str());
+#else
+			// Output to another platform's debug stream
+#endif
+		}
+
+		return c;
+	}
+};
+
+class CustomStream : public std::ostream
+{
+public:
+	CustomStream() : std::ostream(&buffer) {}
+
+private:
+	CustomStreamBuffer buffer;
+};
+
 
 enum ConsoleColor
 {
@@ -59,7 +89,7 @@ public:
 	{
 		set(headerColor);
 		std::cout << listName << ":" << std::endl;
-		
+
 		set(listColour);
 		for (const auto& item : list)
 		{
@@ -80,42 +110,46 @@ public:
 	// Function for debugging with file and line information (INFO)
 	static void internalInfo(const std::string& message, const char* file, int line)
 	{
+		std::cout << std::format("{}({}) : ", file, line, message);
 		ConsoleLog::set(ConsoleColor::Cyan);
 		std::cout << "INFO";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" : {}({}) {}", file, line, message) << std::endl;
+		std::cout << std::format(" - {}", message) << std::endl;
 	}
 
 	// Function for debugging with file and line information (WARN)
 	static void internalWarn(const std::string& message, const char* file, int line)
 	{
+		std::cout << std::format("{}({}) : ", file, line, message);
 		ConsoleLog::set(ConsoleColor::Yellow);
 		std::cout << "WARN";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" : {}({}) {}", file, line, message) << std::endl;
+		std::cout << std::format(" - {}", message) << std::endl;
 	}
 
 	// Function for debugging with file and line information (ERROR)
 	static void internalError(const std::string& message, const char* file, int line)
 	{
+		std::cout << std::format("{}({}) : ", file, line, message);
 		ConsoleLog::set(ConsoleColor::Red);
 		std::cout << "ERROR";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" : {}({}) {}", file, line, message) << std::endl;
+		std::cout << std::format(" - {}", message) << std::endl;
 	}
 };
 
 // Debug macro for convenience
-#define SLIME_INFO(message)  ConsoleLog::internalInfo(message, __FILE__, __LINE__)
-#define SLIME_WARN(message)  ConsoleLog::internalWarn(message, __FILE__, __LINE__)
+#define SLIME_INFO(...) ConsoleLog::internalInfo(std::format(__VA_ARGS__), __FILE__, __LINE__)
+#define SLIME_WARN(...) ConsoleLog::internalWarn(std::format(__VA_ARGS__), __FILE__, __LINE__)
 
-#define SLIME_ERROR(message)                                                                                                                                                  \
+#define SLIME_ERROR(...)                                                                                                                                                      \
 	do                                                                                                                                                                        \
 	{                                                                                                                                                                         \
+		std::string message = std::format(__VA_ARGS__);                                                                                                                       \
 		ConsoleLog::internalError(message, __FILE__, __LINE__);                                                                                                               \
-		assert(false && message);                                                                                                                                             \
+		assert(false && message.c_str());                                                                                                                                     \
 	}                                                                                                                                                                         \
 	while (false)
