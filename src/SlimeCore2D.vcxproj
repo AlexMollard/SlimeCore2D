@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="game\Bullet.h" />
     <ClInclude Include="engine\ConsoleLog.h" />
     <ClInclude Include="engine\BatchRenderer.h" />
     <ClInclude Include="engine\BoundingBox.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="game\Player.h" />
     <ClInclude Include="engine\QuadBatchRenderer.h" />
     <ClInclude Include="engine\StateMachine\State.h" />
+    <ClInclude Include="game\Item.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BatchRenderer.cpp" />
@@ -63,6 +65,7 @@
     <ClCompile Include="game\Cloud.cpp" />
     <ClCompile Include="game\CloudManager.cpp" />
     <ClCompile Include="game\Game2D.cpp" />
+    <ClCompile Include="game\Item.cpp" />
     <ClCompile Include="game\MapGenerator.cpp" />
     <ClCompile Include="game\Player.cpp" />
     <ClCompile Include="game\SlimeCore2D.cpp" />

@@ -1,9 +1,12 @@
 #pragma once
 #include "engine/GameObject.h"
+#include "Bullet.h"
+#include "Item.h"
 
 struct Cell;
 class Texture;
 class Camera;
+class QuadBatchRenderer;
 
 class Player final : public GameObject
 {
@@ -12,14 +15,26 @@ public:
 	~Player() final;
 
 	void Init(Camera* cam, Cell** cells, GameObject* shadow);
+	void SetBatch(QuadBatchRenderer* batch);
 
-	void Update(float deltaTime);
+	void Update(float deltaTime) override;
 	void playerMovement(float deltaTime);
 
 	void UpdateSurroundingTiles();
 	void SetAllCells(Cell** cells);
+
+	void useItem(Item* item);
+
+	void PickupItem(Item item);
+	void OnPickupItem(Item* item);
+
+	void shootBullet();
+	void OnShootBullet(Bullet* bullet);
+	Bullet* GetLastBullet();
+
 private:
 	Camera* camera = nullptr;
+	QuadBatchRenderer* m_batch = nullptr;
 
 	Texture* m_playerIdleLeft = nullptr;
 	Texture* m_playerIdleRight = nullptr;
@@ -28,4 +43,7 @@ private:
 	Texture* m_playerShadow = nullptr;
 
 	Cell** m_cells;
+
+	std::vector<Bullet> bullets;
+	std::vector<Item> items;
 };

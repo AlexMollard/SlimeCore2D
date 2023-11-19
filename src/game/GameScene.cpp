@@ -1,20 +1,19 @@
 #include "GameScene.h"
-#include "engine/MemoryDebugging.h"
 
-#include "Game2D.h"
-#include "engine/StateMachine/StateMachine.h"
 #include "CloudManager.h"
+#include "Game2D.h"
 #include "MapGenerator.h"
 
-#include "engine/Noise.h"
 #include "engine/MemoryDebugging.h"
+#include "engine/Noise.h"
 #include "engine/ResourceManager.h"
+#include "engine/StateMachine/StateMachine.h"
 
 void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 {
-	Camera* camera = game->GetCamera();
+	Camera* camera               = game->GetCamera();
 	ObjectManager* objectManager = game->GetObjectManager();
-	PhysicsScene* physicsScene = game->GetPhysicsScene();
+	PhysicsScene* physicsScene   = game->GetPhysicsScene();
 
 	m_map = new MapGenerator(game->GetObjectManager(), game->GetPhysicsScene(), camera, &m_mapBatchRenderer, &m_treeBatchRenderer, 100);
 
@@ -24,11 +23,11 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	m_player.Create(glm::vec3(0, 0, -0.5f), glm::vec3(1), glm::vec2(1, 2), 404);
 	m_player.Init(camera, m_map->GetAllCells(), shadow);
 	m_player.SetHasAnimation(true);
-
 	m_map->Generate();
 
 	m_player.SetAllCells(m_map->GetAllCells());
 	m_batchRenderer.AddObject(&m_player);
+	m_player.SetBatch(&m_batchRenderer);
 
 	physicsScene->addActor(&m_player, "player");
 
@@ -46,22 +45,22 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	float miniMapHeight  = 200.0f;
 	float miniMapPadding = 20.0f;
 
-	GameObject* miniMapBorderQuad = objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1),
-	                                                           glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
+	GameObject* miniMapBorderQuad =
+	    objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1), glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
 	miniMapBorderQuad->SetColor(glm::vec3(0.1f, 0.1f, 0.1f));
 	miniMapBorderQuad->SetAnchorPoint({ 1.0f, 0.0f });
 	m_uiBatchRenderer.AddObject(miniMapBorderQuad);
 
-	//m_miniMapMask = new Texture();
-	//miniMapMask->GenerateRoundedMask(miniMapWidth * 0.45f, miniMapWidth, miniMapHeight);
-	//m_miniMapMask->GenerateNoise(NoiseType::Perlin, miniMapWidth, miniMapHeight, 0.1, 0.1, 0.1);
-	//miniMapBorderQuad->SetMaskTexture(m_miniMapMask);
+	// m_miniMapMask = new Texture();
+	// miniMapMask->GenerateRoundedMask(miniMapWidth * 0.45f, miniMapWidth, miniMapHeight);
+	// m_miniMapMask->GenerateNoise(NoiseType::Perlin, miniMapWidth, miniMapHeight, 0.1, 0.1, 0.1);
+	// miniMapBorderQuad->SetMaskTexture(m_miniMapMask);
 
 	m_miniMapTexture        = m_map->GenerateMiniMap();
 	GameObject* miniMapQuad = objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding, miniMapPadding, 1), glm::vec2(miniMapWidth, miniMapHeight), m_miniMapTexture);
 	miniMapQuad->SetAnchorPoint({ 1.0f, 0.0f });
 	m_uiBatchRenderer.AddObject(miniMapQuad);
-	//miniMapQuad->SetMaskTexture(m_miniMapMask);
+	// miniMapQuad->SetMaskTexture(m_miniMapMask);
 
 	Texture* fishytex = m_uiBatchRenderer.LoadTexture(ResourceManager::GetTexturePath("fishy"));
 	GameObject* fishy = objectManager->CreateQuad(glm::vec3(100, 100, 1), glm::vec2(fishytex->GetWidth() * 4, fishytex->GetHeight() * 4), fishytex);
@@ -71,6 +70,22 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 
 	m_uiBatchRenderer.SetZOffset(-10.0f);
 	m_uiBatchRenderer.SetOcclusionCulling(false);
+
+	// Example items with custom functions
+	Item healthPotion("Health Potion", [](Player& p) { SLIME_INFO("Yeah"); }, nullptr);
+	Item speedBoost("Speed Boost", nullptr, [](Player& p) { SLIME_INFO("Nah"); });
+	Item damageBoost("Damage Boost", nullptr, [](Player& p) { SLIME_INFO("Pog"); });
+
+	// Register additional event handlers
+	healthPotion.registerEventHandler(ItemEvent::OnPickup, [](Player& p) { SLIME_INFO("Health Potion picked up!"); });
+	speedBoost.registerEventHandler(ItemEvent::OnShoot, [](Player& p) { SLIME_INFO("Speed Boost activated on shoot!"); });
+	damageBoost.registerEventHandler(ItemEvent::OnDamage, [](Player& p) { SLIME_INFO("Damage Boost applied on damage!"); });
+
+	m_player.PickupItem(healthPotion);
+	m_player.PickupItem(speedBoost);
+	m_player.PickupItem(damageBoost);
+
+	m_player.shootBullet();
 }
 
 void GameScene::Update(StateMachine<GameScene>* stateMachine, Game2D* game, float dt)
@@ -108,13 +123,13 @@ void GameScene::Render(StateMachine<GameScene>* stateMachine, Game2D* game, Rend
 	renderer->Draw(&m_uiBatchRenderer, ShaderType::UI, CameraType::SCREENSPACE);
 }
 
-void GameScene::Exit(StateMachine<GameScene>* stateMachine, Game2D* game) 
+void GameScene::Exit(StateMachine<GameScene>* stateMachine, Game2D* game)
 {
 	delete m_miniMapTexture;
 	m_miniMapTexture = nullptr;
 
-	//delete m_miniMapMask;
-	//m_miniMapMask = nullptr;
+	// delete m_miniMapMask;
+	// m_miniMapMask = nullptr;
 
 	delete m_waterTexture;
 	m_waterTexture = nullptr;

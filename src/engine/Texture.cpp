@@ -1,4 +1,6 @@
 #include "Texture.h"
+#include "ConsoleLog.h"
+
 #include "engine/MemoryDebugging.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -33,7 +35,7 @@ Texture::Texture(std::string dir)
 	}
 	else
 	{
-		printf("Failed to load texture: %s\n", dir.c_str());
+		SLIME_WARN("Failed to load texture: {0}", dir.c_str());
 	}
 	stbi_image_free(data);
 }

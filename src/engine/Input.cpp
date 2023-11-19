@@ -22,10 +22,10 @@ void Input::Update()
 	// Get window size
 	SDL_GetWindowSize(m_window, &m_winWidth, &m_winHeight);
 
-	m_mouseXPos /= (m_winWidth / (m_aspectX * 2.0f));
+	m_mouseXPos /= (m_winWidth / (m_aspectX * 2));
 	m_mouseXPos -= m_aspectX;
 
-	m_mouseYPos /= (m_winHeight / (m_aspectY * 2.0f));
+	m_mouseYPos /= (m_winHeight / (m_aspectY * 2));
 	m_mouseYPos -= m_aspectY;
 	m_mouseYPos = -m_mouseYPos;
 

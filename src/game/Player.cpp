@@ -1,8 +1,10 @@
 
 #include "Player.h"
-#include "engine/MemoryDebugging.h"
 
 #include "Cell.h"
+
+#include "engine/MemoryDebugging.h"
+#include "engine/QuadBatchRenderer.h"
 #include "engine/ResourceManager.h"
 
 Player::~Player()
@@ -25,9 +27,9 @@ Player::~Player()
 
 void Player::Init(Camera* cam, Cell** cells, GameObject* shadow)
 {
-	m_cells = cells;
+	m_cells           = cells;
 	m_isMemoryManaged = true;
-	camera = cam;
+	camera            = cam;
 
 	m_playerIdleRight = new Texture(ResourceManager::GetTexturePath("Player/Knight_Idle_Right"));
 	m_playerIdleLeft  = new Texture(ResourceManager::GetTexturePath("Player/Knight_Idle_Left"));
@@ -44,6 +46,11 @@ void Player::Init(Camera* cam, Cell** cells, GameObject* shadow)
 	shadow->SetParent(this);
 	shadow->UpdatePos();
 	shadow->SetScale(glm::vec2(1, 2));
+}
+
+void Player::SetBatch(QuadBatchRenderer* batch)
+{
+	m_batch = batch;
 }
 
 void Player::Update(float deltaTime)
@@ -113,8 +120,8 @@ void Player::UpdateSurroundingTiles()
 
 	for (int i = 0; i < 9; ++i)
 	{
-		const int x         = posX + (i % 3) - 1;
-		const int y         = posY + (i / 3) - 1;
+		const int x = posX + (i % 3) - 1;
+		const int y = posY + (i / 3) - 1;
 		SetSurroundTile(i, m_cells[x][y].GetGameObject());
 	}
 }
@@ -122,4 +129,51 @@ void Player::UpdateSurroundingTiles()
 void Player::SetAllCells(Cell** cells)
 {
 	m_cells = cells;
+}
+
+void Player::PickupItem(Item item)
+{
+	items.push_back(item);
+	OnPickupItem(&items.back());
+}
+
+void Player::OnPickupItem(Item* item)
+{
+	if (item->HasEventHandler(ItemEvent::OnPickup))
+	{
+		item->handleEvent(ItemEvent::OnPickup, *this);
+	}
+}
+
+void Player::shootBullet()
+{
+	glm::vec2 mousePos  = Input::GetMousePos();
+	glm::vec3 playerPos = GetPos();
+
+	glm::vec2 direction = glm::normalize(mousePos - glm::vec2(playerPos));
+
+	bullets.push_back({ 1 });
+
+	Bullet& bullet = bullets.back();
+	bullet.Create(playerPos, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f }, 4575);
+	//bullet.UpdatePos();
+	m_batch->AddObject(&bullets.back());
+
+	OnShootBullet(&bullets.back());
+}
+
+void Player::OnShootBullet(Bullet* bullet)
+{
+	for (auto& item : items)
+	{
+		if (item.HasEventHandler(ItemEvent::OnShoot))
+		{
+			item.handleEvent(ItemEvent::OnShoot, *this);
+		}
+	};
+}
+
+Bullet* Player::GetLastBullet()
+{
+	return &bullets.back();
 }

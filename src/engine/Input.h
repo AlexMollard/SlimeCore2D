@@ -52,8 +52,8 @@ private:
 	int m_winWidth = 0;
 	int m_winHeight = 0;
 
-	double m_aspectX = 32;
-	double m_aspectY = 18;
+	int m_aspectX = 32;
+	int m_aspectY = 18;
 
 	bool m_isWindowFocused = true;
 
