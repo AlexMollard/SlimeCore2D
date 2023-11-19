@@ -60,7 +60,7 @@ void Player::Update(float deltaTime)
 	if (mousePos.x >= 0)
 		right = true;
 
-	if (Input::GetKeyPress(Keycode::D) || Input::GetKeyPress(Keycode::A) || Input::GetKeyPress(Keycode::W) || Input::GetKeyPress(Keycode::S))
+	if (Input::GetKeyPress(SDLK_d) || Input::GetKeyPress(SDLK_a) || Input::GetKeyPress(SDLK_w) || Input::GetKeyPress(SDLK_s))
 	{
 		if (right)
 			SetTexture(m_playerRunright);
@@ -84,22 +84,22 @@ void Player::Update(float deltaTime)
 
 void Player::playerMovement(float deltaTime)
 {
-	float speed = (Input::GetKeyPress(Keycode::LEFT_SHIFT)) ? 10.0f : 4.0f;
+	float speed = (Input::GetKeyPress(SDLK_LSHIFT)) ? 10.0f : 4.0f;
 
 	float moveSpeed = speed * deltaTime;
 
 	glm::vec3 movePos = GetPos();
 
-	if (Input::GetKeyPress(Keycode::W))
+	if (Input::GetKeyPress(SDLK_w))
 		movePos += glm::vec3(0.0f, moveSpeed, 0);
 
-	if (Input::GetKeyPress(Keycode::S))
+	if (Input::GetKeyPress(SDLK_s))
 		movePos += glm::vec3(0.0f, -moveSpeed, 0);
 
-	if (Input::GetKeyPress(Keycode::A))
+	if (Input::GetKeyPress(SDLK_a))
 		movePos += glm::vec3(-moveSpeed, 0.0f, 0);
 
-	if (Input::GetKeyPress(Keycode::D))
+	if (Input::GetKeyPress(SDLK_d))
 		movePos += glm::vec3(moveSpeed, 0.0f, 0);
 
 	SetPos(movePos);

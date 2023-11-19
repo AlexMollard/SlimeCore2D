@@ -1,14 +1,13 @@
 #pragma once
 #include "glm.hpp"
 #include "glew.h"
-#include "glfw3.h"
-#include "Keycode.h"
+#include "sdl.h"
 #include "Camera.h"
 
 class Input
 {
 public:
-	~Input();
+	~Input() = default;
 
 	static Input* GetInstance() {
 		if (!m_instance)
@@ -18,7 +17,7 @@ public:
 
 	void Update();
 
-	GLFWwindow* GetWindow();
+	SDL_Window* GetWindow();
 
 	static glm::vec2 GetMousePos();
 	glm::vec2 GetDeltaMouse() const;
@@ -29,7 +28,7 @@ public:
 
 	void SetCamera(Camera* cam);
 
-	static bool GetKeyPress(Keycode key);
+	static bool GetKeyPress(SDL_Keycode key);
 
 	static void SetScroll(float newScroll);
 	static float GetScroll();
@@ -38,15 +37,17 @@ public:
 	void SetFocus(bool focus);
 
 	static glm::vec2 GetMouseToWorldPos();
+
+	void SetWindow(SDL_Window* window);
 private:
 	static Input* m_instance;
 
-	Input();
+	Input() = default;
 
-	GLFWwindow* m_window;
+	SDL_Window* m_window;
 
-	static double m_mouseXPos;
-	static double m_mouseYPos;
+	static int m_mouseXPos;
+	static int m_mouseYPos;
 
 	int m_winWidth = 0;
 	int m_winHeight = 0;

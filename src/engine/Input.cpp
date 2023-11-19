@@ -4,24 +4,9 @@
 #include <iostream>
 #include <string>
 
-// GLFW Callbacks
-void window_focus_callback(GLFWwindow* window, int focused);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
 float Input::m_scroll;
-double Input::m_mouseXPos;
-double Input::m_mouseYPos;
-
-Input::Input()
-{
-	m_window = glfwGetCurrentContext();
-	glfwSetWindowFocusCallback(m_window, window_focus_callback);
-	glfwSetScrollCallback(m_window, scroll_callback);
-}
-
-Input::~Input()
-{
-}
+int Input::m_mouseXPos;
+int Input::m_mouseYPos;
 
 // Most of this is broken because of the camera changing aspect ratio and position
 void Input::Update()
@@ -31,8 +16,11 @@ void Input::Update()
 
 	m_deltaMouse = glm::vec2((float)m_mouseXPos, (float)m_mouseYPos);
 
-	glfwGetCursorPos(m_window, &m_mouseXPos, &m_mouseYPos);
-	glfwGetWindowSize(m_window, &m_winWidth, &m_winHeight);
+	// Get cursor pos
+	SDL_GetMouseState(&m_mouseXPos, &m_mouseYPos);
+
+	// Get window size
+	SDL_GetWindowSize(m_window, &m_winWidth, &m_winHeight);
 
 	m_mouseXPos /= (m_winWidth / (m_aspectX * 2.0f));
 	m_mouseXPos -= m_aspectX;
@@ -67,7 +55,7 @@ glm::vec2 Input::GetAspectRatio() const
 
 bool Input::GetMouseDown(int button)
 {
-	return (glfwGetMouseButton(GetInstance()->m_window, button));
+	return (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(button));
 }
 
 void Input::SetCamera(Camera* cam)
@@ -75,7 +63,7 @@ void Input::SetCamera(Camera* cam)
 	m_camera = cam;
 }
 
-GLFWwindow* Input::GetWindow()
+SDL_Window* Input::GetWindow()
 {
 	return m_window;
 }
@@ -95,20 +83,25 @@ glm::vec2 Input::GetMouseToWorldPos()
 	return GetInstance()->m_camera->GetPosition() + (glm::vec2(m_mouseXPos, m_mouseYPos));
 }
 
-void window_focus_callback(GLFWwindow* window, int focused)
+void Input::SetWindow(SDL_Window* window) 
+{
+	m_window = window;
+}
+
+void window_focus_callback(SDL_Window* window, int focused)
 {
 	Input::GetInstance()->SetFocus(focused);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(SDL_Window* window, double xoffset, double yoffset)
 {
 	Input::SetScroll(yoffset);
 }
 
-bool Input::GetKeyPress(Keycode key)
+bool Input::GetKeyPress(SDL_Keycode key)
 {
-	int state = glfwGetKey(GetInstance()->m_window, (int)key);
-	if (state == GLFW_PRESS)
+	int state = SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromKey(key)];
+	if (state == SDL_PRESSED)
 	{
 		return true;
 	}

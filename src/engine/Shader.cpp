@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include "Camera.h"
+#include "ConsoleLog.h"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
@@ -63,7 +64,7 @@ void Shader::CreateShader(const char* vertexPath, const char* fragmentPath, cons
 	}
 	catch (std::ifstream::failure e)
 	{
-		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+		SLIME_ERROR("ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ");
 	}
 	const char* vShaderCode = vertexCode.c_str();
 	const char* fShaderCode = fragmentCode.c_str();

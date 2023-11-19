@@ -3,8 +3,6 @@
 #include "ConsoleLog.h"
 #include <string>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
 Window::Window(int width, int height, const char* name)
 {
 	// Check for Memory Leaks
@@ -23,34 +21,56 @@ Window::~Window()
 
 int Window::Window_intit(int width, int height, const char* name)
 {
-	if (!glfwInit())
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
+		SLIME_ERROR("Failed to initialize SDL");
 		return -1;
 	}
 
-    // Output the GLFW version in green
-	int major, minor, revision;
-	glfwGetVersion(&major, &minor, &revision);
-	ConsoleLog::log(std::format("GLFW Version: {}.{}.{}", major, minor, revision), ConsoleColor::Green);
 
-	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    // Output the SDL version in green
+	SDL_version sdlVersion;
+	SDL_GetVersion(&sdlVersion);
+	ConsoleLog::log(std::format("SDL Version: {}.{}.{}", sdlVersion.major, sdlVersion.minor, sdlVersion.patch), ConsoleColor::Green);
 
-	window = glfwCreateWindow(width, height, name, NULL, NULL);
-	glfwMakeContextCurrent(window);
+	// Create window
+	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	
+	// Create OpenGL context
+	glContext = SDL_GL_CreateContext(window);
 
-	if (!window)
+    // Initialize GLEW after creating the OpenGL context
+	GLenum glewInitResult = glewInit();
+	if (glewInitResult != GLEW_OK)
 	{
-		glfwTerminate();
+		SLIME_ERROR("Failed to initialize GLEW");
 		return -1;
 	}
 
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-	// Initializing Glew
-	glewExperimental = GL_TRUE;
-	if (glewInit() != GLEW_OK)
+	// Check for OpenGL support
+	if (!GLEW_VERSION_3_3)
 	{
-		std::cout << "Glew is not having a good time" << std::endl;
+		SLIME_ERROR("OpenGL 3.3 is not supported");
+		return -1;
+	}
+
+	// Setup OpenGL viewport
+	glViewport(0, 0, width, height);
+
+	// Setup OpenGL options
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Setup OpenGL callbacks
+	SDL_GL_SetSwapInterval(1); // Enable vsync
+
+	// If anything has gone wrong, exit and return -1
+	if (!window || !glContext)
+	{
+		SLIME_ERROR("Failed to create window or OpenGL context");
+		return -1;
 	}
 
 	// Output more verbose info
@@ -69,42 +89,58 @@ int Window::Window_intit(int width, int height, const char* name)
 
 	int nrTextureUnits;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &nrTextureUnits);
-	std::cout << "  Max nr of texture units supported: " << nrTextureUnits << std::endl;
-
+	std::cout << "  Max nr of texture units supported: " << nrTextureUnits << "\n" << std::endl;
 
 	return 1;
 }
 
 void Window::Update_Window()
 {
-	glfwSwapBuffers(window);
-	glfwPollEvents();
+	SDL_GL_SwapWindow(window);
+	SDL_Event event;
 
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
+	while (SDL_PollEvent(&event))
+	{
+		if (event.type == SDL_QUIT)
+		{
+			Window_destroy();
+		}
 
-	now = glfwGetTime();
-	delta = (float)(now - last);
-	last = now;
-}
+		if (event.type == SDL_WINDOWEVENT)
+		{
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+			{
+				glViewport(0, 0, event.window.data1, event.window.data2);
+			}
+		}
 
-int Window::Window_shouldClose()
-{
-	return glfwWindowShouldClose(window);
+		if (event.type == SDL_KEYDOWN)
+		{
+			if (event.key.keysym.sym == SDLK_ESCAPE)
+			{
+				Window_destroy();
+			}
+		}
+	}
+
+	now   = SDL_GetTicks();
+	delta = (now - last) / 1000.0f;
+	last  = now;
 }
 
 void Window::Window_destroy()
 {
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	SDL_GL_DeleteContext(glContext);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
+}
+
+SDL_Window* Window::GetWindow() const
+{
+	return window;
 }
 
 float Window::GetDeltaTime()
 {
 	return delta;
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
 }

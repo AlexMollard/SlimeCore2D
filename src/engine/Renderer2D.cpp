@@ -39,7 +39,6 @@ Renderer2D::Renderer2D(Camera* camera, Camera* screenCamera) : m_camera(camera),
 	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glfwSwapInterval(0); // V-Sync
 
 	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::BASIC),    new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str()));
 	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::UI),       new Shader(ResourceManager::GetShaderPath("UIVertex").c_str(),    ResourceManager::GetShaderPath("UIFragment").c_str()));

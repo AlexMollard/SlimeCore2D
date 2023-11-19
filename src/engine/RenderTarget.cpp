@@ -1,5 +1,6 @@
 #include "RenderTarget.h"
 #include "engine/MemoryDebugging.h"
+#include "ConsoleLog.h"
 
  RenderTarget::RenderTarget(unsigned int width, unsigned int height, FlipPolicy flipPolicy) : m_width(width), m_height(height)
 {
@@ -94,7 +95,9 @@ void RenderTarget::Create(FlipPolicy flipPolicy)
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	{
+		SLIME_ERROR("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

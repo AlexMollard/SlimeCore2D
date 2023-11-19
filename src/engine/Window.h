@@ -1,6 +1,6 @@
 #include <iostream>
 #include <glew.h>
-#include <glfw3.h>
+#include <SDL.h>
 
 class Window
 {
@@ -11,13 +11,15 @@ public:
 	// Window Functions
 	int Window_intit(int width, int height, const char* name);
 	void Update_Window();
-	int Window_shouldClose();
 	void Window_destroy();
+
+	SDL_Window* GetWindow() const;
 
 	float GetDeltaTime();
 protected:
 	// Main Window
-	GLFWwindow* window;
+	SDL_Window* window;
+	SDL_GLContext glContext;
 
 	// DeltaTime
 	double last = 0.0;

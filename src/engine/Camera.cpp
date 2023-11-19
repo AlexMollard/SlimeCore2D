@@ -28,7 +28,7 @@ void Camera::Update(float deltaTime)
 
 void Camera::CameraMoveMent(float deltaTime)
 {
-	float speed = (Input::GetKeyPress(Keycode::LEFT_SHIFT)) ? 10.0f : 4.0f;
+	float speed = (Input::GetKeyPress(SDLK_LSHIFT)) ? 10.0f : 4.0f;
 
 	float moveSpeed = speed * deltaTime;
 

@@ -39,9 +39,6 @@
     <ClInclude Include="engine\Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Keycode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="engine\SlimeMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>

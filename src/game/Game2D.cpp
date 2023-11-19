@@ -1,5 +1,6 @@
 #include "Game2D.h"
 #include "engine/MemoryDebugging.h"
+#include <engine/ConsoleLog.h>
 
 Game2D::Game2D()
 {
@@ -8,6 +9,10 @@ Game2D::Game2D()
 
 	GameScene* gameScene = new GameScene();
 	m_stateMachine.ChangeState(gameScene, this);
+
+	SLIME_INFO("This is a debug info.");
+	SLIME_WARN("This is a debug warning.");
+	//SLIME_ERROR("This is a debug error.");
 }
 
 Game2D::~Game2D()

@@ -1,6 +1,5 @@
 #pragma once
 #include "glew.h"
-#include "glfw3.h"
 #include <string>
 #include "fwd.hpp"
 
