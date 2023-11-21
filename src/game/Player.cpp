@@ -131,13 +131,13 @@ void Player::SetAllCells(Cell** cells)
 	m_cells = cells;
 }
 
-void Player::PickupItem(Item item)
+void Player::PickupItem(std::shared_ptr<Item> item)
 {
 	items.push_back(item);
-	OnPickupItem(&items.back());
+	OnPickupItem(items.back());
 }
 
-void Player::OnPickupItem(Item* item)
+void Player::OnPickupItem(std::shared_ptr<Item> item)
 {
 	if (item->HasEventHandler(ItemEvent::OnPickup))
 	{
@@ -166,9 +166,9 @@ void Player::OnShootBullet(Bullet* bullet)
 {
 	for (auto& item : items)
 	{
-		if (item.HasEventHandler(ItemEvent::OnShoot))
+		if (item->HasEventHandler(ItemEvent::OnShoot))
 		{
-			item.handleEvent(ItemEvent::OnShoot, *this);
+			item->handleEvent(ItemEvent::OnShoot, *this);
 		}
 	};
 }

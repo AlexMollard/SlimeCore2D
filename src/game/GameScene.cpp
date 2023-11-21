@@ -2,6 +2,7 @@
 
 #include "CloudManager.h"
 #include "Game2D.h"
+#include "ItemPool.h"
 #include "MapGenerator.h"
 
 #include "engine/MemoryDebugging.h"
@@ -68,21 +69,26 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	m_uiBatchRenderer.SetZOffset(-10.0f);
 	m_uiBatchRenderer.SetOcclusionCulling(false);
 
-	// Example items with custom functions
-	Item healthPotion("Health Potion", { 0, 0 }, [](Player& p) { SLIME_INFO("Yeah"); }, nullptr);
-	Item speedBoost("Speed Boost", { 1, 0 }, nullptr, [](Player& p) { SLIME_INFO("Nah"); });
-	Item damageBoost("Damage Boost", { 2, 0 }, nullptr, [](Player& p) { SLIME_INFO("Pog"); });
+	auto healthPotion = std::make_shared<Item>(Item("Health Potion", { 0, 0 }, [](Player& p) { SLIME_INFO("Yeah"); }, nullptr));
+	healthPotion->registerEventHandler(ItemEvent::OnPickup, [](Player& p) { SLIME_INFO("Health Potion picked up!"); });
 
-	// Register additional event handlers
-	healthPotion.registerEventHandler(ItemEvent::OnPickup, [](Player& p) { SLIME_INFO("Health Potion picked up!"); });
-	speedBoost.registerEventHandler(ItemEvent::OnShoot, [](Player& p) { SLIME_INFO("Speed Boost activated on shoot!"); });
-	damageBoost.registerEventHandler(ItemEvent::OnDamage, [](Player& p) { SLIME_INFO("Damage Boost applied on damage!"); });
+	auto speedBoost= std::make_shared<Item>(Item("Speed Boost", { 1, 0 }, nullptr, [](Player& p) {SLIME_INFO("Nah"); }));
+	speedBoost->registerEventHandler(ItemEvent::OnShoot, [](Player& p) {SLIME_INFO("Speed Boost activated on shoot!"); });
 
-	m_player.PickupItem(healthPotion);
-	m_player.PickupItem(speedBoost);
-	m_player.PickupItem(damageBoost);
+	auto damageBoost= std::make_shared<Item>(Item("Damage Boost", { 2, 0 }, nullptr, [](Player& p) {SLIME_INFO("Pog"); }));
+	damageBoost->registerEventHandler(ItemEvent::OnDamage, [](Player& p) {SLIME_INFO("Damage Boost applied on damage!"); });
 
-	m_player.shootBullet();
+	ItemPool itemPool;
+	itemPool.addItems({ healthPotion, speedBoost, damageBoost });
+
+	// Spawn a random item
+	std::shared_ptr<Item> randomItem = itemPool.spawnRandomItem();
+	m_batchRenderer.AddObject(randomItem.get());
+
+	randomItem->SetPos(m_player.GetPos().x, m_player.GetPos().x, m_player.GetPos().z + 0.01f);
+	m_player.PickupItem(randomItem);
+
+	//m_player.shootBullet();
 }
 
 void GameScene::Update(StateMachine<GameScene>* stateMachine, Game2D* game, float dt)

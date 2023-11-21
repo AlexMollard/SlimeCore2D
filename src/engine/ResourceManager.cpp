@@ -29,7 +29,7 @@ Texture* ResourceManager::LoadTexture(const char* texPath)
 	// Check if the resource is already loaded
 	if (m_resourceMap.find(texPath) != m_resourceMap.end())
 	{
-		SLIME_INFO("Texture '{0}' is already loaded.", texPath);
+		// SLIME_INFO("Texture '{0}' is already loaded.", texPath);
 
 		// Return the cached resource
 		return static_cast<Texture*>(m_resourceMap[texPath].resource);
@@ -57,7 +57,7 @@ Texture* ResourceManager::LoadTexture(const std::string& texPath)
 	// Check if the resource is already loaded
 	if (m_resourceMap.find(name) != m_resourceMap.end())
 	{
-		SLIME_INFO("Shader '{0}' is already loaded.", name);
+		// SLIME_INFO("Shader '{0}' is already loaded.", name);
 		
 		// Return the cached resource
 		return static_cast<Shader*>(m_resourceMap[name].resource);

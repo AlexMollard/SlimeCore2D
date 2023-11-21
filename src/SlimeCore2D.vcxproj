@@ -44,6 +44,7 @@
     <ClInclude Include="engine\QuadBatchRenderer.h" />
     <ClInclude Include="engine\StateMachine\State.h" />
     <ClInclude Include="game\Item.h" />
+    <ClInclude Include="game\ItemPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BatchRenderer.cpp" />
@@ -70,6 +71,7 @@
     <ClCompile Include="game\Player.cpp" />
     <ClCompile Include="game\SlimeCore2D.cpp" />
     <ClCompile Include="engine\QuadBatchRenderer.cpp" />
+    <ClCompile Include="game\ItemPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

@@ -23,10 +23,10 @@ public:
 	void UpdateSurroundingTiles();
 	void SetAllCells(Cell** cells);
 
-	void useItem(Item* item);
+	void useItem(std::shared_ptr<Item> item);
 
-	void PickupItem(Item item);
-	void OnPickupItem(Item* item);
+	void PickupItem(std::shared_ptr<Item> item);
+	void OnPickupItem(std::shared_ptr<Item> item);
 
 	void shootBullet();
 	void OnShootBullet(Bullet* bullet);
@@ -45,5 +45,5 @@ private:
 	Cell** m_cells;
 
 	std::vector<Bullet> bullets;
-	std::vector<Item> items;
+	std::vector<std::shared_ptr<Item>> items;
 };

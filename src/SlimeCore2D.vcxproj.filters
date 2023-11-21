@@ -123,6 +123,9 @@
     <ClInclude Include="game\Item.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="game\ItemPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BoundingBox.cpp">
@@ -195,6 +198,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="game\Item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="game\ItemPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,13 +1,23 @@
 #include "Item.h"
+
 #include <engine/ConsoleLog.h>
 #include <engine/ResourceManager.h>
 
-// Constructor
 Item::Item(const std::string& itemName, glm::ivec2 atlasPos, const std::function<void(Player&)>& onUse, const std::function<void(Player&)>& onPassive)
     : m_name(itemName), m_atlasPosition(atlasPos), m_onUse(onUse), m_onPassive(onPassive)
 {
-	SetTexture(ResourceManager::GetInstance()->LoadTexture("item_atlas.png"));
-	/*setUvs*/
+	Texture* itemAtlas = ResourceManager::GetInstance()->LoadTexture(ResourceManager::GetTexturePath("item_atlas"));
+	SetTexture(itemAtlas);
+	float spriteSize = 32.0f;
+
+	float mod = 1.0f / spriteSize;
+
+	float atlasPosX = static_cast<float>(atlasPos.x);
+	float atlasPosY = static_cast<float>(atlasPos.y) + 1.0f;
+
+	// Flip both X and Y coordinates of the UV rectangle
+	SetScale(glm::vec2(1.0f, 1.0f));
+	SetUVRect(glm::vec4(1.0f + (mod * atlasPosX), 1.0f - (mod * atlasPosY), mod, mod));
 }
 
 // Function to use the item (placeholder implementation)
@@ -37,12 +47,12 @@ void Item::registerEventHandler(ItemEvent event, const std::function<void(Player
 	m_eventHandlers[static_cast<size_t>(event)].push_back(handler);
 }
 
-bool Item::HasEventHandler(ItemEvent event) const 
+bool Item::HasEventHandler(ItemEvent event) const
 {
 	return m_eventHandlers[static_cast<size_t>(event)].size() > 0;
 }
 
-void Item::handleEvent(ItemEvent event, Player& player) 
+void Item::handleEvent(ItemEvent event, Player& player)
 {
 	for (auto& handler : m_eventHandlers[static_cast<size_t>(event)])
 	{
