@@ -48,8 +48,7 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	float miniMapHeight  = 200.0f;
 	float miniMapPadding = 20.0f;
 
-	GameObject* miniMapBorderQuad =
-	    objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1), glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
+	GameObject* miniMapBorderQuad = objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1), glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
 	miniMapBorderQuad->SetColor(glm::vec3(0.1f, 0.1f, 0.1f));
 	miniMapBorderQuad->SetAnchorPoint({ 1.0f, 0.0f });
 	m_uiBatchRenderer.AddObject(miniMapBorderQuad);
