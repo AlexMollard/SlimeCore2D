@@ -1,6 +1,7 @@
 #pragma once
 #include "glew.h"
 #include "glm.hpp"
+#include <numeric>
 #include <string>
 
 class Camera;
@@ -21,6 +22,9 @@ public:
 	void Use();
 
 	void SetCommonUniforms(Camera* camera);
+
+	template<int textureCount>
+	void AddTextureSlotsToShader();
 
 #pragma region Uniform functions
 	template <typename T>
@@ -78,3 +82,13 @@ public:
 protected:
 	unsigned int m_shaderId = 0;
 };
+
+template<int textureCount>
+void Shader::AddTextureSlotsToShader()
+{
+ 	Use();
+ 	const auto loc = glGetUniformLocation(GetID(), "Textures");
+ 	std::array<int, textureCount> samplers{};
+ 	std::iota(samplers.begin(), samplers.end(), 0);
+ 	glUniform1iv(loc, textureCount, samplers.data());
+}

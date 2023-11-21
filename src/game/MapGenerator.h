@@ -29,7 +29,6 @@ public:
 	Texture* GetTexture(type tileType);
 	void SetTileSprite(int x, int y);
 	void CreateTextures();
-	void DeleteTextures();
 
 	void RemakeTerrain();
 	void SetGrass();

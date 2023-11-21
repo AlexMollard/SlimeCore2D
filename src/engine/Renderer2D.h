@@ -82,13 +82,7 @@ public:
 		batchRenderer->Render(camPos, distanceFromCenter);
 	}
 
-	Shader* GetShader(const char* shaderName);
-	Shader* GetShader(ShaderType shaderType);
-
 private:
-	template<int textureCount>
-	void AddTextureSlotsToShader(Shader* shader);
-
 	ShaderType m_shaderType = ShaderType::BASIC;
 
 	std::map<std::string, Shader*> m_shaderMap;

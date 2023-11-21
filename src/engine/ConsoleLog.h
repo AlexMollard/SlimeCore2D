@@ -110,7 +110,7 @@ public:
 	// Function for debugging with file and line information (INFO)
 	static void internalInfo(const std::string& message, const char* file, int line)
 	{
-		std::cout << std::format("{}({}) : ", file, line, message);
+		std::cout << std::format("{}({}) : ", file, line);
 		ConsoleLog::set(ConsoleColor::Cyan);
 		std::cout << "INFO";
 		ConsoleLog::reset();
@@ -121,7 +121,7 @@ public:
 	// Function for debugging with file and line information (WARN)
 	static void internalWarn(const std::string& message, const char* file, int line)
 	{
-		std::cout << std::format("{}({}) : ", file, line, message);
+		std::cout << std::format("{}({}) : ", file, line);
 		ConsoleLog::set(ConsoleColor::Yellow);
 		std::cout << "WARN";
 		ConsoleLog::reset();
@@ -132,7 +132,7 @@ public:
 	// Function for debugging with file and line information (ERROR)
 	static void internalError(const std::string& message, const char* file, int line)
 	{
-		std::cout << std::format("{}({}) : ", file, line, message);
+		std::cout << std::format("{}({}) : ", file, line);
 		ConsoleLog::set(ConsoleColor::Red);
 		std::cout << "ERROR";
 		ConsoleLog::reset();

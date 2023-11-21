@@ -14,6 +14,7 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	Camera* camera               = game->GetCamera();
 	ObjectManager* objectManager = game->GetObjectManager();
 	PhysicsScene* physicsScene   = game->GetPhysicsScene();
+	ResourceManager* resourceManager = ResourceManager::GetInstance();
 
 	m_map = new MapGenerator(game->GetObjectManager(), game->GetPhysicsScene(), camera, &m_mapBatchRenderer, &m_treeBatchRenderer, 100);
 
@@ -34,6 +35,7 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	m_cloudManager.Init(&m_cloudBatchRenderer, 35);
 
 	m_waterTexture        = new Texture(m_waterRenderTarget.GetTextureID());
+	resourceManager->AddResource(m_waterTexture, "waterTexture");
 	GameObject* waterQuad = objectManager->CreateQuad(glm::vec3(0, -10, 1), glm::vec2(RES_WIDTH, RES_HEIGHT), m_waterTexture);
 	waterQuad->SetAnchorPoint({ 0.0f, 0.0f });
 	waterQuad->SetSpriteWidth(RES_WIDTH);
@@ -45,24 +47,18 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	float miniMapHeight  = 200.0f;
 	float miniMapPadding = 20.0f;
 
-	GameObject* miniMapBorderQuad =
-	    objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1), glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
+	GameObject* miniMapBorderQuad = objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1), glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
 	miniMapBorderQuad->SetColor(glm::vec3(0.1f, 0.1f, 0.1f));
 	miniMapBorderQuad->SetAnchorPoint({ 1.0f, 0.0f });
 	m_uiBatchRenderer.AddObject(miniMapBorderQuad);
 
-	// m_miniMapMask = new Texture();
-	// miniMapMask->GenerateRoundedMask(miniMapWidth * 0.45f, miniMapWidth, miniMapHeight);
-	// m_miniMapMask->GenerateNoise(NoiseType::Perlin, miniMapWidth, miniMapHeight, 0.1, 0.1, 0.1);
-	// miniMapBorderQuad->SetMaskTexture(m_miniMapMask);
-
 	m_miniMapTexture        = m_map->GenerateMiniMap();
+	resourceManager->AddResource(m_miniMapTexture, "miniMapTexture");
 	GameObject* miniMapQuad = objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding, miniMapPadding, 1), glm::vec2(miniMapWidth, miniMapHeight), m_miniMapTexture);
 	miniMapQuad->SetAnchorPoint({ 1.0f, 0.0f });
 	m_uiBatchRenderer.AddObject(miniMapQuad);
-	// miniMapQuad->SetMaskTexture(m_miniMapMask);
 
-	Texture* fishytex = m_uiBatchRenderer.LoadTexture(ResourceManager::GetTexturePath("fishy"));
+	Texture* fishytex = resourceManager->LoadTexture(ResourceManager::GetTexturePath("fishy"));
 	GameObject* fishy = objectManager->CreateQuad(glm::vec3(100, 100, 1), glm::vec2(fishytex->GetWidth() * 4, fishytex->GetHeight() * 4), fishytex);
 	fishy->SetAnchorPoint({ 0.0f, 0.0f });
 	fishy->SetFlipPolicy(FlipPolicy::Vertical);
@@ -125,15 +121,6 @@ void GameScene::Render(StateMachine<GameScene>* stateMachine, Game2D* game, Rend
 
 void GameScene::Exit(StateMachine<GameScene>* stateMachine, Game2D* game)
 {
-	delete m_miniMapTexture;
-	m_miniMapTexture = nullptr;
-
-	// delete m_miniMapMask;
-	// m_miniMapMask = nullptr;
-
-	delete m_waterTexture;
-	m_waterTexture = nullptr;
-
 	delete m_map;
 	m_map = nullptr;
 }

@@ -10,6 +10,7 @@
 #include "BatchRenderer.h"
 #include <tuple>
 #include "ResourceManager.h"
+#include "Constants.h"
 
 std::string ShaderTypeToString(ShaderType type)
 {
@@ -40,44 +41,27 @@ Renderer2D::Renderer2D(Camera* camera, Camera* screenCamera) : m_camera(camera),
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::BASIC),    new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str()));
-	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::UI),       new Shader(ResourceManager::GetShaderPath("UIVertex").c_str(),    ResourceManager::GetShaderPath("UIFragment").c_str()));
-	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::GRADIENT), new Shader(ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("GradientFragment").c_str()));
-	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::WATER),    new Shader(ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("WaterFragment").c_str()));
+	ResourceManager* resourceManager = ResourceManager::GetInstance();
+	
+	Shader* basicShader = resourceManager->LoadShader("basicShader", ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("BasicFragment").c_str());
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::BASIC), basicShader);
 
-	AddTextureSlotsToShader<MAX_TEXTURE_COUNT>(GetShader(ShaderType::BASIC));
-	AddTextureSlotsToShader<MAX_TEXTURE_COUNT>(GetShader(ShaderType::UI));
-	AddTextureSlotsToShader<1>(GetShader(ShaderType::GRADIENT));
-	AddTextureSlotsToShader<5>(GetShader(ShaderType::WATER));
+	Shader* uiShader = resourceManager->LoadShader("uiShader", ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("UIFragment").c_str());
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::UI), uiShader);
+	
+	Shader* gradientShader = resourceManager->LoadShader("gradientShader", ResourceManager::GetShaderPath("BasicVertex").c_str(), ResourceManager::GetShaderPath("GradientFragment").c_str());
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::GRADIENT), gradientShader);
+
+	Shader* waterShader = resourceManager->LoadShader("waterShader", ResourceManager::GetShaderPath("UIVertex").c_str(), ResourceManager::GetShaderPath("WaterFragment").c_str());
+	m_shaderMap.try_emplace(ShaderTypeToString(ShaderType::WATER), waterShader);
+
+	basicShader->AddTextureSlotsToShader<MAX_TEXTURE_COUNT>();
+	uiShader->AddTextureSlotsToShader<MAX_TEXTURE_COUNT>();
+	gradientShader->AddTextureSlotsToShader<1>();
+	waterShader->AddTextureSlotsToShader<5>();
 }
 
 Renderer2D::~Renderer2D()
 {
-	for (auto& shader : m_shaderMap)
-	{
-		delete shader.second;
-		shader.second = nullptr;
-	}
-
 	m_camera = nullptr;
-}
-
-template<int textureCount>
-void Renderer2D::AddTextureSlotsToShader(Shader* shader)
-{
-	shader->Use();
-	const auto loc = glGetUniformLocation(shader->GetID(), "Textures");
-	std::array<int, textureCount> samplers{};
-	std::iota(samplers.begin(), samplers.end(), 0);
-	glUniform1iv(loc, textureCount, samplers.data());
-}
-
-Shader* Renderer2D::GetShader(const char* shaderName)
-{
-	return m_shaderMap[shaderName];
-}
-
-Shader* Renderer2D::GetShader(ShaderType shaderType)
-{
-	return m_shaderMap[ShaderTypeToString(shaderType)];
 }

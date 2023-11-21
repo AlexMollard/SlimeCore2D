@@ -46,8 +46,6 @@ MapGenerator::MapGenerator(ObjectManager* objectManager, PhysicsScene* pScene, C
 
 MapGenerator::~MapGenerator()
 {
-	DeleteTextures();
-
 	for (int i = 0; i < m_mapSize; i++)
 	{
 		delete m_cells[i];
@@ -509,138 +507,62 @@ type MapGenerator::SetType(int x, int y)
 
 void MapGenerator::CreateTextures()
 {
+	ResourceManager* resourceManager = ResourceManager::GetInstance();
+
 	// Water
-	m_water = new Texture(ResourceManager::GetTexturePath(waterPath));
+	m_water = resourceManager->LoadTexture(ResourceManager::GetTexturePath(waterPath));
 
 	// Center textures
 	for (const auto& path : centerPaths)
 	{
-		m_center.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+		m_center.emplace_back(resourceManager->LoadTexture(ResourceManager::GetTexturePath(path)));
 	}
 
 	// Sprout textures
 	for (const auto& path : sproutPaths)
 	{
-		m_sprout.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+		m_sprout.emplace_back(resourceManager->LoadTexture(ResourceManager::GetTexturePath(path)));
 	}
 
 	// Stone textures
 	for (const auto& path : stonePaths)
 	{
-		m_stone.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+		m_stone.emplace_back(resourceManager->LoadTexture(ResourceManager::GetTexturePath(path)));
 	}
 
 	// Top textures
-	m_topLeft   = new Texture(ResourceManager::GetTexturePath(topLeftPath));
-	m_topCenter = new Texture(ResourceManager::GetTexturePath(topCenterPath));
-	m_topRight  = new Texture(ResourceManager::GetTexturePath(topRightPath));
+	m_topLeft   = resourceManager->LoadTexture(ResourceManager::GetTexturePath(topLeftPath));
+	m_topCenter = resourceManager->LoadTexture(ResourceManager::GetTexturePath(topCenterPath));
+	m_topRight  = resourceManager->LoadTexture(ResourceManager::GetTexturePath(topRightPath));
 
 	// Inner top textures
-	m_innerTopLeft  = new Texture(ResourceManager::GetTexturePath(innerTopLeftPath));
-	m_innerTopRight = new Texture(ResourceManager::GetTexturePath(innerTopRightPath));
+	m_innerTopLeft  = resourceManager->LoadTexture(ResourceManager::GetTexturePath(innerTopLeftPath));
+	m_innerTopRight = resourceManager->LoadTexture(ResourceManager::GetTexturePath(innerTopRightPath));
 
 	// Middle textures
-	m_middleLeft  = new Texture(ResourceManager::GetTexturePath(middleLeftPath));
-	m_middleRight = new Texture(ResourceManager::GetTexturePath(middleRightPath));
+	m_middleLeft  = resourceManager->LoadTexture(ResourceManager::GetTexturePath(middleLeftPath));
+	m_middleRight = resourceManager->LoadTexture(ResourceManager::GetTexturePath(middleRightPath));
 
 	// Inner bottom textures
-	m_innerBottomLeft  = new Texture(ResourceManager::GetTexturePath(innerBottomLeftPath));
-	m_innerBottomRight = new Texture(ResourceManager::GetTexturePath(innerBottomRightPath));
+	m_innerBottomLeft  = resourceManager->LoadTexture(ResourceManager::GetTexturePath(innerBottomLeftPath));
+	m_innerBottomRight = resourceManager->LoadTexture(ResourceManager::GetTexturePath(innerBottomRightPath));
 
 	// Bottom textures
-	m_bottomLeft = new Texture(ResourceManager::GetTexturePath(bottomLeftPath));
+	m_bottomLeft = resourceManager->LoadTexture(ResourceManager::GetTexturePath(bottomLeftPath));
 	for (const auto& path : bottomCenterPaths)
 	{
-		m_bottomCenter.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+		m_bottomCenter.emplace_back(resourceManager->LoadTexture(ResourceManager::GetTexturePath(path)));
 	}
-	m_bottomRight = new Texture(ResourceManager::GetTexturePath(bottomRightPath));
+	m_bottomRight = resourceManager->LoadTexture(ResourceManager::GetTexturePath(bottomRightPath));
 
 	// Tree textures
 	for (const auto& path : treePaths)
 	{
-		m_tree.emplace_back(new Texture(ResourceManager::GetTexturePath(path)));
+		m_tree.emplace_back(resourceManager->LoadTexture(ResourceManager::GetTexturePath(path)));
 	}
 
 	// Tree shadow texture
-	m_treeShadow = new Texture(ResourceManager::GetTexturePath(treeShadowPath));
-}
-
-void MapGenerator::DeleteTextures()
-{
-	delete m_water;
-	m_water = nullptr;
-
-	for (auto center : m_center)
-	{
-		delete center;
-		center = nullptr;
-	}
-
-	for (auto sprout : m_sprout)
-	{
-		if (sprout != nullptr)
-		{
-			delete sprout;
-			sprout = nullptr;
-		}
-	}
-
-	for (auto stone : m_stone)
-	{
-		if (stone != nullptr)
-		{
-			delete stone;
-			stone = nullptr;
-		}
-	}
-
-	delete m_topLeft;
-	m_topLeft = nullptr;
-	delete m_topCenter;
-	m_topCenter = nullptr;
-	delete m_topRight;
-	m_topRight = nullptr;
-
-	delete m_innerTopLeft;
-	m_innerTopLeft = nullptr;
-	delete m_innerTopRight;
-	m_innerTopRight = nullptr;
-
-	delete m_middleLeft;
-	m_middleLeft = nullptr;
-	delete m_middleRight;
-	m_middleRight = nullptr;
-
-	delete m_innerBottomLeft;
-	m_innerBottomLeft = nullptr;
-	delete m_innerBottomRight;
-	m_innerBottomRight = nullptr;
-
-	delete m_bottomLeft;
-	m_bottomLeft = nullptr;
-
-	for (auto bottomCenter : m_bottomCenter)
-	{
-		if (bottomCenter != nullptr)
-		{
-			delete bottomCenter;
-			bottomCenter = nullptr;
-		}
-	}
-
-	delete m_bottomRight;
-	m_bottomRight = nullptr;
-
-	for (auto tree : m_tree)
-	{
-		if (tree != nullptr)
-		{
-			delete tree;
-			tree = nullptr;
-		}
-	}
-	delete m_treeShadow;
-	m_treeShadow = nullptr;
+	m_treeShadow = resourceManager->LoadTexture(ResourceManager::GetTexturePath(treeShadowPath));
 }
 
 void MapGenerator::RemakeTerrain()
