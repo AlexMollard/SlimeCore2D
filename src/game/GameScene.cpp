@@ -11,9 +11,9 @@
 
 void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 {
-	Camera* camera               = game->GetCamera();
-	ObjectManager* objectManager = game->GetObjectManager();
-	PhysicsScene* physicsScene   = game->GetPhysicsScene();
+	Camera* camera                   = game->GetCamera();
+	ObjectManager* objectManager     = game->GetObjectManager();
+	PhysicsScene* physicsScene       = game->GetPhysicsScene();
 	ResourceManager* resourceManager = ResourceManager::GetInstance();
 
 	m_map = new MapGenerator(game->GetObjectManager(), game->GetPhysicsScene(), camera, &m_mapBatchRenderer, &m_treeBatchRenderer, 100);
@@ -34,7 +34,7 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 
 	m_cloudManager.Init(&m_cloudBatchRenderer, 35);
 
-	m_waterTexture        = new Texture(m_waterRenderTarget.GetTextureID());
+	m_waterTexture = new Texture(m_waterRenderTarget.GetTextureID());
 	resourceManager->AddResource(m_waterTexture, "waterTexture");
 	GameObject* waterQuad = objectManager->CreateQuad(glm::vec3(0, -10, 1), glm::vec2(RES_WIDTH, RES_HEIGHT), m_waterTexture);
 	waterQuad->SetAnchorPoint({ 0.0f, 0.0f });
@@ -47,12 +47,13 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	float miniMapHeight  = 200.0f;
 	float miniMapPadding = 20.0f;
 
-	GameObject* miniMapBorderQuad = objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1), glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
+	GameObject* miniMapBorderQuad =
+	    objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding * 0.5f, miniMapPadding * 0.5f, 1), glm::vec2(miniMapWidth + miniMapPadding, miniMapHeight + miniMapPadding));
 	miniMapBorderQuad->SetColor(glm::vec3(0.1f, 0.1f, 0.1f));
 	miniMapBorderQuad->SetAnchorPoint({ 1.0f, 0.0f });
 	m_uiBatchRenderer.AddObject(miniMapBorderQuad);
 
-	m_miniMapTexture        = m_map->GenerateMiniMap();
+	m_miniMapTexture = m_map->GenerateMiniMap();
 	resourceManager->AddResource(m_miniMapTexture, "miniMapTexture");
 	GameObject* miniMapQuad = objectManager->CreateQuad(glm::vec3(1920 - miniMapPadding, miniMapPadding, 1), glm::vec2(miniMapWidth, miniMapHeight), m_miniMapTexture);
 	miniMapQuad->SetAnchorPoint({ 1.0f, 0.0f });
@@ -68,9 +69,9 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	m_uiBatchRenderer.SetOcclusionCulling(false);
 
 	// Example items with custom functions
-	Item healthPotion("Health Potion", [](Player& p) { SLIME_INFO("Yeah"); }, nullptr);
-	Item speedBoost("Speed Boost", nullptr, [](Player& p) { SLIME_INFO("Nah"); });
-	Item damageBoost("Damage Boost", nullptr, [](Player& p) { SLIME_INFO("Pog"); });
+	Item healthPotion("Health Potion", { 0, 0 }, [](Player& p) { SLIME_INFO("Yeah"); }, nullptr);
+	Item speedBoost("Speed Boost", { 1, 0 }, nullptr, [](Player& p) { SLIME_INFO("Nah"); });
+	Item damageBoost("Damage Boost", { 2, 0 }, nullptr, [](Player& p) { SLIME_INFO("Pog"); });
 
 	// Register additional event handlers
 	healthPotion.registerEventHandler(ItemEvent::OnPickup, [](Player& p) { SLIME_INFO("Health Potion picked up!"); });

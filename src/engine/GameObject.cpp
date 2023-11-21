@@ -79,10 +79,20 @@ void GameObject::AdvanceFrame()
 {
 	m_frame++;
 
-	if (m_frame >= m_texture->GetWidth() / m_spriteWidth)
+	int numberOfRegions = m_texture->GetWidth() / m_spriteWidth;
+
+	if (m_frame >= numberOfRegions)
 	{
 		m_frame = 0;
 	}
+
+    // Calculate UV coordinates based on the m_uvRect
+	float uvLeft   = (m_frame * 1.0f) / numberOfRegions; // Use 1.0f for accurate floating-point division
+	float uvTop    = 0.0f;
+	float uvWidth  = 1.0f / numberOfRegions; // Divide by the total number of regions
+	float uvHeight = 1.0f;
+
+	m_uvRect = glm::vec4(uvLeft, uvTop, uvWidth, uvHeight);
 }
 
 int GameObject::GetFrame()
@@ -167,4 +177,14 @@ glm::vec2 GameObject::GetAnchorPoint() const
 void GameObject::SetAnchorPoint(glm::vec2 val)
 {
 	m_anchorPoint = val;
+}
+
+const glm::vec4& GameObject::GetUVRect() const 
+{
+	return m_uvRect;
+}
+
+void GameObject::SetUVRect(const glm::vec4& val) 
+{
+	m_uvRect = val;
 }

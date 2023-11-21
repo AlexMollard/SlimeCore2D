@@ -104,20 +104,15 @@ QuadBatchRenderer::~QuadBatchRenderer()
 	BatchRenderer::~BatchRenderer();
 }
 
-void QuadBatchRenderer::SetSpriteUvs(Texture* texture, int regionIndex, int spriteWidth)
+void QuadBatchRenderer::SetSpriteUvs(glm::vec4 uvRect)
 {
 	m_uvs.clear();
 
-	// (int) textureSize / spriteWidth;
-	int numberOfRegions = texture->GetWidth() / spriteWidth;
-
-	float uv_x = (regionIndex % numberOfRegions) / (float)numberOfRegions;
-	float uv_y = (regionIndex / (float)numberOfRegions) * (float)numberOfRegions;
-
-	glm::vec2 uv_down_left  = glm::vec2(uv_x, uv_y);
-	glm::vec2 uv_down_right = glm::vec2(uv_x + 1.0f / numberOfRegions, uv_y);
-	glm::vec2 uv_up_right   = glm::vec2(uv_x + 1.0f / numberOfRegions, (uv_y + 1.0f));
-	glm::vec2 uv_up_left    = glm::vec2(uv_x, (uv_y + 1.0f));
+	// Calculate UV coordinates based on the uvRect
+	auto uv_down_left  = glm::vec2(uvRect.x, uvRect.y);
+	auto uv_down_right = glm::vec2(uvRect.x + uvRect.z, uvRect.y);
+	auto uv_up_right   = glm::vec2(uvRect.x + uvRect.z, uvRect.y + uvRect.w);
+	auto uv_up_left    = glm::vec2(uvRect.x, uvRect.y + uvRect.w);
 
 	m_uvs.push_back(uv_down_left);
 	m_uvs.push_back(uv_down_right);
@@ -135,9 +130,7 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 		BeginBatch();
 	}
 
-	bool useBasicUVs      = true;
 	uint32_t textureIndex = 0;
-
 	if (batchData.texture)
 	{
 		textureIndex = GetTextureIndex(batchData.texture);
@@ -145,13 +138,8 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 		{
 			textureIndex = AddTextureSlot(batchData.texture);
 		}
-
-		if (batchData.hasSpriteAnimation && batchData.texture->GetWidth() > 16)
-		{
-			useBasicUVs = false;
-			SetSpriteUvs(batchData.texture, batchData.spriteFrame, batchData.spriteWidth);
-		}
 	}
+	SetSpriteUvs(batchData.uvRect);
 
 	uint32_t maskIndex = 0;
 	if (batchData.maskTexture)
@@ -173,16 +161,6 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 		                       { center + halfSize - anchorOffset, z },
 		                       { center + glm::vec2(-halfSize.x, halfSize.y) - anchorOffset, z } };
 
-	if (batchData.rotation != 0.0f)
-	{
-// 		glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(batchData.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-// 		for (int i = 0; i < 4; ++i)
-// 		{
-// 			positions[i]   = rotation * glm::vec4(positions[i], 1.0f);
-// 			positions[i].z = z;
-// 		}
-	}
-
 	// Apply flip policy (can't just swap because of backface culling)
 	if (batchData.flipPolicy == FlipPolicy::Horizontal || batchData.flipPolicy == FlipPolicy::Both)
 	{
@@ -201,7 +179,7 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 	{
 		data->quadBufferPtr->position  = positions[i];
 		data->quadBufferPtr->color     = batchData.color;
-		data->quadBufferPtr->texCoords = useBasicUVs ? basicUVs[i] : m_uvs[i];
+		data->quadBufferPtr->texCoords = m_uvs[i];
 		data->quadBufferPtr->texIndex  = tIndex;
 		data->quadBufferPtr->maskIndex = mIndex;
 		data->quadBufferPtr++;
@@ -235,9 +213,8 @@ void QuadBatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter
 		if (m_occulsionCulling && glm::distance(camPos, glm::vec2(object->GetPos())) > distanceFromCenter)
 			continue;
 
-		QuadBatchData batchData = { object->GetPos(),          object->GetAnchorPoint(), object->GetScale(),      { object->GetColor(), 1.0f },
-			                        object->GetRotation(),     object->GetTexture(),     object->GetMaskTexture(),    object->GetFlipPolicy(),
-			                        object->GetHasAnimation(), object->GetFrame(),       object->GetSpriteWidth() };
+		QuadBatchData batchData = { object->GetPos(),          object->GetAnchorPoint(), object->GetScale(),      { object->GetColor(), 1.0f }, object->GetUVRect(),
+			                        object->GetRotation(),     object->GetTexture(),     object->GetMaskTexture(),    object->GetFlipPolicy()};
 
 		batchData.position.z += m_zOffset;
 		DrawQuad(batchData);

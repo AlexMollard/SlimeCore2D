@@ -56,6 +56,8 @@ public:
 	glm::vec2 GetAnchorPoint() const;
 	void SetAnchorPoint(glm::vec2 val);
 
+	const glm::vec4& GetUVRect() const;
+	void SetUVRect(const glm::vec4& val);
 protected:
 	glm::vec3 m_color = glm::vec3(1);
 	glm::vec3 n_defaultColor = glm::vec3(1);
@@ -72,6 +74,7 @@ protected:
 	FlipPolicy m_flipPolicy = FlipPolicy::None;
 
 	// Sprite Stuff
+	glm::vec4 m_uvRect = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f); // left, top, width, height
 	int m_frame = 0;
 	int m_spriteWidth = 16;
 	float m_frameRate = 0.5f;

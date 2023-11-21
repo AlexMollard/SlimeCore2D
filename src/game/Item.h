@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <functional>
+#include "ext/vector_int2.hpp"
+#include "engine/GameObject.h"
 class Player;
 
 enum class ItemEvent
@@ -11,10 +13,10 @@ enum class ItemEvent
 	Count
 };
 
-class Item
+class Item : public GameObject
 {
 public:
-	Item(const std::string& itemName, const std::function<void(Player&)>& onUse, const std::function<void(Player&)>& onPassive);
+	Item(const std::string& itemName, glm::ivec2 atlasPos, const std::function<void(Player&)>& onUse, const std::function<void(Player&)>& onPassive);
 
 	// Function to use the item (e.g., when the player activates it)
 	void use(Player& player);
@@ -34,8 +36,9 @@ public:
 	virtual ~Item();
 
 private:
-	std::string name;
-	std::function<void(Player&)> onUse;
-	std::function<void(Player&)> onPassive;
-	std::vector<std::function<void(Player&)>> eventHandlers[static_cast<size_t>(ItemEvent::Count)];
+	std::string m_name;
+	glm::ivec2 m_atlasPosition;
+	std::function<void(Player&)> m_onUse;
+	std::function<void(Player&)> m_onPassive;
+	std::vector<std::function<void(Player&)>> m_eventHandlers[static_cast<size_t>(ItemEvent::Count)];
 };

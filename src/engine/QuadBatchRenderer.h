@@ -7,14 +7,11 @@ struct QuadBatchData
 	glm::vec2 anchorPoint = glm::vec2(0.5f);
 	glm::vec2 size        = glm::vec2(1.0f);
 	glm::vec4 color       = glm::vec4(1.0f);
+	glm::vec4 uvRect          = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f); // left, top, width, height
 	float rotation        = 0.0f;
 	Texture* texture      = nullptr;
 	Texture* maskTexture      = nullptr;
 	FlipPolicy flipPolicy = FlipPolicy::None;
-
-	bool hasSpriteAnimation = false;
-	int spriteFrame = 0;
-	int spriteWidth = 0;
 };
 
 class QuadBatchRenderer : public BatchRenderer
@@ -36,7 +33,7 @@ public:
 	void SetOcclusionCulling(bool val);
 private:
 	void DrawQuad(const QuadBatchData& batchData);
-	void SetSpriteUvs(Texture* texture, int regionIndex, int spriteWidth);
+	void SetSpriteUvs(glm::vec4 uvRect);
 
 	void ShutDown() override;
 
