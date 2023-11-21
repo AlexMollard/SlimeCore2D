@@ -15,11 +15,18 @@ public:
 
 	SDL_Window* GetWindow() const;
 
+	int GetWidth() const;
+	int GetHeight() const;
+
 	float GetDeltaTime();
 protected:
 	// Main Window
 	SDL_Window* window;
 	SDL_GLContext glContext;
+
+	// Window size
+	int m_width;
+	int m_height;
 
 	// DeltaTime
 	double last = 0.0;

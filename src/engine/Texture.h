@@ -15,7 +15,7 @@ class Texture
 public:
 	Texture(std::string dir);
 	Texture(unsigned int id);
-	Texture(float* data, int width, int height);
+	Texture(float* data, int width, int height, int channels = GL_RGBA);
 	Texture() = default;
 	~Texture();
 

@@ -2,6 +2,7 @@
 #include "engine/MemoryDebugging.h"
 
 #include "GameObject.h"
+#include "TextObject.h"
 
 ObjectManager::~ObjectManager()
 {
@@ -41,6 +42,16 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* te
 	m_objects.push_back(go);
 
 	return go;
+}
+
+TextObject* ObjectManager::CreateText(const std::string& text, glm::vec3 pos, const std::string& font, glm::vec3 color)
+{
+	auto textObject = new TextObject(text);
+	textObject->SetPosition(pos);
+	textObject->SetFont(font);
+
+	m_objects.push_back(textObject);
+	return textObject;
 }
 
 void ObjectManager::RemoveQuad(GameObject* object)

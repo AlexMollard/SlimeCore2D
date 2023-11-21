@@ -9,6 +9,7 @@
 #include "engine/Noise.h"
 #include "engine/ResourceManager.h"
 #include "engine/StateMachine/StateMachine.h"
+#include "engine/TextObject.h"
 
 void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 {
@@ -86,8 +87,9 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 
 	randomItem->SetPos(m_player.GetPos().x, m_player.GetPos().x, m_player.GetPos().z + 0.01f);
 	m_player.PickupItem(randomItem);
-
-	//m_player.shootBullet();
+	
+	resourceManager->LoadFont("Basic", ResourceManager::GetFontPath("DoppioOne-Regular"), 24);
+	TextObject* textObject = objectManager->CreateText("Testing", glm::vec3(0, 0, 0), "Basic");
 }
 
 void GameScene::Update(StateMachine<GameScene>* stateMachine, Game2D* game, float dt)

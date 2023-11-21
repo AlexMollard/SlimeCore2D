@@ -56,6 +56,8 @@ int Window::Window_intit(int width, int height, const char* name)
 
 	// Setup OpenGL viewport
 	glViewport(0, 0, width, height);
+	m_width = width;
+	m_height = height;
 
 	// Setup OpenGL options
 	glEnable(GL_DEPTH_TEST);
@@ -110,7 +112,14 @@ void Window::Update_Window()
 		{
 			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
 			{
-				glViewport(0, 0, event.window.data1, event.window.data2);
+				int width  = event.window.data1;
+				int height = event.window.data2;
+
+				m_width  = width;
+				m_height = height;
+
+				// Update the OpenGL viewport
+				glViewport(0, 0, width, height);
 			}
 		}
 
@@ -138,6 +147,16 @@ void Window::Window_destroy()
 SDL_Window* Window::GetWindow() const
 {
 	return window;
+}
+
+int Window::GetWidth() const
+{
+	return m_width;
+}
+
+int Window::GetHeight() const 
+{
+	return m_height;
 }
 
 float Window::GetDeltaTime()

@@ -51,13 +51,6 @@ void BatchRenderer::AddObject(GameObject* newObject)
 	}
 }
 
-Texture* BatchRenderer::LoadTexture(const std::string& dir)
-{
-	auto texture = new Texture(dir);
-	m_texturePool.emplace_back(texture);
-	return texture;
-}
-
 void BatchRenderer::RemoveObject(const GameObject& object)
 {
 	std::vector<GameObject*>& pool = GetObjectPool();

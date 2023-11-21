@@ -60,24 +60,24 @@ private:
 	std::vector<GameObject*> m_grassObjects;
 
 	// Texture Paths
-	const char* waterPath         = "/Water/WaterOne";
-	const char* centerPaths[4]    = { "/Grass/floor_0", "/Grass/floor_1", "/Grass/floor_2", "/Grass/floor_3" };
-	const char* sproutPaths[5]    = { "/Grass/Sprouts/sprout_0", "/Grass/Sprouts/sprout_1", "/Grass/Sprouts/sprout_2", "/Grass/Sprouts/sprout_3", "/Grass/Sprouts/sprout_4" };
-	const char* stonePaths[4]     = { "/Stone/Stone_0", "/Stone/Stone_1", "/Stone/Stone_2", "/Stone/Stone_3" };
-	const char* topLeftPath       = "/Ledges/Wall_Top_Left";
-	const char* topCenterPath     = "/Ledges/Wall_Top";
-	const char* topRightPath      = "/Ledges/Wall_Top_Right";
-	const char* innerTopLeftPath  = "/Ledges/Wall_Inner_Top_Left";
-	const char* innerTopRightPath = "/Ledges/Wall_Inner_Top_Right";
-	const char* middleLeftPath    = "/Ledges/Wall_Left";
-	const char* middleRightPath   = "/Ledges/Wall_Right";
-	const char* innerBottomLeftPath  = "/Ledges/Wall_Inner_Left";
-	const char* innerBottomRightPath = "/Ledges/Wall_Inner_Right";
-	const char* bottomLeftPath       = "/Ledges/Wall_Bottom_Left";
-	const char* bottomCenterPaths[2] = { "/Ledges/Wall_Bottom_Center", "/Ledges/Wall_Bottom_Center_2" };
-	const char* bottomRightPath      = "/Ledges/Wall_Bottom_Right";
-	const char* treePaths[1]         = { "/Trees/tree_0" };
-	const char* treeShadowPath       = "/Trees/tree_0_shadow";
+	const char* waterPath         = "Water/WaterOne";
+	const char* centerPaths[4]    = { "Grass/floor_0", "Grass/floor_1", "Grass/floor_2", "Grass/floor_3" };
+	const char* sproutPaths[5]    = { "Grass/Sprouts/sprout_0", "Grass/Sprouts/sprout_1", "Grass/Sprouts/sprout_2", "Grass/Sprouts/sprout_3", "Grass/Sprouts/sprout_4" };
+	const char* stonePaths[4]     = { "Stone/Stone_0", "Stone/Stone_1", "Stone/Stone_2", "Stone/Stone_3" };
+	const char* topLeftPath       = "Ledges/Wall_Top_Left";
+	const char* topCenterPath     = "Ledges/Wall_Top";
+	const char* topRightPath      = "Ledges/Wall_Top_Right";
+	const char* innerTopLeftPath  = "Ledges/Wall_Inner_Top_Left";
+	const char* innerTopRightPath = "Ledges/Wall_Inner_Top_Right";
+	const char* middleLeftPath    = "Ledges/Wall_Left";
+	const char* middleRightPath   = "Ledges/Wall_Right";
+	const char* innerBottomLeftPath  = "Ledges/Wall_Inner_Left";
+	const char* innerBottomRightPath = "Ledges/Wall_Inner_Right";
+	const char* bottomLeftPath       = "Ledges/Wall_Bottom_Left";
+	const char* bottomCenterPaths[2] = { "Ledges/Wall_Bottom_Center", "Ledges/Wall_Bottom_Center_2" };
+	const char* bottomRightPath      = "Ledges/Wall_Bottom_Right";
+	const char* treePaths[1]         = { "Trees/tree_0" };
+	const char* treeShadowPath       = "Trees/tree_0_shadow";
 
 	// Textures
 	Texture* m_water;

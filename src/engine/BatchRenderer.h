@@ -19,8 +19,6 @@ public:
 
 	virtual void AddObject(GameObject* newObject);
 
-	virtual Texture* LoadTexture(const std::string& dir);
-
 	virtual uint32_t GetTextureIndex(Texture* texture) = 0;
 	virtual uint32_t AddTextureSlot(Texture* texture) = 0;
 	virtual uint32_t AddTextureSlot(GLuint textureID) = 0;

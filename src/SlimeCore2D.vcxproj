@@ -45,6 +45,8 @@
     <ClInclude Include="engine\StateMachine\State.h" />
     <ClInclude Include="game\Item.h" />
     <ClInclude Include="game\ItemPool.h" />
+    <ClInclude Include="engine\TextBatchRenderer.h" />
+    <ClInclude Include="engine\TextObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BatchRenderer.cpp" />
@@ -72,6 +74,8 @@
     <ClCompile Include="game\SlimeCore2D.cpp" />
     <ClCompile Include="engine\QuadBatchRenderer.cpp" />
     <ClCompile Include="game\ItemPool.cpp" />
+    <ClCompile Include="engine\TextBatchRenderer.cpp" />
+    <ClCompile Include="engine\TextObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
@@ -146,14 +150,14 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <PostBuildEvent>
       <Command>xcopy /y "$(SolutionDir)dependencies\sdl\SDL2.dll" "$(OutDir)"
-</Command>
+xcopy /y "$(SolutionDir)dependencies\sdl\SDL2_ttf.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -170,6 +174,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -177,11 +182,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y "$(SolutionDir)dependencies\sdl\SDL2.dll" "$(OutDir)"
-</Command>
+xcopy /y "$(SolutionDir)dependencies\sdl\SDL2_ttf.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
