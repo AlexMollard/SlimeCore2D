@@ -104,6 +104,8 @@ TTF_Font* ResourceManager::LoadFont(const std::string& name, const std::string& 
 		return nullptr;
 	}
 
+	 TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
+
 	// Cache the resource
 	Resource resource{ font, name, ResourceType::Font };
 	m_resourceMap[name] = resource;

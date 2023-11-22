@@ -48,7 +48,7 @@ Texture::Texture(unsigned int id) : m_textureId(id)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture::Texture(float* data, int width, int height, int channels)
+Texture::Texture(float* data, int width, int height, int channels, int dataType)
 {
 	// Create and bind texture ID
 	glGenTextures(1, &m_textureId);
@@ -63,7 +63,7 @@ Texture::Texture(float* data, int width, int height, int channels)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// Load Image and generate mipmaps
-	glTexImage2D(GL_TEXTURE_2D, 0, channels, width, height, 0, channels, GL_FLOAT, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, channels, width, height, 0, channels, dataType, data);
 
 	m_width  = width;
 	m_height = height;

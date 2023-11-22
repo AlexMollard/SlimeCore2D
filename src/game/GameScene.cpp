@@ -85,11 +85,12 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	std::shared_ptr<Item> randomItem = itemPool.spawnRandomItem();
 	m_batchRenderer.AddObject(randomItem.get());
 
-	randomItem->SetPos(m_player.GetPos().x, m_player.GetPos().x, m_player.GetPos().z + 0.01f);
+	randomItem->SetPos(m_player.GetPos().x, m_player.GetPos().y, m_player.GetPos().z + 0.01f);
 	m_player.PickupItem(randomItem);
 	
-	resourceManager->LoadFont("Basic", ResourceManager::GetFontPath("DoppioOne-Regular"), 24);
-	TextObject* textObject = objectManager->CreateText("Testing", glm::vec3(0, 0, 0), "Basic");
+	TextObject* textObject = objectManager->CreateText("POGGERS", glm::vec3(0, 0, 0), "Basic");
+	textObject->SetPos(m_player.GetPos().x, m_player.GetPos().y + 1.0f, m_player.GetPos().z + 0.01f);
+	m_batchRenderer.AddObject(textObject);
 }
 
 void GameScene::Update(StateMachine<GameScene>* stateMachine, Game2D* game, float dt)

@@ -1,7 +1,7 @@
 #pragma once
 #include "glm.hpp"
 #include "glew.h"
-#include "sdl.h"
+#include "SDL3/SDL.h"
 #include "Camera.h"
 
 class Input
@@ -46,8 +46,8 @@ private:
 
 	SDL_Window* m_window;
 
-	static int m_mouseXPos;
-	static int m_mouseYPos;
+	static float m_mouseXPos;
+	static float m_mouseYPos;
 
 	int m_winWidth = 0;
 	int m_winHeight = 0;

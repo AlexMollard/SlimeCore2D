@@ -16,7 +16,7 @@ Window::Window(int width, int height, const char* name)
 
 Window::~Window()
 {
-	Window_destroy();
+	windowDestroy();
 }
 
 int Window::Window_intit(int width, int height, const char* name)
@@ -34,7 +34,7 @@ int Window::Window_intit(int width, int height, const char* name)
 	ConsoleLog::log(std::format("SDL Version: {}.{}.{}", sdlVersion.major, sdlVersion.minor, sdlVersion.patch), ConsoleColor::Green);
 
 	// Create window
-	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow(name, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	
 	// Create OpenGL context
 	glContext = SDL_GL_CreateContext(window);
@@ -96,38 +96,30 @@ int Window::Window_intit(int width, int height, const char* name)
 	return 1;
 }
 
-void Window::Update_Window()
+void Window::updateWindow()
 {
 	SDL_GL_SwapWindow(window);
 	SDL_Event event;
 
 	while (SDL_PollEvent(&event))
 	{
-		if (event.type == SDL_QUIT)
+		if (event.type == SDL_EVENT_WINDOW_RESIZED)
 		{
-			Window_destroy();
+			int width  = event.window.data1;
+			int height = event.window.data2;
+
+			m_width  = width;
+			m_height = height;
+
+			// Update the OpenGL viewport
+			glViewport(0, 0, width, height);
 		}
 
-		if (event.type == SDL_WINDOWEVENT)
-		{
-			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
-			{
-				int width  = event.window.data1;
-				int height = event.window.data2;
-
-				m_width  = width;
-				m_height = height;
-
-				// Update the OpenGL viewport
-				glViewport(0, 0, width, height);
-			}
-		}
-
-		if (event.type == SDL_KEYDOWN)
+		if (event.type == SDL_EVENT_KEY_DOWN)
 		{
 			if (event.key.keysym.sym == SDLK_ESCAPE)
 			{
-				Window_destroy();
+				m_isRunning = false;
 			}
 		}
 	}
@@ -137,7 +129,7 @@ void Window::Update_Window()
 	last  = now;
 }
 
-void Window::Window_destroy()
+void Window::windowDestroy()
 {
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(window);
@@ -162,4 +154,14 @@ int Window::GetHeight() const
 float Window::GetDeltaTime()
 {
 	return delta;
+}
+
+bool Window::GetRunning() const
+{
+	return m_isRunning;
+}
+
+void Window::SetRunning(bool val)
+{
+	m_isRunning = val;
 }

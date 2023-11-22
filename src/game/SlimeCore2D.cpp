@@ -31,14 +31,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SLIME_INFO("Game started in: {0}ms", (SDL_GetTicks() - startTime));
 
 	// Game loop
-	while (SDL_GetWindowFlags(app.GetWindow()) & SDL_WINDOW_SHOWN)
+	while (app.GetRunning())
 	{
 		inputManager->Update();
-		app.Update_Window();
+		app.updateWindow();
 
 		game.Update(app.GetDeltaTime());
 		game.Draw();
 	}
+
+	app.windowDestroy();
 
 	// Delete the resource manager
 	delete ResourceManager::GetInstance();

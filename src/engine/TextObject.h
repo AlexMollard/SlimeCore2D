@@ -3,15 +3,6 @@
 #include "ResourceManager.h"
 #include "Texture.h"
 
-struct FontTexture
-{
-	Texture texture;
-	int width;
-	int height;
-	float x;
-	float y;
-};
-
 class TextObject : public GameObject
 {
 public:
@@ -31,6 +22,4 @@ public:
 private:
 	std::string m_text;
 	TTF_Font* m_font;
-
-	std::vector<FontTexture> m_textures;
 };

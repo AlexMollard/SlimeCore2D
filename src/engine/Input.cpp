@@ -5,8 +5,8 @@
 #include <string>
 
 float Input::m_scroll;
-int Input::m_mouseXPos;
-int Input::m_mouseYPos;
+float Input::m_mouseXPos;
+float Input::m_mouseYPos;
 
 // Most of this is broken because of the camera changing aspect ratio and position
 void Input::Update()

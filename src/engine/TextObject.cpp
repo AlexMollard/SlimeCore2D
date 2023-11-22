@@ -1,11 +1,13 @@
 #include "TextObject.h"
 
-#include <bit>
 #include "ConsoleLog.h"
 #include "RenderTarget.h"
-#include "SDL_surface.h"
+#include "SDL3/SDL_surface.h"
+#include <bit>
+#include "ResourceManager.h"
+#include "SDL3_ttf/SDL_ttf.h"
 
-TextObject::TextObject(const std::string& text) 
+TextObject::TextObject(const std::string& text)
 {
 	SetText(text);
 }
@@ -18,7 +20,7 @@ void TextObject::SetText(const std::string& text)
 	{
 		return;
 	}
-	
+
 	m_text = text;
 }
 
@@ -27,10 +29,14 @@ void TextObject::SetFont(const std::string& fontName)
 	auto resourceManager = ResourceManager::GetInstance();
 
 	// Attempt to convert the void* from the resourceManager to a TTF_Font*
-	if (auto font = std::bit_cast<TTF_Font*>(resourceManager->GetResource(fontName)))
-	{
-		m_font = font;
-	}
+// 	if (auto font = std::bit_cast<TTF_Font*>(resourceManager->GetResource(fontName)))
+// 	{
+// 		m_font = font;
+// 	}
+// 	else
+// 	{
+// 		SLIME_ERROR("Unable to convert void* to TTF_Font*");
+// 	}
 
 	// Generate all the textures for std::vector<SDL_Texture*> m_textures, now that the font has changed
 	GenerateTextures();
@@ -38,61 +44,35 @@ void TextObject::SetFont(const std::string& fontName)
 
 void TextObject::GenerateTextures()
 {
-	// Clear existing textures
-	m_textures.clear();
-
-	// Set the color for the text (you can customize this)
-	SDL_Color textColor = { 255, 255, 255, 255 }; // White color
-
-	// Set the font size (you can customize this)
-	int fontSize = 24;
-
-	// Starting position for the text
-	float x = 0.0f;
-	float y = 0.0f;
-
-	if (!m_font)
+	TTF_Font* font = TTF_OpenFont(ResourceManager::GetFontPath("DoppioOne-Regular").c_str(), 16);
+	if (!font)
 	{
 		SLIME_ERROR("Font not loaded/set.");
 	}
 
-	// Loop through the characters you want to render
-	for (char c : m_text)
-	{    
-		if (c == '\0') {
-			continue;
-		}
-
-		// Render each character to a surface
-		SDL_Surface* textSurface = TTF_RenderText_Blended(m_font, std::string(1, c).c_str(), textColor);
-		if (!textSurface)
-		{
-			// Handle surface creation failure
-			SLIME_WARN("Unable to create text surface for character {}: {}", c, TTF_GetError());
-			continue;
-		}
-
-		// Store texture information in FontTexture structure
-		FontTexture fontTexture;
-		fontTexture.texture = Texture((float*)textSurface->pixels, textSurface->w, textSurface->h);
-		fontTexture.width   = textSurface->w;
-		fontTexture.height  = textSurface->h;
-		fontTexture.x       = x;
-		fontTexture.y       = y;
-
-		// Update x for the next character
-		x += fontTexture.width;
-
-		// Add the FontTexture to the vector
-		m_textures.push_back(fontTexture);
-
-		// Free the surface
-		SDL_FreeSurface(textSurface);
+	// Render each character to a surface
+	SDL_Color textColor = { 255, 255, 255, 255 }; // White color
+	SDL_Surface* textSurface = TTF_RenderUTF8_Blended(font, m_text.c_str(), textColor);
+	if (!textSurface)
+	{
+		// Handle surface creation failure
+		SLIME_WARN("Unable to create text surface for character {}: {}", m_text.c_str(), TTF_GetError());
+		return;
 	}
+
+	// Store texture information in FontTexture structure
+	Texture* newTexture = new Texture((float*)textSurface->pixels, textSurface->w, textSurface->h, GL_RGBA, GL_UNSIGNED_BYTE);
+	SetTexture(newTexture);
+
+	float mod = textSurface->w / textSurface->h;
+	SetScale(glm::vec2(mod, 1.0f));
+
+	// Free the surface
+	SDL_DestroySurface(textSurface);
+	TTF_CloseFont(font);
 }
 
-
-void TextObject::SetFont(TTF_Font* font) 
+void TextObject::SetFont(TTF_Font* font)
 {
 	m_font = font;
 }

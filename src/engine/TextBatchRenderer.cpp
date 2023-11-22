@@ -1,5 +1,5 @@
 #include "TextBatchRenderer.h"
-#include <SDL_ttf.h>
+#include "SDL3_ttf/SDL_ttf.h"
 #include "Constants.h"
 
 struct Vertex
@@ -122,7 +122,7 @@ void TextBatchRenderer::BeginBatch()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Free the surface
-	SDL_FreeSurface(surface);
+	SDL_DestroySurface(surface);
 
 	// Now render stuff with your texture
 	glBindTexture(GL_TEXTURE_2D, textTexture);
