@@ -150,14 +150,16 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <PostBuildEvent>
       <Command>xcopy /y "$(SolutionDir)dependencies\sdl\SDL3.dll" "$(OutDir)"
-xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_ttf.dll" "$(OutDir)"</Command>
+
+xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_ttf.dll" "$(OutDir)"
+xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_image.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -182,11 +184,13 @@ xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_ttf.dll" "$(OutDir)"</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y "$(SolutionDir)dependencies\sdl\SDL3.dll" "$(OutDir)"
-xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_ttf.dll" "$(OutDir)"</Command>
+
+xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_ttf.dll" "$(OutDir)"
+xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_image.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,16 +1,18 @@
 #include "Texture.h"
+
 #include "ConsoleLog.h"
 
 #include "engine/MemoryDebugging.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-//#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "glm.hpp"
 #include "stb_image.h"
-//#include "stb_image_write.h"
+#include "stb_image_write.h"
 
 #define FNL_IMPL
 #include "Noise.h"
+#include "SDL3/SDL_surface.h"
 
 Texture::Texture(std::string dir)
 {
@@ -48,7 +50,7 @@ Texture::Texture(unsigned int id) : m_textureId(id)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture::Texture(float* data, int width, int height, int channels, int dataType)
+Texture::Texture(void* data, int width, int height, int channels, int dataType) : m_width(width), m_height(height), m_channels(channels)
 {
 	// Create and bind texture ID
 	glGenTextures(1, &m_textureId);
@@ -65,10 +67,38 @@ Texture::Texture(float* data, int width, int height, int channels, int dataType)
 	// Load Image and generate mipmaps
 	glTexImage2D(GL_TEXTURE_2D, 0, channels, width, height, 0, channels, dataType, data);
 
-	m_width  = width;
-	m_height = height;
-
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+Texture::Texture(SDL_Surface* surface) : m_width(surface->w), m_height(surface->h), m_channels(4)
+{
+	// Convert the surface to RGBA
+	SDL_Surface* convertedSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32);
+	
+	// Create and bind texture ID
+	glGenTextures(1, &m_textureId);
+	glBindTexture(GL_TEXTURE_2D, m_textureId);
+
+	// Set Wrapping mode
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Set texture filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA, convertedSurface->w, convertedSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, convertedSurface->pixels
+	);
+
+	// Unbind the texture
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Save the texture to a PNG for debugging
+	//stbi_write_png("surface.png", m_width, m_height, 4, convertedSurface->pixels, 0);
+
+	// Free the converted surface
+	SDL_DestroySurface(convertedSurface);
 }
 
 Texture::~Texture()
@@ -205,7 +235,7 @@ void Texture::GenerateNoise(NoiseType noiseType, int width, int height, float sc
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Save the noise map to a PNG for debugging
-	//stbi_write_png("noise.png", width, height, 3, noiseMap, 0);
+	// stbi_write_png("noise.png", width, height, 3, noiseMap, 0);
 
 	// Don't forget to delete the noiseMap when you're done with it!
 	delete[] noiseMap;
@@ -243,7 +273,7 @@ void Texture::GenerateColor(glm::vec4 colour, int width, int height)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Save the color map to a PNG for debugging
-	//stbi_write_png("color.png", width, height, 4, colorMap, 0);
+	// stbi_write_png("color.png", width, height, 4, colorMap, 0);
 
 	// Don't forget to delete the colorMap when you're done with it!
 	delete[] colorMap;
@@ -260,7 +290,7 @@ void Texture::GenerateRoundedMask(float borderRadius, int width, int height)
 	// Allocate memory for the mask map
 	unsigned char* maskMap = new unsigned char[4 * width * height];
 
-    // Calculate the center of the image
+	// Calculate the center of the image
 	float centerX = width / 2.0f;
 	float centerY = height / 2.0f;
 
@@ -280,8 +310,8 @@ void Texture::GenerateRoundedMask(float borderRadius, int width, int height)
 
 			// Set alpha in the mask map
 			unsigned char alphaByte = static_cast<unsigned char>((alpha < 0.75f) ? 0 : 255);
-			
-			int index               = 4 * (y * width + x);
+
+			int index = 4 * (y * width + x);
 
 			// Store alpha in the mask map
 			maskMap[index]     = alphaByte; // Red channel
@@ -308,7 +338,7 @@ void Texture::GenerateRoundedMask(float borderRadius, int width, int height)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Save the mask map to a PNG for debugging
-	//stbi_write_png("mask.png", width, height, 4, maskMap, 0);
+	// stbi_write_png("mask.png", width, height, 4, maskMap, 0);
 
 	// Don't forget to delete the mask map when you're done with it!
 	delete[] maskMap;

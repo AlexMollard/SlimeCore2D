@@ -44,11 +44,11 @@ GameObject* ObjectManager::CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* te
 	return go;
 }
 
-TextObject* ObjectManager::CreateText(const std::string& text, glm::vec3 pos, const std::string& font, glm::vec3 color)
+TextObject* ObjectManager::CreateText(const std::string& text, glm::vec3 pos, int sizePt, glm::vec3 color)
 {
 	auto textObject = new TextObject(text);
 	textObject->SetPosition(pos);
-	textObject->SetFont(font);
+	textObject->SetFont(sizePt, color);
 
 	m_objects.push_back(textObject);
 	return textObject;

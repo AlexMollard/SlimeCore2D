@@ -14,7 +14,7 @@ public:
 	GameObject* CreateQuad(glm::vec3 pos, glm::vec2 size = glm::vec2(1), glm::vec3 color = glm::vec3(1));
 	GameObject* CreateQuad(glm::vec3 pos, glm::vec2 size, Texture* tex);
 	
-	TextObject* CreateText(const std::string& text, glm::vec3 pos, const std::string& font, glm::vec3 color = glm::vec3(1));
+	TextObject* CreateText(const std::string& text, glm::vec3 pos, int sizePt, glm::vec3 color = glm::vec3(1));
 	
 	void RemoveQuad(GameObject* object);
 	int GetObjectIndex(GameObject* object);

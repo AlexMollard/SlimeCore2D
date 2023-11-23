@@ -1,6 +1,7 @@
 #include "Game2D.h"
 #include "engine/MemoryDebugging.h"
 #include <engine/ConsoleLog.h>
+#include "glew.h"
 
 Game2D::Game2D()
 {

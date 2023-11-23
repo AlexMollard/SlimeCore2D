@@ -15,8 +15,8 @@ public:
 	void Draw();
 
 	void SetText(const std::string& text);
-	void SetFont(const std::string& fontName);
-	void GenerateTextures();
+	void SetFont(int sizePt, glm::vec3 color);
+	void GenerateTextures(int sizePt, glm::vec3 color);
 	void SetFont(TTF_Font* font);
 
 private:

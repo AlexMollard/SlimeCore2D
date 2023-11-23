@@ -1,8 +1,11 @@
 #include "TextObject.h"
 
+#include "engine/MemoryDebugging.h"
+
 #include "ConsoleLog.h"
 #include "RenderTarget.h"
 #include "SDL3/SDL_surface.h"
+#include "SDL3_image/SDL_image.h"
 #include <bit>
 #include "ResourceManager.h"
 #include "SDL3_ttf/SDL_ttf.h"
@@ -24,34 +27,21 @@ void TextObject::SetText(const std::string& text)
 	m_text = text;
 }
 
-void TextObject::SetFont(const std::string& fontName)
+void TextObject::SetFont(int sizePt, glm::vec3 color)
 {
-	auto resourceManager = ResourceManager::GetInstance();
-
-	// Attempt to convert the void* from the resourceManager to a TTF_Font*
-// 	if (auto font = std::bit_cast<TTF_Font*>(resourceManager->GetResource(fontName)))
-// 	{
-// 		m_font = font;
-// 	}
-// 	else
-// 	{
-// 		SLIME_ERROR("Unable to convert void* to TTF_Font*");
-// 	}
-
-	// Generate all the textures for std::vector<SDL_Texture*> m_textures, now that the font has changed
-	GenerateTextures();
+	GenerateTextures(sizePt, color);
 }
 
-void TextObject::GenerateTextures()
+void TextObject::GenerateTextures(int sizePt, glm::vec3 color)
 {
-	TTF_Font* font = TTF_OpenFont(ResourceManager::GetFontPath("DoppioOne-Regular").c_str(), 16);
+	TTF_Font* font = TTF_OpenFont(ResourceManager::GetFontPath("DoppioOne-Regular").c_str(), sizePt);
 	if (!font)
 	{
 		SLIME_ERROR("Font not loaded/set.");
 	}
 
 	// Render each character to a surface
-	SDL_Color textColor = { 255, 255, 255, 255 }; // White color
+	SDL_Color textColor      = { color.r * 255, color.g * 255, color.b * 255, 255 };
 	SDL_Surface* textSurface = TTF_RenderUTF8_Blended(font, m_text.c_str(), textColor);
 	if (!textSurface)
 	{
@@ -60,17 +50,20 @@ void TextObject::GenerateTextures()
 		return;
 	}
 
+	IMG_SavePNG(textSurface, "output.png");
+
 	// Store texture information in FontTexture structure
-	Texture* newTexture = new Texture((float*)textSurface->pixels, textSurface->w, textSurface->h, GL_RGBA, GL_UNSIGNED_BYTE);
+	Texture* newTexture = new Texture(textSurface);
 	SetTexture(newTexture);
 
-	float mod = textSurface->w / textSurface->h;
-	SetScale(glm::vec2(mod, 1.0f));
+	float aspectRatio = (static_cast<float>(textSurface->w) / textSurface->h) * 10.0f;
+	SetScale(glm::vec2(aspectRatio, 10.0f));
 
 	// Free the surface
 	SDL_DestroySurface(textSurface);
 	TTF_CloseFont(font);
 }
+
 
 void TextObject::SetFont(TTF_Font* font)
 {

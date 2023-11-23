@@ -88,9 +88,9 @@ void GameScene::Enter(StateMachine<GameScene>* stateMachine, Game2D* game)
 	randomItem->SetPos(m_player.GetPos().x, m_player.GetPos().y, m_player.GetPos().z + 0.01f);
 	m_player.PickupItem(randomItem);
 	
-	TextObject* textObject = objectManager->CreateText("POGGERS", glm::vec3(0, 0, 0), "Basic");
-	textObject->SetPos(m_player.GetPos().x, m_player.GetPos().y + 1.0f, m_player.GetPos().z + 0.01f);
-	m_batchRenderer.AddObject(textObject);
+	textObject = objectManager->CreateText("This is a test!", glm::vec3(200, 200, 1), 32, glm::vec3(100, 231, 123));
+	textObject->SetFlipPolicy(FlipPolicy::Vertical);
+	m_uiBatchRenderer.AddObject(textObject);
 }
 
 void GameScene::Update(StateMachine<GameScene>* stateMachine, Game2D* game, float dt)

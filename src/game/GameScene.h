@@ -8,6 +8,7 @@
 
 class Game2D;
 class MapGenerator;
+class TextObject;
 
 class GameScene : public State<GameScene>
 {
@@ -25,6 +26,7 @@ private:
 	glm::vec4 m_sunColour        = glm::vec4(1.0f, 0.7f, 0.8f, 1.0f);
 
 	Player m_player;
+	TextObject* textObject;
 
 	QuadBatchRenderer m_waterBatchRenderer = QuadBatchRenderer();
 	QuadBatchRenderer m_mapBatchRenderer   = QuadBatchRenderer();
