@@ -112,7 +112,7 @@ void GameScene::Render(StateMachine<GameScene>* stateMachine, Game2D* game, Rend
 
 	// Draw player offset for reflection in water
 	camera.SetPosition({ camera.GetPosition().x, camera.GetPosition().y - 2.25f });
-	game->GetRenderer()->Draw(&m_batchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, m_sunColour);
+	//game->GetRenderer()->Draw(&m_batchRenderer, ShaderType::BASIC, CameraType::ORTHOGRAPHIC, m_sunColour);
 	camera.SetPosition({ camera.GetPosition().x, camera.GetPosition().y + 2.25f });
 
 	m_waterRenderTarget.Unbind();

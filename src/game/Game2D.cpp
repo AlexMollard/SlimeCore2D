@@ -8,8 +8,8 @@ Game2D::Game2D()
 	Input::GetInstance()->SetCamera(&m_camera);
 	m_screenCamera.UpdateTransformToPutZeroTopLeft();
 
-	GameScene* gameScene = new GameScene();
-	m_stateMachine.ChangeState(gameScene, this);
+	//GameScene* gameScene = new GameScene();
+	//m_stateMachine.ChangeState(gameScene, this);
 }
 
 Game2D::~Game2D()
@@ -29,5 +29,5 @@ void Game2D::Update(float deltaTime)
 
 void Game2D::Draw()
 {
-	m_stateMachine.Render(this, GetRenderer());
+	//m_stateMachine.Render(this, GetRenderer());
 }

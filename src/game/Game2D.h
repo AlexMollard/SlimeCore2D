@@ -20,7 +20,7 @@ public:
 	Camera* GetCamera() { return &m_camera; }
 	Camera* GetScreenCamera() { return &m_screenCamera; }
 
-	Renderer2D* GetRenderer() { return &m_renderer; }
+	//Renderer2D* GetRenderer() { return &m_renderer; }
 	PhysicsScene* GetPhysicsScene() { return &m_physicsScene; }
 	ObjectManager* GetObjectManager() { return &m_objectManager; }
 
@@ -32,7 +32,7 @@ private:
 	Camera m_camera = Camera(-16, -9, -1, 1, true);
 	Camera m_screenCamera = Camera(16, 9, -10, 10, false);
 
-	Renderer2D m_renderer = Renderer2D(&m_camera, &m_screenCamera);
+	//Renderer2D m_renderer = Renderer2D(&m_camera, &m_screenCamera);
 	PhysicsScene m_physicsScene = PhysicsScene();
 	ObjectManager m_objectManager;
 };

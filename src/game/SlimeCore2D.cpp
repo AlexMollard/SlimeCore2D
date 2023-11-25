@@ -1,4 +1,5 @@
 #include "engine/MemoryDebugging.h"
+#include "engine/Vulkan/VulkanDebug.h"
 #include "engine/Window.h"
 #include "Game2D.h"
 #include <engine/ConsoleLog.h>
@@ -25,8 +26,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Input* inputManager = Input::GetInstance();
 	inputManager->SetWindow(app.GetWindow());
 
-
-
 	// Output how long it took to start the game
 	SLIME_INFO("Game started in: {0}ms", (SDL_GetTicks() - startTime));
 
@@ -34,13 +33,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	while (app.GetRunning())
 	{
 		inputManager->Update();
-		app.updateWindow();
+		app.UpdateWindow();
 
 		game.Update(app.GetDeltaTime());
 		game.Draw();
 	}
 
-	app.windowDestroy();
+	app.WindowDestroy();
 
 	// Delete the resource manager
 	delete ResourceManager::GetInstance();
