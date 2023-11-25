@@ -1,14 +1,18 @@
 #include "Window.h"
 
+#include "engine/MemoryDebugging.h"
 #include "ConsoleLog.h"
+
 #include "SDL3/SDL_vulkan.h"
+#include "Vulkan/VulkanInstance.h"
+#include "Vulkan/VulkanDevice.h"
+#include "Vulkan/VulkanSwapchain.h"
+
+#include <iostream>
 #include <optional>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "engine/MemoryDebugging.h"
-
 
 Window::Window(int width, int height, const char* name)
 {
@@ -50,6 +54,9 @@ int Window::WindowInit(int width, int height, const char* name)
 	// Create the vulkan device
 	m_device = new VulkanDevice(*m_instance->GetInstance(), m_surface);
 
+	// Create the vulkan swapchain
+	m_swapchain = new VulkanSwapchain(*m_device, m_surface);
+
 	return 1;
 }
 
@@ -76,6 +83,7 @@ void Window::UpdateWindow()
 
 void Window::WindowDestroy()
 {
+	delete m_swapchain;
 	delete m_device;
 	delete m_instance;
 

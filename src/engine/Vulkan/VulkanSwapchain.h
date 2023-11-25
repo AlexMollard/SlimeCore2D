@@ -1,15 +1,29 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
+#include "VulkanDevice.h"
 
 class VulkanSwapchain
 {
 public:
-	VulkanSwapchain(vk::Device& logicalDevice);
+	VulkanSwapchain(VulkanDevice& device, const vk::SurfaceKHR& surface);
 	~VulkanSwapchain();
 
-	void CreateSwapchain();
+	void CreateSwapchain(const vk::SurfaceKHR& surface);
 	void DestroySwapchain();
 
 private:
-	vk::SwapchainKHR swapchain;
+	vk::SurfaceCapabilitiesKHR GetSurfaceCapabilities(const vk::SurfaceKHR& surface);
+	vk::SurfaceFormatKHR ChooseSurfaceFormat(const vk::SurfaceKHR& surface);
+	vk::PresentModeKHR ChoosePresentMode(const vk::SurfaceKHR& surface);
+
+	VulkanDevice& m_device;
+	vk::SwapchainKHR m_swapchain;
+	std::vector<vk::Image> m_swapchainImages;
+
+	// Debug stuff
+	void PrintDebugInfo(const vk::SurfaceKHR& surface);
+	void AddValueToBuffer(const char* name, const auto& value);
+	void PrintSurfaceCapabilities(const vk::SurfaceCapabilitiesKHR& surfaceCapabilities);
+	void PrintSurfaceFormats(const std::vector<vk::SurfaceFormatKHR>& surfaceFormats);
+	void PrintPresentModes(const std::vector<vk::PresentModeKHR>& presentModes);
 };

@@ -1,7 +1,9 @@
 #include <SDL.h>
-#include <iostream>
-#include "Vulkan/VulkanInstance.h"
-#include "Vulkan/VulkanDevice.h"
+#include <vulkan/vulkan.hpp>
+
+class VulkanInstance;
+class VulkanDevice;
+class VulkanSwapchain;
 
 class Window
 {
@@ -36,6 +38,7 @@ protected:
 	// Vulkan Stuff
 	VulkanInstance* m_instance = nullptr;
 	VulkanDevice* m_device = nullptr;
+	VulkanSwapchain* m_swapchain = nullptr;
 	vk::SurfaceKHR m_surface;
 	VkPhysicalDevice m_physicalDevice;
 	VkQueue m_graphicsQueue;

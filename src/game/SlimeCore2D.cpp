@@ -9,11 +9,11 @@
 Input* Input::m_instance = 0;
 ResourceManager* ResourceManager::m_instance = 0;
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int main(int argc, char* argv[])
 {
 	// Create an instance of CustomStream and associate it with std::cout
-	CustomStream customStream;
-	std::cout.rdbuf(customStream.rdbuf());
+// 	CustomStream customStream;
+// 	std::cout.rdbuf(customStream.rdbuf());
 
 	// Start time 
 	float startTime = (float)SDL_GetTicks();

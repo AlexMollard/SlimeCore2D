@@ -8,34 +8,34 @@
 #include <windows.h>
 #endif
 
-class CustomStreamBuffer : public std::streambuf
-{
-public:
-	virtual int_type overflow(int_type c = traits_type::eof())
-	{
-		if (c != traits_type::eof())
-		{
-			// Convert the character to a string and output to the debug window
-			std::string output(1, static_cast<char>(c));
-#ifdef _WIN32
-			OutputDebugStringA(output.c_str());
-#else
-			// Output to another platform's debug stream
-#endif
-		}
-
-		return c;
-	}
-};
-
-class CustomStream : public std::ostream
-{
-public:
-	CustomStream() : std::ostream(&buffer) {}
-
-private:
-	CustomStreamBuffer buffer;
-};
+// class CustomStreamBuffer : public std::streambuf
+// {
+// public:
+// 	virtual int_type overflow(int_type c = traits_type::eof())
+// 	{
+// 		if (c != traits_type::eof())
+// 		{
+// 			// Convert the character to a string and output to the debug window
+// 			std::string output(1, static_cast<char>(c));
+// #ifdef _WIN32
+// 			OutputDebugStringA(output.c_str());
+// #else
+// 			// Output to another platform's debug stream
+// #endif
+// 		}
+// 
+// 		return c;
+// 	}
+// };
+// 
+// class CustomStream : public std::ostream
+// {
+// public:
+// 	CustomStream() : std::ostream(&buffer) {}
+// 
+// private:
+// 	CustomStreamBuffer buffer;
+// };
 
 
 enum ConsoleColor
@@ -148,8 +148,8 @@ public:
 #define SLIME_ERROR(...)                                                                                                                                                      \
 	do                                                                                                                                                                        \
 	{                                                                                                                                                                         \
-		std::string message = std::format(__VA_ARGS__);                                                                                                                       \
-		ConsoleLog::internalError(message, __FILE__, __LINE__);                                                                                                               \
-		assert(false && message.c_str());                                                                                                                                     \
+		std::string __message__ = std::format(__VA_ARGS__);                                                                                                                       \
+		ConsoleLog::internalError(__message__, __FILE__, __LINE__);                                                                                                               \
+		throw std::runtime_error(__message__.c_str());                                                                                                                                  \
 	}                                                                                                                                                                         \
 	while (false)

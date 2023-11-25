@@ -1,4 +1,5 @@
 #include "VulkanDevice.h"
+#include "engine/MemoryDebugging.h"
 
 #include <engine/ConsoleLog.h>
 #include <set>
@@ -34,20 +35,120 @@ VulkanDevice::VulkanDevice(vk::Instance& instance, vk::SurfaceKHR& surface)
 	}
 
 	// Create logical device
-	float queuePriority = 1.0f;
-	vk::DeviceQueueCreateInfo queueCreateInfo({}, m_physicalDevice.getQueueFamilyProperties()[0].queueCount);
+	std::vector<vk::QueueFamilyProperties> queueFamilies = m_physicalDevice.getQueueFamilyProperties();
+	// Loop through all the queue families
+	for (uint32_t i = 0; i < queueFamilies.size(); i++)
+	{
+		// Get the queue family properties
+		vk::QueueFamilyProperties queueFamilyProperty = queueFamilies[i];
 
-	vk::DeviceCreateInfo deviceCreateInfo({}, 1, &queueCreateInfo);
+		// Check if the queue family supports graphics
+		if ((queueFamilyProperty.queueFlags & vk::QueueFlagBits::eGraphics) && !IsQueueFamilyIndexSet(QueueType::GRAPHICS))
+		{
+			SetQueueFamilyIndex(QueueType::GRAPHICS, i);
+			continue;
+		}
 
-	m_logicalDevice = m_physicalDevice.createDeviceUnique(deviceCreateInfo);
+		// Check if the queue family supports presentation
+		if (m_physicalDevice.getSurfaceSupportKHR(i, surface) && !IsQueueFamilyIndexSet(QueueType::PRESENT))
+		{
+			SetQueueFamilyIndex(QueueType::PRESENT, i);
+			continue;
+		}
+
+		// Check if the queue family supports compute
+		if ((queueFamilyProperty.queueFlags & vk::QueueFlagBits::eCompute) && !IsQueueFamilyIndexSet(QueueType::COMPUTE))
+		{
+			SetQueueFamilyIndex(QueueType::COMPUTE, i);
+			continue;
+		}
+
+		// Check if the queue family supports transfer
+		if ((queueFamilyProperty.queueFlags & vk::QueueFlagBits::eTransfer) && !IsQueueFamilyIndexSet(QueueType::TRANSFER))
+		{
+			SetQueueFamilyIndex(QueueType::TRANSFER, i);
+			continue;
+		}
+	}
+
+	// Check if all the queues have been set
+	if (!IsQueueFamilyIndexSet(QueueType::GRAPHICS))
+	{
+		SLIME_ERROR("No graphics queue family index found!");
+	}
+
+	if (!IsQueueFamilyIndexSet(QueueType::PRESENT))
+	{
+		SLIME_ERROR("No present queue family index found!");
+	}
+
+	// Get the queue priorities
+	std::vector<float> queuePriorities = { 1.0f };
+
+	// Create the queue create infos
+	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+	queueCreateInfos.emplace_back(vk::DeviceQueueCreateFlags(), GetQueueFamilyIndex(QueueType::GRAPHICS), static_cast<uint32_t>(queuePriorities.size()), queuePriorities.data());
+	queueCreateInfos.emplace_back(vk::DeviceQueueCreateFlags(), GetQueueFamilyIndex(QueueType::PRESENT), static_cast<uint32_t>(queuePriorities.size()), queuePriorities.data());
+
+	if (IsQueueFamilyIndexSet(QueueType::TRANSFER))
+		queueCreateInfos.emplace_back(vk::DeviceQueueCreateFlags(), GetQueueFamilyIndex(QueueType::TRANSFER), static_cast<uint32_t>(queuePriorities.size()), queuePriorities.data());
+
+	if (IsQueueFamilyIndexSet(QueueType::COMPUTE))
+		queueCreateInfos.emplace_back(vk::DeviceQueueCreateFlags(), GetQueueFamilyIndex(QueueType::COMPUTE), static_cast<uint32_t>(queuePriorities.size()), queuePriorities.data());
+
+	// Create the device create info
+	auto deviceCreateInfo = vk::DeviceCreateInfo(vk::DeviceCreateFlags(), static_cast<uint32_t>(queueCreateInfos.size()), queueCreateInfos.data());
+
+	// Set the device features
+	auto deviceFeatures = vk::PhysicalDeviceFeatures();
+
+	// Check for tessellation and geometry shader support
+	bool isTessellationShaderSupported = false;
+	bool isGeometryShaderSupported     = false;
+	const auto& availableExtensions    = m_physicalDevice.enumerateDeviceExtensionProperties();
+
+	for (const auto& extension : availableExtensions)
+	{
+		if (strcmp(extension.extensionName, "VK_EXT_tessellation_shader") == 0)
+			isTessellationShaderSupported = true;
+		else if (strcmp(extension.extensionName, "VK_EXT_geometry_shader") == 0)
+			isGeometryShaderSupported = true;
+
+		// Break out of loop early if both extensions are supported
+		if (isTessellationShaderSupported && isGeometryShaderSupported)
+			break;
+	}
+
+	// Enable the corresponding features if supported
+	if (isTessellationShaderSupported)
+		deviceFeatures.tessellationShader = VK_TRUE;
+
+	if (isGeometryShaderSupported)
+		deviceFeatures.geometryShader = VK_TRUE;
+
+	deviceCreateInfo.setPEnabledFeatures(&deviceFeatures);
+
+	deviceCreateInfo.setEnabledExtensionCount(static_cast<uint32_t>(m_deviceExtensions.size()));
+	deviceCreateInfo.setPpEnabledExtensionNames(m_deviceExtensions.data());
+
+	// Create the logical device
+	m_logicalDevice = m_physicalDevice.createDevice(deviceCreateInfo);
+
+	// Get the queues
+	SetQueue(QueueType::GRAPHICS, m_logicalDevice.getQueue(GetQueueFamilyIndex(QueueType::GRAPHICS), 0));
+	SetQueue(QueueType::PRESENT, m_logicalDevice.getQueue(GetQueueFamilyIndex(QueueType::PRESENT), 0));
+
+	if (IsQueueFamilyIndexSet(QueueType::TRANSFER))
+		SetQueue(QueueType::TRANSFER, m_logicalDevice.getQueue(GetQueueFamilyIndex(QueueType::TRANSFER), 0));
+
+	if (IsQueueFamilyIndexSet(QueueType::COMPUTE))
+		SetQueue(QueueType::COMPUTE, m_logicalDevice.getQueue(GetQueueFamilyIndex(QueueType::COMPUTE), 0));
 
 	OutputDeviceProperties();
 }
 
 VulkanDevice::~VulkanDevice()
 {
-	m_logicalDevice->waitIdle();
-	m_logicalDevice.reset();
 }
 
 vk::PhysicalDevice* VulkanDevice::GetPhysicalDevice()
@@ -55,9 +156,9 @@ vk::PhysicalDevice* VulkanDevice::GetPhysicalDevice()
 	return &m_physicalDevice;
 }
 
-vk::Device* VulkanDevice::GetLogicalDevice()
+vk::Device& VulkanDevice::GetLogicalDevice()
 {
-	return &m_logicalDevice.get();
+	return m_logicalDevice;
 }
 
 bool VulkanDevice::IsDeviceSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface)
@@ -144,7 +245,92 @@ VulkanDevice::SwapChainSupportDetails VulkanDevice::QuerySwapChainSupport(vk::Ph
 	return details;
 }
 
-const char* VulkanDevice::BoolToString(bool value) 
+vk::Queue VulkanDevice::GetQueue(QueueType queueType) const
+{
+	switch (queueType)
+	{
+	case QueueType::GRAPHICS: return m_graphicsQueue;
+	case QueueType::PRESENT: return m_presentQueue;
+	case QueueType::COMPUTE: return m_computeQueue;
+	case QueueType::TRANSFER: return m_transferQueue;
+	default: return nullptr;
+	}
+}
+
+uint32_t VulkanDevice::GetQueueIndex(QueueType queueType) const
+{
+	switch (queueType)
+	{
+	case QueueType::GRAPHICS: return m_graphicsQueueIndex;
+	case QueueType::PRESENT: return m_presentQueueIndex;
+	case QueueType::COMPUTE: return m_computeQueueIndex;
+	case QueueType::TRANSFER: return m_transferQueueIndex;
+	default: return 0;
+	}
+}
+
+uint32_t VulkanDevice::GetQueueFamilyIndex(QueueType queueType) const
+{
+	switch (queueType)
+	{
+	case QueueType::GRAPHICS: return m_graphicsQueueFamilyIndex;
+	case QueueType::PRESENT: return m_presentQueueFamilyIndex;
+	case QueueType::COMPUTE: return m_computeQueueFamilyIndex;
+	case QueueType::TRANSFER: return m_transferQueueFamilyIndex;
+	default: return 0;
+	}
+}
+
+void VulkanDevice::SetQueue(QueueType queueType, vk::Queue queue)
+{
+	switch (queueType)
+	{
+	case QueueType::GRAPHICS: m_graphicsQueue = queue; break;
+	case QueueType::PRESENT: m_presentQueue = queue; break;
+	case QueueType::COMPUTE: m_computeQueue = queue; break;
+	case QueueType::TRANSFER: m_transferQueue = queue; break;
+	default: break;
+	}
+}
+
+void VulkanDevice::SetQueueIndex(QueueType queueType, uint32_t queueIndex)
+{
+	switch (queueType)
+	{
+	case QueueType::GRAPHICS: m_graphicsQueueIndex = queueIndex; break;
+	case QueueType::PRESENT: m_presentQueueIndex = queueIndex; break;
+	case QueueType::COMPUTE: m_computeQueueIndex = queueIndex; break;
+	case QueueType::TRANSFER: m_transferQueueIndex = queueIndex; break;
+	default: break;
+	}
+}
+
+void VulkanDevice::SetQueueFamilyIndex(QueueType queueType, uint32_t queueFamilyIndex)
+{
+	switch (queueType)
+	{
+	case QueueType::GRAPHICS: m_graphicsQueueFamilyIndex = queueFamilyIndex; break;
+	case QueueType::PRESENT: m_presentQueueFamilyIndex = queueFamilyIndex; break;
+	case QueueType::COMPUTE: m_computeQueueFamilyIndex = queueFamilyIndex; break;
+	case QueueType::TRANSFER: m_transferQueueFamilyIndex = queueFamilyIndex; break;
+	default: break;
+	}
+}
+
+bool VulkanDevice::IsQueueFamilyIndexSet(QueueType queueType) const
+{
+	switch (queueType)
+	{
+	case QueueType::GRAPHICS: return m_graphicsQueueFamilyIndex != UINT32_MAX;
+	case QueueType::PRESENT: return m_presentQueueFamilyIndex != UINT32_MAX;
+	case QueueType::COMPUTE: return m_computeQueueFamilyIndex != UINT32_MAX;
+	case QueueType::TRANSFER: return m_transferQueueFamilyIndex != UINT32_MAX;
+	default: return false;
+	}
+}
+
+// DEBUG FUNCTIONS
+const char* VulkanDevice::BoolToString(bool value)
 {
 	return value ? "True" : "False";
 }
@@ -183,11 +369,12 @@ std::string VulkanDevice::GetFormattedApiVersion(uint32_t apiVersion)
 
 void VulkanDevice::AddValueToBuffer(const char* name, auto value)
 {
-	std::cout << std::setw(30) << std::left << name << ": " << value << "\n";
+	std::cout << std::setw(34) << std::left << name << ": " << value << "\n";
 }
 
 void VulkanDevice::OutputDeviceProperties()
 {
+	// PhysicalDevice
 	vk::PhysicalDeviceProperties deviceProperties             = m_physicalDevice.getProperties();
 	vk::PhysicalDeviceFeatures supportedFeatures              = m_physicalDevice.getFeatures();
 	vk::PhysicalDeviceMemoryProperties deviceMemoryProperties = m_physicalDevice.getMemoryProperties();
@@ -238,5 +425,25 @@ void VulkanDevice::OutputDeviceProperties()
 	AddValueToBuffer("    - drawIndirectFirstInstance", BoolToString(supportedFeatures.drawIndirectFirstInstance));
 	AddValueToBuffer("    - depthClamp", BoolToString(supportedFeatures.depthClamp));
 
-	std::cout << std::flush	<< std::endl;
+	std::cout << std::flush << std::endl;
+
+	// LogicalDevice
+	std::cout << "\nCreated Logical Device:\n";
+
+	// Query queue family properties
+	uint32_t queueFamilyCount = 0;
+	m_physicalDevice.getQueueFamilyProperties(&queueFamilyCount, nullptr);
+	std::vector<vk::QueueFamilyProperties> queueFamilies(queueFamilyCount);
+	m_physicalDevice.getQueueFamilyProperties(&queueFamilyCount, queueFamilies.data());
+
+	std::cout << "  Queue Families:\n";
+	for (uint32_t i = 0; i < static_cast<uint32_t>(queueFamilies.size()); ++i)
+	{
+		std::cout << "    Family " << i << ":\n";
+		AddValueToBuffer("      - Queue Count", queueFamilies[i].queueCount);
+		AddValueToBuffer("      - Timestamp Valid Bits", queueFamilies[i].timestampValidBits);
+
+		std::cout << std::flush << std::endl;
+	}
+	std::cout << std::flush << std::endl;
 }

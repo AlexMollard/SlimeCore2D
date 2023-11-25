@@ -1,4 +1,6 @@
 #pragma once
+#include "engine/MemoryDebugging.h"
+
 #include <unordered_map>
 #include <vulkan/vulkan.hpp>
 

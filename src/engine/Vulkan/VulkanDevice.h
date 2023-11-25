@@ -5,15 +5,49 @@
 class VulkanDevice
 {
 public:
+	enum class QueueType
+	{
+		GRAPHICS,
+		PRESENT,
+		COMPUTE,
+		TRANSFER
+	};
+
 	VulkanDevice(vk::Instance& instance, vk::SurfaceKHR& surface);
 	~VulkanDevice();
 
 	vk::PhysicalDevice* GetPhysicalDevice();
-	vk::Device* GetLogicalDevice();
+	vk::Device& GetLogicalDevice();
+
+	// == QUEUE == //
+	vk::Queue GetQueue(QueueType queueType) const;
+	uint32_t GetQueueIndex(QueueType queueType) const;
+	uint32_t GetQueueFamilyIndex(QueueType queueType) const;
+
+	void SetQueue(QueueType queueType, vk::Queue queue);
+	void SetQueueIndex(QueueType queueType, uint32_t queueIndex);
+	void SetQueueFamilyIndex(QueueType queueType, uint32_t queueFamilyIndex);
+
+	bool IsQueueFamilyIndexSet(QueueType queueType) const;
 
 private:
 	vk::PhysicalDevice m_physicalDevice;
-	vk::UniqueDevice m_logicalDevice;
+	vk::Device m_logicalDevice;
+
+	vk::Queue m_graphicsQueue; // Used for pushing geometry to the GPU
+	vk::Queue m_presentQueue;  // Used for presenting the rendered image to the screen
+	vk::Queue m_computeQueue;  // Used for compute shaders
+	vk::Queue m_transferQueue; // Used for transferring data between buffers
+
+	uint32_t m_graphicsQueueIndex = UINT32_MAX;
+	uint32_t m_presentQueueIndex  = UINT32_MAX;
+	uint32_t m_computeQueueIndex  = UINT32_MAX;
+	uint32_t m_transferQueueIndex = UINT32_MAX;
+
+	uint32_t m_graphicsQueueFamilyIndex = UINT32_MAX;
+	uint32_t m_presentQueueFamilyIndex  = UINT32_MAX;
+	uint32_t m_computeQueueFamilyIndex  = UINT32_MAX;
+	uint32_t m_transferQueueFamilyIndex = UINT32_MAX;
 
 	struct QueueFamilyIndices
 	{
@@ -36,7 +70,7 @@ private:
 	SwapChainSupportDetails QuerySwapChainSupport(vk::PhysicalDevice device, vk::SurfaceKHR surface);
 
 	// Device extensions
-	const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 	// Debug output stuff
 	enum class VendorID

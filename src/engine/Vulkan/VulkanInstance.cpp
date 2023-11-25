@@ -1,4 +1,6 @@
 #include "VulkanInstance.h"
+#include "engine/MemoryDebugging.h"
+
 #include "VulkanDebug.h"
 
 VulkanInstance::VulkanInstance(const char* appName, const char* engineName)
