@@ -24,13 +24,13 @@ public:
 	uint32_t GetQueueIndex(QueueType queueType) const;
 	uint32_t GetQueueFamilyIndex(QueueType queueType) const;
 
+private:
 	void SetQueue(QueueType queueType, vk::Queue queue);
 	void SetQueueIndex(QueueType queueType, uint32_t queueIndex);
 	void SetQueueFamilyIndex(QueueType queueType, uint32_t queueFamilyIndex);
 
 	bool IsQueueFamilyIndexSet(QueueType queueType) const;
 
-private:
 	vk::PhysicalDevice m_physicalDevice;
 	vk::Device m_logicalDevice;
 
@@ -56,6 +56,12 @@ private:
 
 		bool IsComplete() const;
 	};
+
+	// == COMMAND POOL == //
+	vk::CommandPool CreateCommandPool(QueueType queueType);
+
+	vk::CommandPool m_graphicsCommandPool;
+	vk::CommandPool m_presentCommandPool;
 
 	struct SwapChainSupportDetails
 	{

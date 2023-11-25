@@ -144,11 +144,16 @@ VulkanDevice::VulkanDevice(vk::Instance& instance, vk::SurfaceKHR& surface)
 	if (IsQueueFamilyIndexSet(QueueType::COMPUTE))
 		SetQueue(QueueType::COMPUTE, m_logicalDevice.getQueue(GetQueueFamilyIndex(QueueType::COMPUTE), 0));
 
+	m_graphicsCommandPool = CreateCommandPool(QueueType::GRAPHICS);
+	m_presentCommandPool  = CreateCommandPool(QueueType::PRESENT);
+
 	OutputDeviceProperties();
 }
 
 VulkanDevice::~VulkanDevice()
 {
+	m_logicalDevice.destroyCommandPool(m_graphicsCommandPool);
+	m_logicalDevice.destroyCommandPool(m_presentCommandPool);
 }
 
 vk::PhysicalDevice* VulkanDevice::GetPhysicalDevice()
@@ -360,6 +365,12 @@ const char* VulkanDevice::GetDeviceTypeName(vk::PhysicalDeviceType deviceType)
 	case vk::PhysicalDeviceType::eOther: return "Unknown";
 	default: return "Unknown";
 	}
+}
+
+vk::CommandPool VulkanDevice::CreateCommandPool(QueueType queueType)
+{
+	vk::CommandPoolCreateInfo poolInfo({}, GetQueueFamilyIndex(queueType));
+	return m_logicalDevice.createCommandPool(poolInfo);
 }
 
 std::string VulkanDevice::GetFormattedApiVersion(uint32_t apiVersion)
