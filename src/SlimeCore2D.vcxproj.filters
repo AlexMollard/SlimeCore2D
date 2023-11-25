@@ -153,7 +153,7 @@
     <ClInclude Include="engine\Vulkan\VulkanRenderPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanFramebuffer.h">
+    <ClInclude Include="engine\Vulkan\VulkanFramebuffers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\Vulkan\VulkanDebug.h">
@@ -263,7 +263,7 @@
     <ClCompile Include="engine\Vulkan\VulkanRenderPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanFramebuffer.cpp">
+    <ClCompile Include="engine\Vulkan\VulkanFramebuffers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="engine\Vulkan\VulkanDebug.cpp">

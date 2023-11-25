@@ -156,12 +156,12 @@ VulkanDevice::~VulkanDevice()
 	m_logicalDevice.destroyCommandPool(m_presentCommandPool);
 }
 
-vk::PhysicalDevice* VulkanDevice::GetPhysicalDevice()
+vk::PhysicalDevice VulkanDevice::GetPhysicalDevice()
 {
-	return &m_physicalDevice;
+	return m_physicalDevice;
 }
 
-vk::Device& VulkanDevice::GetLogicalDevice()
+vk::Device VulkanDevice::GetLogicalDevice()
 {
 	return m_logicalDevice;
 }

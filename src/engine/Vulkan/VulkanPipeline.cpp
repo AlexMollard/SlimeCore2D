@@ -1,6 +1,6 @@
 #include "VulkanPipeline.h"
 
-VulkanPipeline::VulkanPipeline(vk::Device& logicalDevice, vk::RenderPass& renderPass) {}
+VulkanPipeline::VulkanPipeline(vk::Device logicalDevice, VulkanRenderPass renderPass) : m_logicalDevice(logicalDevice), m_renderPass(renderPass) {}
 
 VulkanPipeline::~VulkanPipeline() {}
 

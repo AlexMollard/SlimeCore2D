@@ -1,6 +1,9 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 #include "VulkanDevice.h"
+#include "VulkanRenderPass.h"
+
+class VulkanFramebuffers;
 
 class VulkanSwapchain
 {
@@ -10,7 +13,6 @@ public:
 
 	void CreateSwapchain(const vk::SurfaceKHR& surface);
 	void DestroySwapchain();
-
 private:
 	vk::SurfaceCapabilitiesKHR GetSurfaceCapabilities(const vk::SurfaceKHR& surface);
 	vk::SurfaceFormatKHR ChooseSurfaceFormat(const vk::SurfaceKHR& surface);
@@ -19,6 +21,9 @@ private:
 	VulkanDevice& m_device;
 	vk::SwapchainKHR m_swapchain;
 	std::vector<vk::Image> m_swapchainImages;
+	VulkanFramebuffers* m_framebuffers = nullptr;
+	vk::Extent2D m_swapchainExtent;
+	VulkanRenderPass m_renderPass;
 
 	// Debug stuff
 	void PrintDebugInfo(const vk::SurfaceKHR& surface);

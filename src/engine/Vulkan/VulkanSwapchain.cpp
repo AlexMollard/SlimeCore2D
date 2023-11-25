@@ -1,9 +1,11 @@
 #include "VulkanSwapchain.h"
 #include "engine/MemoryDebugging.h"
 #include <engine/ConsoleLog.h>
+#include "VulkanFramebuffers.h"
+
 #include <iostream>
 
-VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const vk::SurfaceKHR& surface) : m_device(device)
+VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const vk::SurfaceKHR& surface) : m_device(device), m_renderPass(device, surface)
 {
 	if (!m_device.GetPhysicalDevice() || !m_device.GetLogicalDevice())
 	{
@@ -41,6 +43,8 @@ void VulkanSwapchain::CreateSwapchain(const vk::SurfaceKHR& surface)
 		imageCount = surfaceCapabilities.maxImageCount;
 	}
 
+	m_swapchainExtent = surfaceCapabilities.currentExtent;
+
 	// Create the swapchain create info
 	vk::SwapchainCreateInfoKHR swapchainCreateInfo;
 	swapchainCreateInfo.setSurface(surface);
@@ -76,21 +80,24 @@ void VulkanSwapchain::CreateSwapchain(const vk::SurfaceKHR& surface)
 
 	m_swapchain       = m_device.GetLogicalDevice().createSwapchainKHR(swapchainCreateInfo);
 	m_swapchainImages = m_device.GetLogicalDevice().getSwapchainImagesKHR(m_swapchain);
+
+	m_framebuffers = new VulkanFramebuffers(m_device.GetLogicalDevice(), m_renderPass, m_swapchainExtent, m_swapchainImages);
 }
 
 void VulkanSwapchain::DestroySwapchain()
 {
+	delete m_framebuffers;
 	m_device.GetLogicalDevice().destroySwapchainKHR(m_swapchain);
 }
 
 vk::SurfaceCapabilitiesKHR VulkanSwapchain::GetSurfaceCapabilities(const vk::SurfaceKHR& surface)
 {
-	return m_device.GetPhysicalDevice()->getSurfaceCapabilitiesKHR(surface);
+	return m_device.GetPhysicalDevice().getSurfaceCapabilitiesKHR(surface);
 }
 
 vk::SurfaceFormatKHR VulkanSwapchain::ChooseSurfaceFormat(const vk::SurfaceKHR& surface)
 {
-	auto formats = m_device.GetPhysicalDevice()->getSurfaceFormatsKHR(surface);
+	auto formats = m_device.GetPhysicalDevice().getSurfaceFormatsKHR(surface);
 
 	for (const auto& format : formats)
 	{
@@ -106,7 +113,7 @@ vk::SurfaceFormatKHR VulkanSwapchain::ChooseSurfaceFormat(const vk::SurfaceKHR& 
 
 vk::PresentModeKHR VulkanSwapchain::ChoosePresentMode(const vk::SurfaceKHR& surface)
 {
-	std::vector<vk::PresentModeKHR> presentModes = m_device.GetPhysicalDevice()->getSurfacePresentModesKHR(surface);
+	std::vector<vk::PresentModeKHR> presentModes = m_device.GetPhysicalDevice().getSurfacePresentModesKHR(surface);
 
 	// Assume you have a default present mode
 	vk::PresentModeKHR preferredPresentMode = vk::PresentModeKHR::eFifo;
@@ -127,8 +134,8 @@ vk::PresentModeKHR VulkanSwapchain::ChoosePresentMode(const vk::SurfaceKHR& surf
 void VulkanSwapchain::PrintDebugInfo(const vk::SurfaceKHR& surface)
 {
 	PrintSurfaceCapabilities(GetSurfaceCapabilities(surface));
-	PrintSurfaceFormats(m_device.GetPhysicalDevice()->getSurfaceFormatsKHR(surface));
-	PrintPresentModes(m_device.GetPhysicalDevice()->getSurfacePresentModesKHR(surface));
+	PrintSurfaceFormats(m_device.GetPhysicalDevice().getSurfaceFormatsKHR(surface));
+	PrintPresentModes(m_device.GetPhysicalDevice().getSurfacePresentModesKHR(surface));
 }
 
 void VulkanSwapchain::AddValueToBuffer(const char* name, const auto& value)

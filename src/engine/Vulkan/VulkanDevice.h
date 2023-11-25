@@ -16,8 +16,8 @@ public:
 	VulkanDevice(vk::Instance& instance, vk::SurfaceKHR& surface);
 	~VulkanDevice();
 
-	vk::PhysicalDevice* GetPhysicalDevice();
-	vk::Device& GetLogicalDevice();
+	vk::PhysicalDevice GetPhysicalDevice();
+	vk::Device GetLogicalDevice();
 
 	// == QUEUE == //
 	vk::Queue GetQueue(QueueType queueType) const;

@@ -1,11 +1,12 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 #include "VulkanShaderModule.h"
+#include "VulkanRenderPass.h"
 
 class VulkanPipeline
 {
 public:
-	VulkanPipeline(vk::Device& logicalDevice, vk::RenderPass& renderPass);
+	VulkanPipeline(vk::Device logicalDevice, VulkanRenderPass renderPass);
 	~VulkanPipeline();
 
 	void CreateGraphicsPipeline(const VulkanShaderModule& vertexShader, const VulkanShaderModule& fragmentShader);
@@ -14,5 +15,5 @@ public:
 private:
 	vk::Device m_logicalDevice;
 	vk::UniquePipeline m_graphicsPipeline;
-	vk::RenderPass m_renderPass;
+	VulkanRenderPass m_renderPass;
 };
