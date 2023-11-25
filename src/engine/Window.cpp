@@ -74,6 +74,11 @@ void Window::UpdateWindow()
 				m_isRunning = false;
 			}
 		}
+
+		if (event.type == SDL_EVENT_QUIT)
+		{
+			m_isRunning = false;
+		}
 	}
 
 	m_now   = SDL_GetTicks();
