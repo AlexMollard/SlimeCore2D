@@ -7,6 +7,7 @@
 #include "Vulkan/VulkanInstance.h"
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanSwapchain.h"
+#include "Vulkan/VulkanPipeline.h"
 
 #include <iostream>
 #include <optional>
@@ -54,8 +55,11 @@ int Window::WindowInit(int width, int height, const char* name)
 	// Create the vulkan device
 	m_device = new VulkanDevice(*m_instance->GetInstance(), m_surface);
 
-	// Create the vulkan swapchain
+	// Create the vulkan swapchain (Swapchain, Framebuffers)
 	m_swapchain = new VulkanSwapchain(*m_device, m_surface);
+
+	// Create the Graphics Pipeline
+	m_graphicsPipeline = new VulkanPipeline(*m_device, m_swapchain->GetRenderPass(), surface);
 
 	return 1;
 }
@@ -88,6 +92,7 @@ void Window::UpdateWindow()
 
 void Window::WindowDestroy()
 {
+	delete m_graphicsPipeline;
 	delete m_swapchain;
 	delete m_device;
 	delete m_instance;

@@ -4,6 +4,7 @@
 class VulkanInstance;
 class VulkanDevice;
 class VulkanSwapchain;
+class VulkanPipeline;
 
 class Window
 {
@@ -39,6 +40,7 @@ protected:
 	VulkanInstance* m_instance = nullptr;
 	VulkanDevice* m_device = nullptr;
 	VulkanSwapchain* m_swapchain = nullptr;
+	VulkanPipeline* m_graphicsPipeline = nullptr;
 	vk::SurfaceKHR m_surface;
 	VkPhysicalDevice m_physicalDevice;
 	VkQueue m_graphicsQueue;

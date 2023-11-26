@@ -41,7 +41,7 @@ void TextObject::GenerateTextures(int sizePt, glm::vec3 color)
 	}
 
 	// Render each character to a surface
-	SDL_Color textColor      = { color.r * 255, color.g * 255, color.b * 255, 255 };
+	SDL_Color textColor      = { static_cast<Uint8>(color.r * 255), static_cast<Uint8>(color.g * 255), static_cast<Uint8>(color.b * 255), 255 };
 	SDL_Surface* textSurface = TTF_RenderUTF8_Blended(font, m_text.c_str(), textColor);
 	if (!textSurface)
 	{

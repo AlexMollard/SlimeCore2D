@@ -13,6 +13,11 @@ public:
 
 	void CreateSwapchain(const vk::SurfaceKHR& surface);
 	void DestroySwapchain();
+
+	vk::SwapchainKHR GetSwapchain() const;
+	VulkanRenderPass& GetRenderPass();
+
+	vk::Extent2D GetSwapchainExtent() const;
 private:
 	vk::SurfaceCapabilitiesKHR GetSurfaceCapabilities(const vk::SurfaceKHR& surface);
 	vk::SurfaceFormatKHR ChooseSurfaceFormat(const vk::SurfaceKHR& surface);
@@ -29,6 +34,5 @@ private:
 	void PrintDebugInfo(const vk::SurfaceKHR& surface);
 	void AddValueToBuffer(const char* name, const auto& value);
 	void PrintSurfaceCapabilities(const vk::SurfaceCapabilitiesKHR& surfaceCapabilities);
-	void PrintSurfaceFormats(const std::vector<vk::SurfaceFormatKHR>& surfaceFormats);
 	void PrintPresentModes(const std::vector<vk::PresentModeKHR>& presentModes);
 };

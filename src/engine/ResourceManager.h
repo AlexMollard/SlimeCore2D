@@ -49,10 +49,12 @@ public:
 
 	static const std::string BASE_TEXTURE_PATH;
 	static const std::string BASE_SHADER_PATH;
+	static const std::string BASE_VULKAN_SHADER_PATH;
 	static const std::string BASE_FONT_PATH;
 
 	static std::string GetTexturePath(const std::string& name, const std::string& extension = ".png");
 	static std::string GetShaderPath(const std::string& name, const std::string& extension = ".shader");
+	static std::string GetVulkanShaderPath(const std::string& name, int shaderStage);
 	static std::string GetFontPath(const std::string& name, const std::string& extension = ".ttf");
 
 	// Methods for loading and retrieving resources

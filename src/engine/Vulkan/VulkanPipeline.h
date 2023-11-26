@@ -2,18 +2,22 @@
 #include <vulkan/vulkan.hpp>
 #include "VulkanShaderModule.h"
 #include "VulkanRenderPass.h"
+#include "VulkanDevice.h"
 
 class VulkanPipeline
 {
 public:
-	VulkanPipeline(vk::Device logicalDevice, VulkanRenderPass renderPass);
+	VulkanPipeline(VulkanDevice& device, VulkanRenderPass& renderPass, vk::SurfaceKHR surface);
 	~VulkanPipeline();
 
-	void CreateGraphicsPipeline(const VulkanShaderModule& vertexShader, const VulkanShaderModule& fragmentShader);
-	void DestroyGraphicsPipeline();
-
 private:
-	vk::Device m_logicalDevice;
-	vk::UniquePipeline m_graphicsPipeline;
-	VulkanRenderPass m_renderPass;
+	VulkanDevice& m_device;
+	vk::Pipeline m_graphicsPipeline = nullptr;
+	VulkanRenderPass& m_renderPass;
+
+	VulkanShaderModule* vertShaderModule = nullptr;
+	VulkanShaderModule* fragShaderModule = nullptr;
+
+	void SetupViewportAndScissor(vk::SurfaceKHR surface, vk::Viewport& viewport, vk::Rect2D& scissor);
+	vk::DescriptorSetLayout CreateDescriptorSetLayout();
 };

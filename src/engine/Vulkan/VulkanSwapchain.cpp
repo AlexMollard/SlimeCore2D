@@ -90,6 +90,21 @@ void VulkanSwapchain::DestroySwapchain()
 	m_device.GetLogicalDevice().destroySwapchainKHR(m_swapchain);
 }
 
+vk::SwapchainKHR VulkanSwapchain::GetSwapchain() const
+{
+	return m_swapchain;
+}
+
+VulkanRenderPass& VulkanSwapchain::GetRenderPass() 
+{
+	return m_renderPass;
+}
+
+vk::Extent2D VulkanSwapchain::GetSwapchainExtent() const
+{
+	return m_swapchainExtent;
+}
+
 vk::SurfaceCapabilitiesKHR VulkanSwapchain::GetSurfaceCapabilities(const vk::SurfaceKHR& surface)
 {
 	return m_device.GetPhysicalDevice().getSurfaceCapabilitiesKHR(surface);
@@ -134,7 +149,6 @@ vk::PresentModeKHR VulkanSwapchain::ChoosePresentMode(const vk::SurfaceKHR& surf
 void VulkanSwapchain::PrintDebugInfo(const vk::SurfaceKHR& surface)
 {
 	PrintSurfaceCapabilities(GetSurfaceCapabilities(surface));
-	PrintSurfaceFormats(m_device.GetPhysicalDevice().getSurfaceFormatsKHR(surface));
 	PrintPresentModes(m_device.GetPhysicalDevice().getSurfacePresentModesKHR(surface));
 }
 
@@ -151,17 +165,6 @@ void VulkanSwapchain::PrintSurfaceCapabilities(const vk::SurfaceCapabilitiesKHR&
 
 	std::string extentString = std::format("[width: {}, height {}]", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
 	AddValueToBuffer("  Current Extent", extentString.c_str());
-	std::cout << std::endl;
-}
-
-void VulkanSwapchain::PrintSurfaceFormats(const std::vector<vk::SurfaceFormatKHR>& surfaceFormats)
-{
-	std::cout << "Surface Formats:" << std::endl;
-	for (const auto& format : surfaceFormats)
-	{
-		std::cout << std::setw(20) << std::left << "  Format" << ": " << std::setw(25) << vk::to_string(format.format);
-		std::cout << " Color Space" << ": " << vk::to_string(format.colorSpace) << std::endl;
-	}
 	std::cout << std::endl;
 }
 

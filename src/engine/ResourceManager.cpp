@@ -4,16 +4,34 @@
 #include "Constants.h"
 #include "Shader.h"
 #include "Texture.h"
+#include <vulkan/vulkan.hpp>
 
 #include "engine/MemoryDebugging.h"
 
-const std::string ResourceManager::BASE_TEXTURE_PATH = "../resources/textures/";
-const std::string ResourceManager::BASE_SHADER_PATH  = "../resources/shaders/";
-const std::string ResourceManager::BASE_FONT_PATH    = "../resources/fonts/";
+const std::string ResourceManager::BASE_TEXTURE_PATH       = "../resources/textures/";
+const std::string ResourceManager::BASE_SHADER_PATH        = "../resources/shaders/";
+const std::string ResourceManager::BASE_VULKAN_SHADER_PATH = "../resources/shaders/compiled/";
+const std::string ResourceManager::BASE_FONT_PATH          = "../resources/fonts/";
 
 std::string ResourceManager::GetTexturePath(const std::string& name, const std::string& extension)
 {
 	return BASE_TEXTURE_PATH + name + extension;
+}
+
+std::string ResourceManager::GetVulkanShaderPath(const std::string& name, int shaderStage)
+{
+	auto stage = static_cast<vk::ShaderStageFlagBits>(shaderStage);
+	switch (stage)
+	{
+	case vk::ShaderStageFlagBits::eVertex: return BASE_VULKAN_SHADER_PATH + name + ".vert.spv";
+	case vk::ShaderStageFlagBits::eFragment: return BASE_VULKAN_SHADER_PATH + name + ".frag.spv";
+	case vk::ShaderStageFlagBits::eGeometry: return BASE_VULKAN_SHADER_PATH + name + ".geom.spv";
+	case vk::ShaderStageFlagBits::eTessellationControl: return BASE_VULKAN_SHADER_PATH + name + ".tesc.spv";
+	case vk::ShaderStageFlagBits::eTessellationEvaluation: return BASE_VULKAN_SHADER_PATH + name + ".tese.spv";
+	case vk::ShaderStageFlagBits::eCompute: return BASE_VULKAN_SHADER_PATH + name + ".comp.spv";
+	default: SLIME_ERROR("Invalid shader stage!"); return "";
+	}
+	return BASE_VULKAN_SHADER_PATH + name + ".spv";
 }
 
 std::string ResourceManager::GetShaderPath(const std::string& name, const std::string& extension)
@@ -21,7 +39,7 @@ std::string ResourceManager::GetShaderPath(const std::string& name, const std::s
 	return BASE_SHADER_PATH + name + extension;
 }
 
-std::string ResourceManager::GetFontPath(const std::string& name, const std::string& extension) 
+std::string ResourceManager::GetFontPath(const std::string& name, const std::string& extension)
 {
 	return BASE_FONT_PATH + name + extension;
 }
@@ -104,7 +122,7 @@ TTF_Font* ResourceManager::LoadFont(const std::string& name, const std::string& 
 		return nullptr;
 	}
 
-	 TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
+	TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
 
 	// Cache the resource
 	Resource resource{ font, name, ResourceType::Font };
