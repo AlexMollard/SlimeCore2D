@@ -4,10 +4,6 @@
 #include "ConsoleLog.h"
 
 #include "SDL3/SDL_vulkan.h"
-#include "Vulkan/VulkanInstance.h"
-#include "Vulkan/VulkanDevice.h"
-#include "Vulkan/VulkanSwapchain.h"
-#include "Vulkan/VulkanPipeline.h"
 
 #include <iostream>
 #include <optional>
@@ -38,28 +34,10 @@ int Window::WindowInit(int width, int height, const char* name)
 		return -1;
 	}
 
-	// Create the vulkan instance
-	m_instance = new VulkanInstance(name, name);
+	m_width  = width;
+	m_height = height;
 
-	// Create window
-	m_window = SDL_CreateWindow(name, width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
-
-	// Create an SDL Vulkan SDL surface
-	VkSurfaceKHR surface = static_cast<VkSurfaceKHR>(m_surface);
-	if (!SDL_Vulkan_CreateSurface(m_window, *m_instance->GetInstance(), nullptr, &surface))
-	{
-		SLIME_ERROR("Failed to create Vulkan surface: {}", SDL_GetError());
-	}
-	m_surface = surface;
-	
-	// Create the vulkan device
-	m_device = new VulkanDevice(*m_instance->GetInstance(), m_surface);
-
-	// Create the vulkan swapchain (Swapchain, Framebuffers)
-	m_swapchain = new VulkanSwapchain(*m_device, m_surface);
-
-	// Create the Graphics Pipeline
-	m_graphicsPipeline = new VulkanPipeline(*m_device, m_swapchain->GetRenderPass(), surface);
+	m_last = SDL_GetTicks();
 
 	return 1;
 }

@@ -132,34 +132,16 @@
     <ClInclude Include="engine\TextObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanInstance.h">
+    <ClInclude Include="engine\Vulkan\VulkanEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanDevice.h">
+    <ClInclude Include="engine\Vulkan\VulkanTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanSwapchain.h">
+    <ClInclude Include="engine\Vulkan\VulkanInit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanCommandBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanShaderModule.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanRenderPass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanFramebuffers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanDebug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\Vulkan\VulkanStructs.h">
+    <ClInclude Include="engine\Vulkan\VulkanImages.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -245,34 +227,13 @@
     <ClCompile Include="engine\TextObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanInstance.cpp">
+    <ClCompile Include="engine\Vulkan\VulkanEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanDevice.cpp">
+    <ClCompile Include="engine\Vulkan\VulkanInit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanSwapchain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanCommandBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanShaderModule.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanRenderPass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanFramebuffers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanDebug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\Vulkan\VulkanStructs.cpp">
+    <ClCompile Include="engine\Vulkan\VulkanImages.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

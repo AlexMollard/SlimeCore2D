@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\Vulkan\VulkanInit.h" />
+    <ClInclude Include="engine\Vulkan\VulkanTypes.h" />
     <ClInclude Include="game\Bullet.h" />
     <ClInclude Include="engine\ConsoleLog.h" />
     <ClInclude Include="engine\BatchRenderer.h" />
@@ -47,16 +49,8 @@
     <ClInclude Include="game\ItemPool.h" />
     <ClInclude Include="engine\TextBatchRenderer.h" />
     <ClInclude Include="engine\TextObject.h" />
-    <ClInclude Include="engine\Vulkan\VulkanInstance.h" />
-    <ClInclude Include="engine\Vulkan\VulkanDevice.h" />
-    <ClInclude Include="engine\Vulkan\VulkanSwapchain.h" />
-    <ClInclude Include="engine\Vulkan\VulkanCommandBuffer.h" />
-    <ClInclude Include="engine\Vulkan\VulkanShaderModule.h" />
-    <ClInclude Include="engine\Vulkan\VulkanPipeline.h" />
-    <ClInclude Include="engine\Vulkan\VulkanRenderPass.h" />
-    <ClInclude Include="engine\Vulkan\VulkanFramebuffers.h" />
-    <ClInclude Include="engine\Vulkan\VulkanDebug.h" />
-    <ClInclude Include="engine\Vulkan\VulkanStructs.h" />
+    <ClInclude Include="engine\Vulkan\VulkanEngine.h" />
+    <ClInclude Include="engine\Vulkan\VulkanImages.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BatchRenderer.cpp" />
@@ -71,7 +65,7 @@
     <ClCompile Include="engine\RigidBody.cpp" />
     <ClCompile Include="engine\Shader.cpp" />
     <ClCompile Include="engine\Texture.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanDebug.cpp" />
+    <ClCompile Include="engine\Vulkan\VulkanInit.cpp" />
     <ClCompile Include="engine\Window.cpp" />
     <ClCompile Include="engine\RenderTarget.cpp" />
     <ClCompile Include="engine\ResourceManager.cpp" />
@@ -87,15 +81,8 @@
     <ClCompile Include="game\ItemPool.cpp" />
     <ClCompile Include="engine\TextBatchRenderer.cpp" />
     <ClCompile Include="engine\TextObject.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanInstance.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanDevice.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanSwapchain.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanCommandBuffer.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanShaderModule.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanPipeline.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanRenderPass.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanFramebuffers.cpp" />
-    <ClCompile Include="engine\Vulkan\VulkanStructs.cpp" />
+    <ClCompile Include="engine\Vulkan\VulkanEngine.cpp" />
+    <ClCompile Include="engine\Vulkan\VulkanImages.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
@@ -151,7 +138,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;VK_PROTOTYPES;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions);GLEW_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb;$(SolutionDir)dependencies\vulkan\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\vk-bootstrap\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -164,13 +151,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <MinimalRebuild>false</MinimalRebuild>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;$(VULKAN_SDK)/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;$(VULKAN_SDK)/Lib;$(SolutionDir)Dependencies\vk-bootstrap\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;vulkan-1.lib;vk-bootstrap.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -191,7 +178,7 @@ xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_image.dll" "$(OutDir)"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;VK_PROTOTYPES;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions);GLEW_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb;$(SolutionDir)dependencies\vulkan\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\vk-bootstrap\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -203,8 +190,8 @@ xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_image.dll" "$(OutDir)"</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;$(VULKAN_SDK)/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;$(VULKAN_SDK)/Lib;$(SolutionDir)Dependencies\vk-bootstrap\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;vulkan-1.lib;vk-bootstrap.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y "$(SolutionDir)dependencies\sdl\SDL3.dll" "$(OutDir)"
