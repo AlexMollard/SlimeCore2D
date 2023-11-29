@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #ifdef _WIN32
@@ -107,49 +108,77 @@ public:
 		reset();
 	}
 
-	// Function for debugging with file and line information (INFO)
+// Function for debugging with file and line information (INFO)
 	static void internalInfo(const std::string& message, const char* file, int line)
 	{
-		std::cout << std::format("{}({}) : ", file, line);
+		std::stringstream ss;
+		ss << file << "(" << line << ") : ";
+
 		ConsoleLog::set(ConsoleColor::Cyan);
 		std::cout << "INFO";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" - {}", message) << std::endl;
+		ss << " - " << message << std::endl;
+
+		ConsoleLog::log(ss.str(), ConsoleColor::Cyan);
 	}
 
 	// Function for debugging with file and line information (WARN)
 	static void internalWarn(const std::string& message, const char* file, int line)
 	{
-		std::cout << std::format("{}({}) : ", file, line);
+		std::stringstream ss;
+		ss << file << "(" << line << ") : ";
+
 		ConsoleLog::set(ConsoleColor::Yellow);
 		std::cout << "WARN";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" - {}", message) << std::endl;
+		ss << " - " << message << std::endl;
+
+		ConsoleLog::log(ss.str(), ConsoleColor::Yellow);
 	}
 
 	// Function for debugging with file and line information (ERROR)
 	static void internalError(const std::string& message, const char* file, int line)
 	{
-		std::cout << std::format("{}({}) : ", file, line);
+		std::stringstream ss;
+		ss << file << "(" << line << ") : ";
+
 		ConsoleLog::set(ConsoleColor::Red);
 		std::cout << "ERROR";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" - {}", message) << std::endl;
+		ss << " - " << message << std::endl;
+
+		ConsoleLog::log(ss.str(), ConsoleColor::Red);
 	}
 };
 
 // Debug macro for convenience
-#define SLIME_INFO(...) ConsoleLog::internalInfo(std::format(__VA_ARGS__), __FILE__, __LINE__)
-#define SLIME_WARN(...) ConsoleLog::internalWarn(std::format(__VA_ARGS__), __FILE__, __LINE__)
+#define SLIME_INFO(...) ConsoleLog::internalInfo(formatString(__VA_ARGS__), __FILE__, __LINE__)
+#define SLIME_WARN(...) ConsoleLog::internalWarn(formatString(__VA_ARGS__), __FILE__, __LINE__)
 
 #define SLIME_ERROR(...)                                                                                                                                                      \
 	do                                                                                                                                                                        \
 	{                                                                                                                                                                         \
-		std::string __message__ = std::format(__VA_ARGS__);                                                                                                                       \
-		ConsoleLog::internalError(__message__, __FILE__, __LINE__);                                                                                                               \
-		throw std::runtime_error(__message__.c_str());                                                                                                                                  \
+		std::string __message__ = formatString(__VA_ARGS__);                                                                                                                  \
+		ConsoleLog::internalError(__message__, __FILE__, __LINE__);                                                                                                           \
+		throw std::runtime_error(__message__.c_str());                                                                                                                        \
 	}                                                                                                                                                                         \
 	while (false)
+
+// Function to replace std::format
+template<typename... Args>
+std::string formatString(const char* format, Args... args)
+{
+	// Using a stringstream for concatenation
+	std::stringstream ss;
+	// Ignoring the return value to suppress any warnings about unused results
+	(void)std::initializer_list<int>{ (ss << args, 0)... };
+
+	// Using snprintf to handle the format string and ensure proper memory allocation
+	char buffer[256]; // Adjust the buffer size accordingly
+	std::snprintf(buffer, sizeof(buffer), format, ss.str().c_str());
+
+	return std::string(buffer);
+}

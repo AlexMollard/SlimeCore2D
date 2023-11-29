@@ -1,5 +1,14 @@
 #pragma once
+#include "vulkan/vk_mem_alloc.h"
 #include <vulkan/vulkan.h>
+
+struct AllocatedImage
+{
+	VkFormat m_imageFormat;
+	VkImage m_image;
+	VkImageView m_imageView;
+	VmaAllocation m_allocation;
+};
 
 static const char* vkResultToString(VkResult res)
 {
@@ -53,7 +62,7 @@ static const char* vkResultToString(VkResult res)
 		CASE(THREAD_DONE_KHR)
 		CASE(OPERATION_DEFERRED_KHR)
 		CASE(OPERATION_NOT_DEFERRED_KHR)
-		default: return "unknown";
+	default: return "unknown";
 	}
 #undef CASE
 }
@@ -64,7 +73,7 @@ static const char* vkResultToString(VkResult res)
 		VkResult err = x;                                                                                                                                                     \
 		if (err)                                                                                                                                                              \
 		{                                                                                                                                                                     \
-			SLIME_ERROR("Detected Vulkan error: {}", vkResultToString(err));                                                                                                   \
+			SLIME_ERROR("Detected Vulkan error: {}", vkResultToString(err));                                                                                                  \
 		}                                                                                                                                                                     \
 	}                                                                                                                                                                         \
 	while (0)

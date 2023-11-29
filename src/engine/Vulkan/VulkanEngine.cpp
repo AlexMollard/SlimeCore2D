@@ -1,11 +1,17 @@
 #include "VulkanEngine.h"
 
+#include "VkBootstrap.h"
+
+#define VMA_IMPLEMENTATION
+#include "vulkan/vk_mem_alloc.h"
+
 #include "VulkanImages.h"
 #include "VulkanInit.h"
 #include "VulkanTypes.h"
 #include <SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <regex>
+#include <sstream>
 
 #include "engine/ConsoleLog.h"
 #include "engine/MemoryDebugging.h"
@@ -71,7 +77,10 @@ void VulkanEngine::InitVulkan()
 		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 			color = ConsoleColor::Red;
 
-		ConsoleLog::log(std::format("[{}: {}]", severity, type), color);
+		std::stringstream ss;
+		ss << "[" << severity << ": " << type << "]";
+
+		ConsoleLog::log(ss.str(), color);
 		ConsoleLog::log(pCallbackData->pMessage, ConsoleColor::White);
 		std::cout << std::endl;
 		return VK_FALSE;
@@ -119,6 +128,15 @@ void VulkanEngine::InitVulkan()
 	// use vkbootstrap to get a Graphics queue
 	m_graphicsQueue       = vkbDevice.get_queue(vkb::QueueType::graphics).value();
 	m_graphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
+
+	// initialize the memory allocator
+	VmaAllocatorCreateInfo allocatorInfo = {};
+	allocatorInfo.physicalDevice         = m_chosenGPU;
+	allocatorInfo.device                 = m_device;
+	allocatorInfo.instance               = m_instance;
+	vmaCreateAllocator(&allocatorInfo, &m_allocator);
+
+	m_mainDeletionQueue.push_function([&]() { vmaDestroyAllocator(m_allocator); });
 }
 
 void VulkanEngine::InitSwapchain()
@@ -139,6 +157,39 @@ void VulkanEngine::InitSwapchain()
 	m_swapchainImageViews = vkbSwapchain.get_image_views().value();
 
 	m_swachainImageFormat = vkbSwapchain.image_format;
+
+	// depth image size will match the window
+	VkExtent3D drawImageExtent = { m_windowExtent.width, m_windowExtent.height, 1 };
+
+	// hardcoding the depth format to 32 bit float
+	m_drawImage.m_imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+
+	VkImageUsageFlags drawImageUsages{};
+	drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
+
+	VkImageCreateInfo rimg_info = vkinit::ImageCreateInfo(m_drawImage.m_imageFormat, drawImageUsages, drawImageExtent);
+
+	// for the draw image, we want to allocate it from gpu local memory
+	VmaAllocationCreateInfo rimg_allocinfo = {};
+	rimg_allocinfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
+	rimg_allocinfo.requiredFlags           = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+	// allocate and create the image
+	vmaCreateImage(m_allocator, &rimg_info, &rimg_allocinfo, &m_drawImage.m_image, &m_drawImage.m_allocation, nullptr);
+
+	// build a image-view for the draw image to use for rendering
+	VkImageViewCreateInfo rview_info = vkinit::ImageviewCreateInfo(m_drawImage.m_imageFormat, m_drawImage.m_image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+	VK_CHECK(vkCreateImageView(m_device, &rview_info, nullptr, &m_drawImage.m_imageView));
+
+	// add to deletion queues
+	m_mainDeletionQueue.push_function(
+	    [=]()
+	    {
+		    vkDestroyImageView(m_device, m_drawImage.m_imageView, nullptr);
+		    vmaDestroyImage(m_allocator, m_drawImage.m_image, m_drawImage.m_allocation);
+	    });
 }
 
 void VulkanEngine::InitCommands()
@@ -210,6 +261,9 @@ void VulkanEngine::Draw()
 {
 	// wait until the gpu has finished rendering the last frame. Timeout of 1 second
 	VK_CHECK(vkWaitForFences(m_device, 1, &GetCurrentFrame().m_renderFence, true, ONE_SECOND));
+
+	GetCurrentFrame().m_deletionQueue.flush();
+
 	VK_CHECK(vkResetFences(m_device, 1, &GetCurrentFrame().m_renderFence));
 
 	// request image from the swapchain
@@ -229,21 +283,26 @@ void VulkanEngine::Draw()
 	// start the command buffer recording
 	VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
-	// make the swapchain image into writeable mode before rendering
-	vkutil::TransitionImage(cmd, m_swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+	// transition our main draw image into general layout so we can write into it
+	// we will overwrite it all so we dont care about what was the older layout
+	vkutil::TransitionImage(cmd, m_drawImage.m_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
-	// make a clear-color from frame number. This will flash with a 120 frame period.
-	VkClearColorValue clearValue;
-	float flash = abs(sin(m_frameNumber / 120.f));
-	clearValue  = { { 0.0f, 0.0f, flash, 1.0f } };
+	Render(cmd);
 
-	VkImageSubresourceRange clearRange = vkinit::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+	// transtion the draw image and the swapchain image into their correct transfer layouts
+	vkutil::TransitionImage(cmd, m_drawImage.m_image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	vkutil::TransitionImage(cmd, m_swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-	// clear image
-	vkCmdClearColorImage(cmd, m_swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+	VkExtent3D extent;
+	extent.height = m_windowExtent.height;
+	extent.width  = m_windowExtent.width;
+	extent.depth  = 1;
 
-	// make the swapchain image into presentable mode
-	vkutil::TransitionImage(cmd, m_swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	// execute a copy from the draw image into the swapchain
+	vkutil::CopyImageToImage(cmd, m_drawImage.m_image, m_swapchainImages[swapchainImageIndex], extent);
+
+	// set swapchain image layout to Present so we can show it on the screen
+	vkutil::TransitionImage(cmd, m_swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 	// finalize the command buffer (we can no longer add commands, but it can now be executed)
 	VK_CHECK(vkEndCommandBuffer(cmd));
@@ -283,12 +342,27 @@ void VulkanEngine::Draw()
 	m_frameNumber++;
 }
 
+void VulkanEngine::Render(VkCommandBuffer cmd)
+{
+	// make a clear-color from frame number. This will flash with a 120 frame period.
+	VkClearColorValue clearValue;
+	float flash = abs(sin(m_frameNumber / 120.f));
+	clearValue  = { { 0.0f, 0.0f, flash, 1.0f } };
+
+	VkImageSubresourceRange clearRange = vkinit::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+
+	// clear image
+	vkCmdClearColorImage(cmd, m_drawImage.m_image, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+}
+
 void VulkanEngine::Cleanup()
 {
 	if (m_isInitialized)
 	{
 		// make sure the gpu has stopped doing its things
 		vkDeviceWaitIdle(m_device);
+
+		m_mainDeletionQueue.flush();
 
 		for (int i = 0; i < FRAME_OVERLAP; i++)
 		{
