@@ -17,7 +17,7 @@ layout( push_constant ) uniform constants
 
 float iTime = PushConstants.data4.x;
 vec2 iResolution = imageSize(image);
-vec2 iMouse = vec2(0.5,0.5);
+vec3 iMouse = vec3(PushConstants.data4.y, PushConstants.data4.z, 0.5);
 
 // Created by Danil (2021+) https://cohost.org/arugl
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.

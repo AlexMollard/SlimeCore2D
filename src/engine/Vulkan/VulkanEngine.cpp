@@ -3,7 +3,6 @@
 #include "VkBootstrap.h"
 
 #define VMA_IMPLEMENTATION
-#include "engine/ResourceManager.h"
 #include "Pipeline.h"
 #include "VulkanImages.h"
 #include "VulkanInit.h"
@@ -19,6 +18,7 @@
 
 #include "engine/ConsoleLog.h"
 #include "engine/MemoryDebugging.h"
+#include "engine/ResourceManager.h"
 
 constexpr uint64_t ONE_SECOND = 1000000000;
 
@@ -158,7 +158,7 @@ void VulkanEngine::InitVulkan()
 		ConsoleLog::log(pCallbackData->pMessage, ConsoleColor::White);
 		std::cout << std::endl;
 
-		//if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+		// if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 		//	abort();
 
 		return VK_FALSE;
@@ -194,9 +194,13 @@ void VulkanEngine::InitVulkan()
 	                                         .select()                           // Select the best gpu
 	                                         .value();                           // Get the selected gpu
 
+	if (!physicalDevice.enable_extension_if_present(VK_NV_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME))
+	{
+		SLIME_ERROR("The graphics card doesnt support compute shader derivatives!");
+	}
+
 	// create the final vulkan device
 	vkb::DeviceBuilder deviceBuilder{ physicalDevice };
-
 	vkb::Device vkbDevice = deviceBuilder.build().value();
 
 	// Get the VkDevice handle used in the rest of a vulkan application
@@ -355,7 +359,6 @@ void VulkanEngine::InitPipelines()
 
 	VK_CHECK(vkCreatePipelineLayout(m_device, &computeLayout, nullptr, &m_gradientPipelineLayout));
 
-
 	VkShaderModule gradientShader;
 	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Basic", ShaderStage::Compute).c_str(), m_device, &gradientShader))
 	{
@@ -386,6 +389,12 @@ void VulkanEngine::InitPipelines()
 		SLIME_ERROR("Error when building the compute shader");
 	}
 
+	VkShaderModule raytracingShader;
+	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Raytracing", ShaderStage::Compute).c_str(), m_device, &raytracingShader))
+	{
+		SLIME_ERROR("Error when building the compute shader");
+	}
+
 	VkPipelineShaderStageCreateInfo stageinfo{};
 	stageinfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	stageinfo.pNext  = nullptr;
@@ -397,66 +406,68 @@ void VulkanEngine::InitPipelines()
 	computePipelineCreateInfo.sType  = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
 	computePipelineCreateInfo.pNext  = nullptr;
 	computePipelineCreateInfo.layout = m_gradientPipelineLayout;
-	computePipelineCreateInfo.stage  = stageinfo;
 
-	ComputeEffect gradient;
-	gradient.layout = m_gradientPipelineLayout;
-	gradient.name   = "gradient";
-	gradient.data   = {};
+	computePipelineCreateInfo.stage = stageinfo;
+	ComputeEffect* gradient         = new ComputeEffect();
+	gradient->layout                = m_gradientPipelineLayout;
+	gradient->name                  = "gradient";
+	gradient->data                  = {};
+	gradient->data.data1            = glm::vec4(1, 0, 0, 1);
+	gradient->data.data2            = glm::vec4(0, 0, 1, 1);
 
-	// default colors
-	gradient.data.data1 = glm::vec4(1, 0, 0, 1);
-	gradient.data.data2 = glm::vec4(0, 0, 1, 1);
+	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &gradient->pipeline));
 
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &gradient.pipeline));
-
-	// change the shader module only to create the sky shader
 	computePipelineCreateInfo.stage.module = skyShader;
+	ComputeEffect* sky                     = new ComputeEffect();
+	sky->layout                            = m_gradientPipelineLayout;
+	sky->name                              = "sky";
+	sky->data                              = {};
+	sky->data.data1                        = glm::vec4(0.1, 0.2, 0.4, 0.97);
 
-	ComputeEffect sky;
-	sky.layout = m_gradientPipelineLayout;
-	sky.name   = "sky";
-	sky.data   = {};
-	// default sky parameters
-	sky.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
-
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &sky.pipeline));
+	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &sky->pipeline));
 
 	computePipelineCreateInfo.stage.module = mandelbrotShader;
-	ComputeEffect mandelbrot;
-	mandelbrot.layout = m_gradientPipelineLayout;
-	mandelbrot.name   = "mandelbrot";
-	mandelbrot.data   = {};
-	// default sky parameters
-	mandelbrot.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
+	ComputeEffect* mandelbrot              = new ComputeEffect();
+	mandelbrot->layout                     = m_gradientPipelineLayout;
+	mandelbrot->name                       = "mandelbrot";
+	mandelbrot->data                       = {};
+	mandelbrot->data.data1                 = glm::vec4(0.1, 0.2, 0.4, 0.97);
 
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &mandelbrot.pipeline));
+	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &mandelbrot->pipeline));
 
 	computePipelineCreateInfo.stage.module = waterShader;
-	ComputeEffect water;
-	water.layout      = m_gradientPipelineLayout;
-	water.name      = "water";
-	water.data        = {};
-	// default sky parameters
-	water.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
+	ComputeEffect* water                   = new ComputeEffect();
+	water->layout                          = m_gradientPipelineLayout;
+	water->name                            = "water";
+	water->data                            = {};
+	water->data.data1                      = glm::vec4(0.1, 0.2, 0.4, 0.97);
 
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &water.pipeline));
+	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &water->pipeline));
 
 	computePipelineCreateInfo.stage.module = cubeShader;
-	ComputeEffect cube;
-	cube.layout  = m_gradientPipelineLayout;
-	cube.name   = "cube";
-	cube.data    = {};
-	// default sky parameters
-	cube.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
+	ComputeEffect* cube                    = new ComputeEffect();
+	cube->layout                           = m_gradientPipelineLayout;
+	cube->name                             = "cube";
+	cube->data                             = {};
+	cube->data.data1                       = glm::vec4(0.1, 0.2, 0.4, 0.97);
 
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &cube.pipeline));
+	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &cube->pipeline));
+
+	computePipelineCreateInfo.stage.module = raytracingShader;
+	ComputeEffect* raytracing              = new ComputeEffect();
+	raytracing->layout                     = m_gradientPipelineLayout;
+	raytracing->name                       = "raytracing";
+	raytracing->data                       = {};
+	raytracing->data.data1                 = glm::vec4(0.1, 0.2, 0.4, 0.97);
+
+	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &raytracing->pipeline));
 
 	backgroundEffects.push_back(gradient);
 	backgroundEffects.push_back(sky);
 	backgroundEffects.push_back(mandelbrot);
 	backgroundEffects.push_back(water);
 	backgroundEffects.push_back(cube);
+	backgroundEffects.push_back(raytracing);
 
 	// destroy structures properly
 	vkDestroyShaderModule(m_device, gradientShader, nullptr);
@@ -464,15 +475,16 @@ void VulkanEngine::InitPipelines()
 	vkDestroyShaderModule(m_device, mandelbrotShader, nullptr);
 	vkDestroyShaderModule(m_device, waterShader, nullptr);
 	vkDestroyShaderModule(m_device, cubeShader, nullptr);
+	vkDestroyShaderModule(m_device, raytracingShader, nullptr);
 	m_mainDeletionQueue.push_function(
-	    [&]()
+	    [this]()
 	    {
 		    vkDestroyPipelineLayout(m_device, m_gradientPipelineLayout, nullptr);
-		    vkDestroyPipeline(m_device, cube.pipeline, nullptr);
-		    vkDestroyPipeline(m_device, water.pipeline, nullptr);
-		    vkDestroyPipeline(m_device, mandelbrot.pipeline, nullptr);
-		    vkDestroyPipeline(m_device, sky.pipeline, nullptr);
-		    vkDestroyPipeline(m_device, gradient.pipeline, nullptr);
+
+		    for (auto effect : backgroundEffects)
+		    {
+			    vkDestroyPipeline(m_device, effect->pipeline, nullptr);
+		    }
 	    });
 }
 
@@ -595,28 +607,30 @@ void VulkanEngine::Update()
 			ImVec2 windowPos = ImVec2(ImGui::GetIO().DisplaySize.x - ImGui::GetWindowWidth(), ImGui::GetIO().DisplaySize.y - ImGui::GetWindowHeight());
 			ImGui::SetWindowPos(windowPos);
 
-			ComputeEffect& selected = backgroundEffects[currentBackgroundEffect];
+			ComputeEffect* selected = backgroundEffects[currentBackgroundEffect];
 
-			ImGui::Text("Selected effect: ", selected.name);
+			ImGui::Text("Selected effect: ", selected->name);
 
 			ImGui::SliderInt("Effect Index", &currentBackgroundEffect, 0, backgroundEffects.size() - 1);
 
-			ImGui::SliderFloat4("data1", (float*)&selected.data.data1, 0.0f, 1.0f);
-			ImGui::SliderFloat4("data2", (float*)&selected.data.data2, 0.0f, 1.0f);
-			ImGui::SliderFloat4("data3", (float*)&selected.data.data3, 0.0f, 1.0f);
+			ImGui::SliderFloat4("data1", (float*)&selected->data.data1, 0.0f, 1.0f);
+			ImGui::SliderFloat4("data2", (float*)&selected->data.data2, 0.0f, 1.0f);
+			ImGui::SliderFloat4("data3", (float*)&selected->data.data3, 0.0f, 1.0f);
 			// ImGui::SliderFloat4("data4", (float*)&selected.data.data4, 0.0f, 1.0f); // This will be adjusted automatically in this update
-			
+
 			// update data4
-			float time = SDL_GetTicks() / 1000.0f;
-			selected.data.data4.x = time;
-			selected.data.data4.y = time * 2.0f;
+			float time             = SDL_GetTicks() / 1000.0f;
+			selected->data.data4.x = time;
+
+			// Mouse pos is y and z
+			selected->data.data4.y = ImGui::GetIO().MousePos.x;
+			selected->data.data4.z = ImGui::GetIO().MousePos.y;
 
 			ImGui::End();
 		}
 
 		// make imgui calculate internal draw structures
 		ImGui::Render();
-
 
 		if (!skipDrawing)
 		{
@@ -725,15 +739,15 @@ void VulkanEngine::Draw()
 
 void VulkanEngine::Render(VkCommandBuffer cmd)
 {
-	ComputeEffect& effect = backgroundEffects[currentBackgroundEffect];
+	ComputeEffect* effect = backgroundEffects[currentBackgroundEffect];
 
 	// bind the background compute pipeline
-	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect.pipeline);
+	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect->pipeline);
 
 	// bind the descriptor set containing the draw image for the compute pipeline
 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_gradientPipelineLayout, 0, 1, &m_mainDescriptorSet, 0, nullptr);
 
-	vkCmdPushConstants(cmd, m_gradientPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &effect.data);
+	vkCmdPushConstants(cmd, m_gradientPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &effect->data);
 	// execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
 	vkCmdDispatch(cmd, std::ceil(m_windowExtent.width / 16.0), std::ceil(m_windowExtent.height / 16.0), 1);
 }

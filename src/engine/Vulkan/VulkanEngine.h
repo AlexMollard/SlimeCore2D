@@ -123,6 +123,6 @@ private:
 
 	DeletionQueue m_mainDeletionQueue;
 
-	std::vector<ComputeEffect> backgroundEffects;
+	std::vector<ComputeEffect*> backgroundEffects;
 	int currentBackgroundEffect = 0;
 };

@@ -32,12 +32,19 @@ bool vkutil::LoadShaderModule(const char* filePath, VkDevice device, VkShaderMod
 	// create a new shader module, using the buffer we loaded
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType                    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.pNext                    = nullptr;
-
+	
 	// codeSize has to be in bytes, so multply the ints in the buffer by size of
 	// int to know the real size of the buffer
 	createInfo.codeSize = buffer.size() * sizeof(uint32_t);
 	createInfo.pCode    = buffer.data();
+
+	   // Include the extension structure for compute shader derivatives
+	VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT subgroupSizeCreateInfo = {};
+	subgroupSizeCreateInfo.sType                                                  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO_EXT;
+	subgroupSizeCreateInfo.pNext                                                  = nullptr;
+	subgroupSizeCreateInfo.requiredSubgroupSize                                   = 1;
+
+	createInfo.pNext = &subgroupSizeCreateInfo;
 
 	// check that the creation goes well.
 	VkShaderModule shaderModule;
@@ -45,6 +52,7 @@ bool vkutil::LoadShaderModule(const char* filePath, VkDevice device, VkShaderMod
 	{
 		return false;
 	}
+	
 	*outShaderModule = shaderModule;
 	return true;
 }
