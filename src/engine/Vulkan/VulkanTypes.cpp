@@ -31,3 +31,13 @@ size_t VulkanBuffer::GetSize() const
 {
 	return size;
 }
+
+void AllocatedImage::Destroy(VkDevice device, VmaAllocator allocator) 
+{
+	vkDestroyImageView(device, imageView, nullptr);
+	vmaDestroyImage(allocator, image, allocation);
+
+	image = VK_NULL_HANDLE;
+	imageView = VK_NULL_HANDLE;
+	allocation = VK_NULL_HANDLE;
+}

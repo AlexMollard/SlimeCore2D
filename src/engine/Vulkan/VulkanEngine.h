@@ -47,10 +47,14 @@ public:
 	struct SDL_Window* m_window = nullptr;
 
 	void Init();
+	void RebuildSwapchain();
 	void Update();
 	void Draw();
 	void Render(VkCommandBuffer cmd);
+	void DrawImgui(VkCommandBuffer cmd, VkImageView targetImageView);
 	void Cleanup();
+
+	void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 
 	VkInstance m_instance;                      // Vulkan library handle
 	VkDebugUtilsMessengerEXT m_debug_messenger; // Vulkan debug output handle
@@ -59,7 +63,7 @@ public:
 	VkSurfaceKHR m_surface;                     // Vulkan window surface
 
 	VkSwapchainKHR m_swapchain;     // Swapchain to present images to the screen
-	VkFormat m_swachainImageFormat; // Format of the images in the swapchain
+	VkFormat m_swapchainImageFormat; // Format of the images in the swapchain
 
 	std::vector<VkImage> m_swapchainImages;         // Images that belong to the swapchain
 	std::vector<VkImageView> m_swapchainImageViews; // Image views for the swapchain images
@@ -85,6 +89,11 @@ public:
 	VkPipeline m_gradientPipeline;
 	VkPipelineLayout m_gradientPipelineLayout;
 
+	// immediate submit structures (imm == immediate)
+	VkFence m_immFence;
+	VkCommandBuffer m_immCommandBuffer;
+	VkCommandPool m_immCommandPool;
+
 private:
 	void InitVulkan();
 	void InitSwapchain();
@@ -92,6 +101,7 @@ private:
 	void InitSyncStructures();
 	void InitDescriptors();
 	void InitPipelines();
+	void InitImgui();
 
 	DeletionQueue m_mainDeletionQueue;
 };

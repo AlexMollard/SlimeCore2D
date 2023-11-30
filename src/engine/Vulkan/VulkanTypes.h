@@ -5,10 +5,12 @@
 
 struct AllocatedImage
 {
-	VkFormat m_imageFormat;
-	VkImage m_image;
-	VkImageView m_imageView;
-	VmaAllocation m_allocation;
+	VkFormat imageFormat;
+	VkImage image;
+	VkImageView imageView;
+	VmaAllocation allocation;
+
+	void Destroy(VkDevice device, VmaAllocator allocator);
 };
 
 struct VulkanBuffer
@@ -93,7 +95,7 @@ static const char* vkResultToString(VkResult res)
 	do                                                                                                                                                                        \
 	{                                                                                                                                                                         \
 		VkResult err = x;                                                                                                                                                     \
-		if (err)                                                                                                                                                              \
+		if (err != VK_SUCCESS)                                                                                                                                                              \
 		{                                                                                                                                                                     \
 			SLIME_ERROR("Detected Vulkan error: {}", vkResultToString(err));                                                                                                  \
 		}                                                                                                                                                                     \
