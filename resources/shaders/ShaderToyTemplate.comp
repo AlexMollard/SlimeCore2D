@@ -1,0 +1,43 @@
+#version 450
+layout (local_size_x = 16, local_size_y = 16) in;
+layout(rgba8,set = 0, binding = 0) uniform image2D image;
+
+//push constants block
+layout( push_constant ) uniform constants
+{
+ vec4 data1;
+ vec4 data2;
+ vec4 data3;
+ vec4 data4;
+} PushConstants;
+
+float iTime = PushConstants.data4.x;
+vec2 iResolution = imageSize(image);
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    vec3 color = vec3(0.0);
+
+    // post
+    fragColor = vec4(pow(color, vec3(0.65)), 1.0);
+}
+
+
+void main() 
+{
+    vec4 value = vec4(0.0, 0.0, 0.0, 1.0);
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size = imageSize(image);
+    
+    // Flip the Y-coordinate
+    ivec2 flippedTexelCoord = ivec2(texelCoord.x, size.y - texelCoord.y - 1);
+
+    if (texelCoord.x < size.x && texelCoord.y < size.y)
+    {
+        vec4 color;
+        mainImage(color, flippedTexelCoord);
+
+        imageStore(image, texelCoord, color);
+    }   
+}
+
+

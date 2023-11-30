@@ -3,6 +3,7 @@
 #include "VulkanInit.h"
 #include <deque>
 #include <functional>
+#include "ext/vector_float4.hpp"
 
 constexpr unsigned int FRAME_OVERLAP = 2;
 
@@ -25,6 +26,24 @@ struct DeletionQueue
 
 		deletors.clear();
 	}
+};
+
+struct ComputePushConstants
+{
+	glm::vec4 data1;
+	glm::vec4 data2;
+	glm::vec4 data3;
+	glm::vec4 data4;
+};
+
+struct ComputeEffect
+{
+	const char* name;
+
+	VkPipeline pipeline;
+	VkPipelineLayout layout;
+
+	ComputePushConstants data;
 };
 
 struct FrameData
@@ -86,7 +105,6 @@ public:
 	VkDescriptorSet m_mainDescriptorSet;
 	VkDescriptorSetLayout m_mainDescriptorLayout;
 
-	VkPipeline m_gradientPipeline;
 	VkPipelineLayout m_gradientPipelineLayout;
 
 	// immediate submit structures (imm == immediate)
@@ -104,4 +122,7 @@ private:
 	void InitImgui();
 
 	DeletionQueue m_mainDeletionQueue;
+
+	std::vector<ComputeEffect> backgroundEffects;
+	int currentBackgroundEffect = 0;
 };
