@@ -89,14 +89,14 @@ void VulkanEngine::InitSwapchain()
 	        .value();
 
 	// store swapchain and its related images
-	m_swapchain           = vkbSwapchain.swapchain;
-	m_swapchainImages     = vkbSwapchain.get_images().value();
-	m_swapchainImageViews = vkbSwapchain.get_image_views().value();
+	m_swapchain            = vkbSwapchain.swapchain;
+	m_swapchainImages      = vkbSwapchain.get_images().value();
+	m_swapchainImageViews  = vkbSwapchain.get_image_views().value();
 	m_swapchainImageFormat = vkbSwapchain.image_format;
 
 	// depth image size will match the window
 	VkExtent3D drawImageExtent = { m_windowExtent.width, m_windowExtent.height, 1 };
-	m_drawImage.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+	m_drawImage.imageFormat    = VK_FORMAT_R16G16B16A16_SFLOAT;
 
 	VkImageUsageFlags drawImageUsages{};
 	drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -319,7 +319,17 @@ ComputeEffect* VulkanEngine::CreateComputeEffect(const char* name, VkShaderModul
 	return effect;
 }
 
-void VulkanEngine::InitPipelines()
+void VulkanEngine::InitPipelines() 
+{
+	// Compute pipelines
+	InitBackgroundPipelines();
+	
+	// Graphics pipelines
+	InitTrianglePipeline();
+	InitMeshPipeline();
+}
+
+void VulkanEngine::InitBackgroundPipelines()
 {
 	VkPushConstantRange pushConstant{};
 	pushConstant.offset     = 0;
@@ -377,6 +387,113 @@ void VulkanEngine::InitPipelines()
 		    {
 			    vkDestroyPipeline(m_device, effect->pipeline, nullptr);
 		    }
+	    });
+}
+
+void VulkanEngine::InitTrianglePipeline()
+{
+	VkShaderModule triangleVertexShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Triangle", ShaderStage::Vertex).c_str(), m_device);
+	VkShaderModule triangleFragShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Triangle", ShaderStage::Fragment).c_str(), m_device);
+
+	// build the pipeline layout that controls the inputs/outputs of the shader
+	// we are not using descriptor sets or other systems yet, so no need to use anything other than empty default
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo = vkinit::PipelineLayoutCreateInfo();
+	VK_CHECK(vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr, &m_trianglePipelineLayout));
+
+	vkutil::PipelineBuilder pipelineBuilder;
+
+	// use the triangle layout we created
+	pipelineBuilder.m_pipelineLayout = m_trianglePipelineLayout;
+	// connecting the vertex and pixel shaders to the pipeline
+	pipelineBuilder.SetShaders(triangleVertexShader, triangleFragShader);
+	// it will draw triangles
+	pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+	// filled triangles
+	pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
+	// no backface culling
+	pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+	// no multisampling
+	pipelineBuilder.SetMultisamplingNone();
+	// no blending
+	pipelineBuilder.DisableBlending();
+	// no depth testing
+	pipelineBuilder.DisableDepthtest();
+
+	// connect the image format we will draw into, from draw image
+	pipelineBuilder.SetColorAttachmentFormat(m_drawImage.imageFormat);
+	pipelineBuilder.SetDepthFormat(VK_FORMAT_UNDEFINED);
+
+	// finally build the pipeline
+	m_trianglePipeline = pipelineBuilder.BuildPipeline(m_device);
+
+	// clean structures
+	vkDestroyShaderModule(m_device, triangleFragShader, nullptr);
+	vkDestroyShaderModule(m_device, triangleVertexShader, nullptr);
+
+	m_mainDeletionQueue.push_function(
+	    [&]()
+	    {
+		    vkDestroyPipelineLayout(m_device, m_trianglePipelineLayout, nullptr);
+		    vkDestroyPipeline(m_device, m_trianglePipeline, nullptr);
+	    });
+}
+
+void VulkanEngine::InitMeshPipeline() 
+{
+	//> rectangle_shaders
+	VkShaderModule triangleVertexShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("TriangleMesh", ShaderStage::Vertex).c_str(), m_device);
+	VkShaderModule triangleFragShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Triangle", ShaderStage::Fragment).c_str(), m_device);
+
+	VkPushConstantRange bufferRange{};
+	bufferRange.offset     = 0;
+	bufferRange.size       = sizeof(VkDeviceAddress);
+	bufferRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkPipelineLayoutCreateInfo pipeline_layout_info = vkinit::PipelineLayoutCreateInfo();
+	pipeline_layout_info.pPushConstantRanges        = &bufferRange;
+	pipeline_layout_info.pushConstantRangeCount     = 1;
+
+	VK_CHECK(vkCreatePipelineLayout(m_device, &pipeline_layout_info, nullptr, &m_meshPipelineLayout));
+
+	//< rectangle_shaders
+
+	//> rectangle_shaders2
+	vkutil::PipelineBuilder pipelineBuilder;
+
+	// use the triangle layout we created
+	pipelineBuilder.m_pipelineLayout = m_meshPipelineLayout;
+	// connecting the vertex and pixel shaders to the pipeline
+	pipelineBuilder.SetShaders(triangleVertexShader, triangleFragShader);
+	// it will draw triangles
+	pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+	// filled triangles
+	pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
+	// no backface culling
+	pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+	// no multisampling
+	pipelineBuilder.SetMultisamplingNone();
+	// no blending
+	//pipelineBuilder.enable_blending_additive(); << ADDD THIS
+	pipelineBuilder.DisableBlending();
+	// no depth testing
+	pipelineBuilder.DisableDepthtest();
+
+	// connect the image format we will draw into, from draw image
+	pipelineBuilder.SetColorAttachmentFormat(m_drawImage.imageFormat);
+	pipelineBuilder.SetDepthFormat(VK_FORMAT_UNDEFINED);
+
+	// finally build the pipeline
+	m_meshPipeline = pipelineBuilder.BuildPipeline(m_device);
+
+	// clean structures
+	vkDestroyShaderModule(m_device, triangleFragShader, nullptr);
+	vkDestroyShaderModule(m_device, triangleVertexShader, nullptr);
+
+	m_mainDeletionQueue.push_function(
+	    [&]()
+	    {
+		    vkDestroyPipelineLayout(m_device, m_meshPipelineLayout, nullptr);
+		    vkDestroyPipeline(m_device, m_meshPipeline, nullptr);
 	    });
 }
 
@@ -569,10 +686,14 @@ void VulkanEngine::Draw()
 	// we will overwrite it all so we dont care about what was the older layout
 	vkutil::TransitionImage(cmd, m_drawImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
-	Render(cmd);
+	DrawBackground(cmd);
+
+	vkutil::TransitionImage(cmd, m_drawImage.image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	DrawGeometry(cmd);
 
 	// transtion the draw image and the swapchain image into their correct transfer layouts
-	vkutil::TransitionImage(cmd, m_drawImage.image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	vkutil::TransitionImage(cmd, m_drawImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	vkutil::TransitionImage(cmd, m_swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	VkExtent3D extent;
@@ -629,7 +750,7 @@ void VulkanEngine::Draw()
 	m_frameNumber++;
 }
 
-void VulkanEngine::Render(VkCommandBuffer cmd)
+void VulkanEngine::DrawBackground(VkCommandBuffer cmd)
 {
 	ComputeEffect* effect = backgroundEffects[currentBackgroundEffect];
 
@@ -652,6 +773,47 @@ void VulkanEngine::DrawImgui(VkCommandBuffer cmd, VkImageView targetImageView)
 	vkCmdBeginRendering(cmd, &renderInfo);
 
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+
+	vkCmdEndRendering(cmd);
+}
+
+void VulkanEngine::DrawGeometry(VkCommandBuffer cmd)
+{
+	// begin a render pass  connected to our draw image
+	VkRenderingAttachmentInfo colorAttachment = vkinit::AttachmentInfo(m_drawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	VkRenderingInfo renderInfo                = vkinit::RenderingInfo(m_windowExtent, &colorAttachment, nullptr);
+	vkCmdBeginRendering(cmd, &renderInfo);
+
+	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_trianglePipeline);
+
+	// set dynamic viewport and scissor
+	VkViewport viewport = {};
+	viewport.x          = 0;
+	viewport.y          = 0;
+	viewport.width      = m_windowExtent.width;
+	viewport.height     = m_windowExtent.height;
+	viewport.minDepth   = 0.f;
+	viewport.maxDepth   = 1.f;
+
+	vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+	VkRect2D scissor      = {};
+	scissor.offset.x      = 0;
+	scissor.offset.y      = 0;
+	scissor.extent.width  = m_windowExtent.width;
+	scissor.extent.height = m_windowExtent.height;
+
+	vkCmdSetScissor(cmd, 0, 1, &scissor);
+
+	// launch a draw command to draw 3 vertices
+	vkCmdDraw(cmd, 3, 1, 0, 0);
+
+	//vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_meshPipeline);
+
+	//vkCmdPushConstants(cmd, m_meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &rectangle.vertexBufferAddress);
+	//vkCmdBindIndexBuffer(cmd, rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+//	vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
 
 	vkCmdEndRendering(cmd);
 }

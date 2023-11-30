@@ -68,8 +68,9 @@ public:
 	void Init();
 	void Update();
 	void Draw();
-	void Render(VkCommandBuffer cmd);
+	void DrawBackground(VkCommandBuffer cmd);
 	void DrawImgui(VkCommandBuffer cmd, VkImageView targetImageView);
+	void DrawGeometry(VkCommandBuffer cmd);
 	void Cleanup();
 
 	void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
@@ -105,6 +106,14 @@ public:
 	VkDescriptorSetLayout m_mainDescriptorLayout;
 
 	VkPipelineLayout m_gradientPipelineLayout;
+	VkPipelineLayout m_trianglePipelineLayout;
+	VkPipeline m_trianglePipeline;
+
+	
+	VkPipelineLayout m_meshPipelineLayout;
+	VkPipeline m_meshPipeline;
+
+	GPUMeshBuffers rectangle;
 
 	// immediate submit structures (imm == immediate)
 	VkFence m_immFence;
@@ -119,6 +128,9 @@ private:
 	void InitDescriptors();
 	ComputeEffect* CreateComputeEffect(const char* name, VkShaderModule shader, VkPipelineLayout layout, VkComputePipelineCreateInfo computePipelineCreateInfo);
 	void InitPipelines();
+	void InitBackgroundPipelines();
+	void InitTrianglePipeline();
+	void InitMeshPipeline();
 	void InitImgui();
 
 	DeletionQueue m_mainDeletionQueue;

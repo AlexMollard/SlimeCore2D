@@ -13,6 +13,20 @@ struct AllocatedImage
 	void Destroy(VkDevice device, VmaAllocator allocator);
 };
 
+struct AllocatedBuffer
+{
+	VkBuffer buffer;
+	VmaAllocation allocation;
+	VmaAllocationInfo info;
+};
+
+struct GPUMeshBuffers
+{
+	AllocatedBuffer indexBuffer;
+	AllocatedBuffer vertexBuffer;
+	VkDeviceAddress vertexBufferAddress;
+};
+
 struct VulkanBuffer
 {
 	VulkanBuffer();
