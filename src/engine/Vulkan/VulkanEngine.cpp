@@ -1,9 +1,8 @@
 #include "VulkanEngine.h"
-
-#include "VkBootstrap.h"
-
 #define VMA_IMPLEMENTATION
+
 #include "Pipeline.h"
+#include "VkBootstrap.h"
 #include "VulkanImages.h"
 #include "VulkanInit.h"
 #include "VulkanTypes.h"
@@ -59,16 +58,26 @@ void VulkanEngine::Init()
 	m_isInitialized = true;
 }
 
-void VulkanEngine::RebuildSwapchain()
+void VulkanEngine::InitSwapchain()
 {
-	vkQueueWaitIdle(m_graphicsQueue);
-
 	vkb::SwapchainBuilder swapchainBuilder{ m_chosenGPU, m_device, m_surface };
 
 	SDL_GetWindowSizeInPixels(m_window, (int*)&m_windowExtent.width, (int*)&m_windowExtent.height);
 
-	vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
-	m_drawImage.Destroy(m_device, m_allocator);
+	bool recreating = false;
+	if (m_swapchain != VK_NULL_HANDLE)
+	{
+		vkQueueWaitIdle(m_graphicsQueue);
+		// Clean up the swapchain image views
+		for (int i = 0; i < m_swapchainImageViews.size(); i++)
+		{
+			vkDestroyImageView(m_device, m_swapchainImageViews[i], nullptr);
+		}
+
+		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+		m_drawImage.Destroy(m_device, m_allocator);
+		recreating = true;
+	}
 
 	vkb::Swapchain vkbSwapchain =
 	    swapchainBuilder
@@ -83,13 +92,10 @@ void VulkanEngine::RebuildSwapchain()
 	m_swapchain           = vkbSwapchain.swapchain;
 	m_swapchainImages     = vkbSwapchain.get_images().value();
 	m_swapchainImageViews = vkbSwapchain.get_image_views().value();
-
 	m_swapchainImageFormat = vkbSwapchain.image_format;
 
 	// depth image size will match the window
 	VkExtent3D drawImageExtent = { m_windowExtent.width, m_windowExtent.height, 1 };
-
-	// hardcoding the depth format to 32 bit float
 	m_drawImage.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 
 	VkImageUsageFlags drawImageUsages{};
@@ -111,12 +117,14 @@ void VulkanEngine::RebuildSwapchain()
 
 	VK_CHECK(vkCreateImageView(m_device, &rview_info, nullptr, &m_drawImage.imageView));
 
+	if (!recreating)
+		return;
+
 	VkDescriptorImageInfo imgInfo{};
 	imgInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	imgInfo.imageView   = m_drawImage.imageView;
 
 	VkWriteDescriptorSet cameraWrite = vkinit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, m_mainDescriptorSet, &imgInfo, 0);
-
 	vkUpdateDescriptorSets(m_device, 1, &cameraWrite, 0, nullptr);
 }
 
@@ -219,52 +227,6 @@ void VulkanEngine::InitVulkan()
 	vmaCreateAllocator(&allocatorInfo, &m_allocator);
 }
 
-void VulkanEngine::InitSwapchain()
-{
-	vkb::SwapchainBuilder swapchainBuilder{ m_chosenGPU, m_device, m_surface };
-
-	vkb::Swapchain vkbSwapchain =
-	    swapchainBuilder
-	        .set_desired_format(VkSurfaceFormatKHR{ .format = VK_FORMAT_B8G8R8A8_UNORM, .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR }) // Set the desired format
-	        .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)                                                                            // use vsync present mode
-	        .set_desired_extent(m_windowExtent.width, m_windowExtent.height)
-	        .add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
-	        .build()
-	        .value();
-
-	// store swapchain and its related images
-	m_swapchain           = vkbSwapchain.swapchain;
-	m_swapchainImages     = vkbSwapchain.get_images().value();
-	m_swapchainImageViews = vkbSwapchain.get_image_views().value();
-
-	m_swapchainImageFormat = vkbSwapchain.image_format;
-
-	// depth image size will match the window
-	VkExtent3D drawImageExtent = { m_windowExtent.width, m_windowExtent.height, 1 };
-
-	// hardcoding the depth format to 32 bit float
-	m_drawImage.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-
-	VkImageUsageFlags drawImageUsages{};
-	drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
-
-	VkImageCreateInfo rimg_info = vkinit::ImageCreateInfo(m_drawImage.imageFormat, drawImageUsages, drawImageExtent);
-
-	// for the draw image, we want to allocate it from gpu local memory
-	VmaAllocationCreateInfo rimg_allocinfo = {};
-	rimg_allocinfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
-	rimg_allocinfo.requiredFlags           = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	// allocate and create the image
-	vmaCreateImage(m_allocator, &rimg_info, &rimg_allocinfo, &m_drawImage.image, &m_drawImage.allocation, nullptr);
-
-	// build a image-view for the draw image to use for rendering
-	VkImageViewCreateInfo rview_info = vkinit::ImageviewCreateInfo(m_drawImage.imageFormat, m_drawImage.image, VK_IMAGE_ASPECT_COLOR_BIT);
-
-	VK_CHECK(vkCreateImageView(m_device, &rview_info, nullptr, &m_drawImage.imageView));
-}
-
 void VulkanEngine::InitCommands()
 {
 	// create a command pool for commands submitted to the graphics queue.
@@ -341,59 +303,45 @@ void VulkanEngine::InitDescriptors()
 	    });
 }
 
+ComputeEffect* VulkanEngine::CreateComputeEffect(const char* name, VkShaderModule shader, VkPipelineLayout layout, VkComputePipelineCreateInfo computePipelineCreateInfo)
+{
+	ComputeEffect* effect = new ComputeEffect();
+	effect->layout        = layout;
+	effect->name          = name;
+	effect->data          = {};
+
+	computePipelineCreateInfo.stage.module = shader;
+	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &effect->pipeline));
+
+	backgroundEffects.push_back(effect);
+	vkDestroyShaderModule(m_device, shader, nullptr);
+
+	return effect;
+}
+
 void VulkanEngine::InitPipelines()
 {
-	VkPipelineLayoutCreateInfo computeLayout{};
-	computeLayout.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	computeLayout.pNext          = nullptr;
-	computeLayout.pSetLayouts    = &m_mainDescriptorLayout;
-	computeLayout.setLayoutCount = 1;
-
 	VkPushConstantRange pushConstant{};
 	pushConstant.offset     = 0;
 	pushConstant.size       = sizeof(ComputePushConstants);
 	pushConstant.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 
+	VkPipelineLayoutCreateInfo computeLayout{};
+	computeLayout.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	computeLayout.pNext                  = nullptr;
+	computeLayout.pSetLayouts            = &m_mainDescriptorLayout;
+	computeLayout.setLayoutCount         = 1;
 	computeLayout.pPushConstantRanges    = &pushConstant;
 	computeLayout.pushConstantRangeCount = 1;
 
 	VK_CHECK(vkCreatePipelineLayout(m_device, &computeLayout, nullptr, &m_gradientPipelineLayout));
 
-	VkShaderModule gradientShader;
-	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Basic", ShaderStage::Compute).c_str(), m_device, &gradientShader))
-	{
-		SLIME_ERROR("Error when building the compute shader");
-	}
-
-	VkShaderModule skyShader;
-	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Sky", ShaderStage::Compute).c_str(), m_device, &skyShader))
-	{
-		SLIME_ERROR("Error when building the compute shader");
-	}
-
-	VkShaderModule mandelbrotShader;
-	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mandelbrot", ShaderStage::Compute).c_str(), m_device, &mandelbrotShader))
-	{
-		SLIME_ERROR("Error when building the compute shader");
-	}
-
-	VkShaderModule waterShader;
-	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("water", ShaderStage::Compute).c_str(), m_device, &waterShader))
-	{
-		SLIME_ERROR("Error when building the compute shader");
-	}
-
-	VkShaderModule cubeShader;
-	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("CubeLines", ShaderStage::Compute).c_str(), m_device, &cubeShader))
-	{
-		SLIME_ERROR("Error when building the compute shader");
-	}
-
-	VkShaderModule raytracingShader;
-	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Raytracing", ShaderStage::Compute).c_str(), m_device, &raytracingShader))
-	{
-		SLIME_ERROR("Error when building the compute shader");
-	}
+	VkShaderModule gradientShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Basic", ShaderStage::Compute).c_str(), m_device);
+	VkShaderModule skyShader        = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Sky", ShaderStage::Compute).c_str(), m_device);
+	VkShaderModule mandelbrotShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mandelbrot", ShaderStage::Compute).c_str(), m_device);
+	VkShaderModule waterShader      = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("water", ShaderStage::Compute).c_str(), m_device);
+	VkShaderModule cubeShader       = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("CubeLines", ShaderStage::Compute).c_str(), m_device);
+	VkShaderModule raytracingShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Raytracing", ShaderStage::Compute).c_str(), m_device);
 
 	VkPipelineShaderStageCreateInfo stageinfo{};
 	stageinfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -406,76 +354,20 @@ void VulkanEngine::InitPipelines()
 	computePipelineCreateInfo.sType  = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
 	computePipelineCreateInfo.pNext  = nullptr;
 	computePipelineCreateInfo.layout = m_gradientPipelineLayout;
+	computePipelineCreateInfo.stage  = stageinfo;
 
-	computePipelineCreateInfo.stage = stageinfo;
-	ComputeEffect* gradient         = new ComputeEffect();
-	gradient->layout                = m_gradientPipelineLayout;
-	gradient->name                  = "gradient";
-	gradient->data                  = {};
-	gradient->data.data1            = glm::vec4(1, 0, 0, 1);
-	gradient->data.data2            = glm::vec4(0, 0, 1, 1);
+	ComputeEffect* gradient = CreateComputeEffect("gradient", gradientShader, m_gradientPipelineLayout, computePipelineCreateInfo);
+	gradient->data.data1    = glm::vec4(1, 0, 0, 1);
+	gradient->data.data2    = glm::vec4(0, 0, 1, 1);
 
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &gradient->pipeline));
+	ComputeEffect* sky = CreateComputeEffect("sky", skyShader, m_gradientPipelineLayout, computePipelineCreateInfo);
+	sky->data.data1    = glm::vec4(0.1, 0.2, 0.4, 0.97);
 
-	computePipelineCreateInfo.stage.module = skyShader;
-	ComputeEffect* sky                     = new ComputeEffect();
-	sky->layout                            = m_gradientPipelineLayout;
-	sky->name                              = "sky";
-	sky->data                              = {};
-	sky->data.data1                        = glm::vec4(0.1, 0.2, 0.4, 0.97);
+	ComputeEffect* mandelbrot = CreateComputeEffect("mandelbrot", mandelbrotShader, m_gradientPipelineLayout, computePipelineCreateInfo);
+	ComputeEffect* water      = CreateComputeEffect("water", waterShader, m_gradientPipelineLayout, computePipelineCreateInfo);
+	ComputeEffect* cube       = CreateComputeEffect("cube", cubeShader, m_gradientPipelineLayout, computePipelineCreateInfo);
+	ComputeEffect* raytracing = CreateComputeEffect("raytracing", raytracingShader, m_gradientPipelineLayout, computePipelineCreateInfo);
 
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &sky->pipeline));
-
-	computePipelineCreateInfo.stage.module = mandelbrotShader;
-	ComputeEffect* mandelbrot              = new ComputeEffect();
-	mandelbrot->layout                     = m_gradientPipelineLayout;
-	mandelbrot->name                       = "mandelbrot";
-	mandelbrot->data                       = {};
-	mandelbrot->data.data1                 = glm::vec4(0.1, 0.2, 0.4, 0.97);
-
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &mandelbrot->pipeline));
-
-	computePipelineCreateInfo.stage.module = waterShader;
-	ComputeEffect* water                   = new ComputeEffect();
-	water->layout                          = m_gradientPipelineLayout;
-	water->name                            = "water";
-	water->data                            = {};
-	water->data.data1                      = glm::vec4(0.1, 0.2, 0.4, 0.97);
-
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &water->pipeline));
-
-	computePipelineCreateInfo.stage.module = cubeShader;
-	ComputeEffect* cube                    = new ComputeEffect();
-	cube->layout                           = m_gradientPipelineLayout;
-	cube->name                             = "cube";
-	cube->data                             = {};
-	cube->data.data1                       = glm::vec4(0.1, 0.2, 0.4, 0.97);
-
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &cube->pipeline));
-
-	computePipelineCreateInfo.stage.module = raytracingShader;
-	ComputeEffect* raytracing              = new ComputeEffect();
-	raytracing->layout                     = m_gradientPipelineLayout;
-	raytracing->name                       = "raytracing";
-	raytracing->data                       = {};
-	raytracing->data.data1                 = glm::vec4(0.1, 0.2, 0.4, 0.97);
-
-	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &raytracing->pipeline));
-
-	backgroundEffects.push_back(gradient);
-	backgroundEffects.push_back(sky);
-	backgroundEffects.push_back(mandelbrot);
-	backgroundEffects.push_back(water);
-	backgroundEffects.push_back(cube);
-	backgroundEffects.push_back(raytracing);
-
-	// destroy structures properly
-	vkDestroyShaderModule(m_device, gradientShader, nullptr);
-	vkDestroyShaderModule(m_device, skyShader, nullptr);
-	vkDestroyShaderModule(m_device, mandelbrotShader, nullptr);
-	vkDestroyShaderModule(m_device, waterShader, nullptr);
-	vkDestroyShaderModule(m_device, cubeShader, nullptr);
-	vkDestroyShaderModule(m_device, raytracingShader, nullptr);
 	m_mainDeletionQueue.push_function(
 	    [this]()
 	    {
@@ -588,7 +480,7 @@ void VulkanEngine::Update()
 			}
 			if (e.type == SDL_EVENT_WINDOW_RESIZED)
 			{
-				RebuildSwapchain();
+				InitSwapchain();
 			}
 
 			// send SDL event to imgui for handling
@@ -655,7 +547,7 @@ void VulkanEngine::Draw()
 	VkResult e = vkAcquireNextImageKHR(m_device, m_swapchain, ONE_SECOND, GetCurrentFrame().m_swapchainSemaphore, nullptr, &swapchainImageIndex);
 	if (e == VK_ERROR_OUT_OF_DATE_KHR)
 	{
-		RebuildSwapchain();
+		InitSwapchain();
 		return;
 	}
 

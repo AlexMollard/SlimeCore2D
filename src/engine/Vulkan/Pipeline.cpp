@@ -1,15 +1,16 @@
 #include "Pipeline.h"
 #include <vector>
 #include <fstream>
+#include <engine/ConsoleLog.h>
 
-bool vkutil::LoadShaderModule(const char* filePath, VkDevice device, VkShaderModule* outShaderModule)
+VkShaderModule vkutil::LoadShaderModule(const char* filePath, VkDevice device)
 {
 	// open the file. With cursor at the end
 	std::ifstream file(filePath, std::ios::ate | std::ios::binary);
 
 	if (!file.is_open())
 	{
-		return false;
+		return VK_NULL_HANDLE;
 	}
 
 	// find what the size of the file is by looking up the location of the cursor
@@ -50,9 +51,9 @@ bool vkutil::LoadShaderModule(const char* filePath, VkDevice device, VkShaderMod
 	VkShaderModule shaderModule;
 	if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 	{
-		return false;
+		SLIME_ERROR("Error when building the compute shader");
+		return VK_NULL_HANDLE;
 	}
 	
-	*outShaderModule = shaderModule;
-	return true;
+	return shaderModule;
 }

@@ -66,7 +66,6 @@ public:
 	struct SDL_Window* m_window = nullptr;
 
 	void Init();
-	void RebuildSwapchain();
 	void Update();
 	void Draw();
 	void Render(VkCommandBuffer cmd);
@@ -118,6 +117,7 @@ private:
 	void InitCommands();
 	void InitSyncStructures();
 	void InitDescriptors();
+	ComputeEffect* CreateComputeEffect(const char* name, VkShaderModule shader, VkPipelineLayout layout, VkComputePipelineCreateInfo computePipelineCreateInfo);
 	void InitPipelines();
 	void InitImgui();
 
