@@ -18,17 +18,14 @@ std::string ResourceManager::GetTexturePath(const std::string& name, const std::
 	return BASE_TEXTURE_PATH + name + extension;
 }
 
-std::string ResourceManager::GetVulkanShaderPath(const std::string& name, int shaderStage)
+std::string ResourceManager::GetVulkanShaderPath(const std::string& name, ShaderStage shaderStage)
 {
-	auto stage = static_cast<vk::ShaderStageFlagBits>(shaderStage);
-	switch (stage)
+	switch (shaderStage)
 	{
-	case vk::ShaderStageFlagBits::eVertex: return BASE_VULKAN_SHADER_PATH + name + ".vert.spv";
-	case vk::ShaderStageFlagBits::eFragment: return BASE_VULKAN_SHADER_PATH + name + ".frag.spv";
-	case vk::ShaderStageFlagBits::eGeometry: return BASE_VULKAN_SHADER_PATH + name + ".geom.spv";
-	case vk::ShaderStageFlagBits::eTessellationControl: return BASE_VULKAN_SHADER_PATH + name + ".tesc.spv";
-	case vk::ShaderStageFlagBits::eTessellationEvaluation: return BASE_VULKAN_SHADER_PATH + name + ".tese.spv";
-	case vk::ShaderStageFlagBits::eCompute: return BASE_VULKAN_SHADER_PATH + name + ".comp.spv";
+	case ShaderStage::Vertex: return BASE_VULKAN_SHADER_PATH + name + ".vert.spv";
+	case ShaderStage::Fragment: return BASE_VULKAN_SHADER_PATH + name + ".frag.spv";
+	case ShaderStage::Geometry: return BASE_VULKAN_SHADER_PATH + name + ".geom.spv";
+	case ShaderStage::Compute: return BASE_VULKAN_SHADER_PATH + name + ".comp.spv";
 	default: SLIME_ERROR("Invalid shader stage!"); return "";
 	}
 	return BASE_VULKAN_SHADER_PATH + name + ".spv";

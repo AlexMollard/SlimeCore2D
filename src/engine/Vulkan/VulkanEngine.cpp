@@ -3,11 +3,12 @@
 #include "VkBootstrap.h"
 
 #define VMA_IMPLEMENTATION
-#include "vulkan/vk_mem_alloc.h"
-
+#include "../ResourceManager.h"
+#include "Pipeline.h"
 #include "VulkanImages.h"
 #include "VulkanInit.h"
 #include "VulkanTypes.h"
+#include "vulkan/vk_mem_alloc.h"
 #include <SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <regex>
@@ -42,6 +43,12 @@ void VulkanEngine::Init()
 
 	// Initialize Sync Structures
 	InitSyncStructures();
+
+	// Initialize Descriptors
+	InitDescriptors();
+
+	// Initialize Pipelines
+	InitPipelines();
 
 	m_isInitialized = true;
 }
@@ -228,6 +235,74 @@ void VulkanEngine::InitSyncStructures()
 	}
 }
 
+void VulkanEngine::InitDescriptors()
+{
+	// create a descriptor pool that will hold 10 sets with 1 image each
+	std::vector<DescriptorAllocator::PoolSizeRatio> sizes = { { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 } };
+
+	globalDescriptorAllocator.InitPool(m_device, 10, sizes);
+
+	// make the descriptor set layout for our compute draw
+	{
+		DescriptorLayoutBuilder builder;
+		builder.AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT);
+		m_mainDescriptorLayout = builder.Build(m_device);
+
+		// Create m_drawImageDescriptors
+		m_mainDescriptorSet = globalDescriptorAllocator.Allocate(m_device, m_mainDescriptorLayout);
+
+		globalDescriptorAllocator.UpdateImageDescriptor(m_device, m_mainDescriptorSet, m_drawImage.m_imageView, VK_IMAGE_LAYOUT_GENERAL, 0);
+	}
+
+	// add descriptor set layout to deletion queues
+	m_mainDeletionQueue.push_function(
+	    [&]()
+	    {
+		    vkDestroyDescriptorSetLayout(m_device, m_mainDescriptorLayout, nullptr);
+		    globalDescriptorAllocator.DestroyPool(m_device);
+	    });
+}
+
+void VulkanEngine::InitPipelines()
+{
+	VkPipelineLayoutCreateInfo computeLayout{};
+	computeLayout.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	computeLayout.pNext          = nullptr;
+	computeLayout.pSetLayouts    = &m_mainDescriptorLayout;
+	computeLayout.setLayoutCount = 1;
+
+	VK_CHECK(vkCreatePipelineLayout(m_device, &computeLayout, nullptr, &m_gradientPipelineLayout));
+
+	VkShaderModule computeDrawShader;
+	if (!vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Basic", ShaderStage::Compute).c_str(), m_device, &computeDrawShader))
+	{
+		std::cout << "Error when building the compute shader" << std::endl;
+	}
+
+	VkPipelineShaderStageCreateInfo stageinfo{};
+	stageinfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	stageinfo.pNext  = nullptr;
+	stageinfo.stage  = VK_SHADER_STAGE_COMPUTE_BIT;
+	stageinfo.module = computeDrawShader;
+	stageinfo.pName  = "main";
+
+	VkComputePipelineCreateInfo computePipelineCreateInfo{};
+	computePipelineCreateInfo.sType  = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+	computePipelineCreateInfo.pNext  = nullptr;
+	computePipelineCreateInfo.layout = m_gradientPipelineLayout;
+	computePipelineCreateInfo.stage  = stageinfo;
+
+	VK_CHECK(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &m_gradientPipeline));
+
+	vkDestroyShaderModule(m_device, computeDrawShader, nullptr);
+	m_mainDeletionQueue.push_function(
+	    [&]()
+	    {
+		    vkDestroyPipelineLayout(m_device, m_gradientPipelineLayout, nullptr);
+		    vkDestroyPipeline(m_device, m_gradientPipeline, nullptr);
+	    });
+}
+
 void VulkanEngine::Update()
 {
 	SDL_Event e;
@@ -344,15 +419,14 @@ void VulkanEngine::Draw()
 
 void VulkanEngine::Render(VkCommandBuffer cmd)
 {
-	// make a clear-color from frame number. This will flash with a 120 frame period.
-	VkClearColorValue clearValue;
-	float flash = abs(sin(m_frameNumber / 120.f));
-	clearValue  = { { 0.0f, 0.0f, flash, 1.0f } };
+	// bind the gradient drawing compute pipeline
+	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_gradientPipeline);
 
-	VkImageSubresourceRange clearRange = vkinit::ImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+	// bind the descriptor set containing the draw image for the compute pipeline
+	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_gradientPipelineLayout, 0, 1, &m_mainDescriptorSet, 0, nullptr);
 
-	// clear image
-	vkCmdClearColorImage(cmd, m_drawImage.m_image, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+	// execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
+	vkCmdDispatch(cmd, std::ceil(m_windowExtent.width / 16.0), std::ceil(m_windowExtent.height / 16.0), 1);
 }
 
 void VulkanEngine::Cleanup()

@@ -144,6 +144,12 @@
     <ClInclude Include="engine\Vulkan\VulkanImages.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="engine\Vulkan\DescriptorLayoutBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\Vulkan\Pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BoundingBox.cpp">
@@ -234,6 +240,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="engine\Vulkan\VulkanImages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\Vulkan\DescriptorLayoutBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\Vulkan\Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\Vulkan\VulkanTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

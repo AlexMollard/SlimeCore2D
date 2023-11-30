@@ -19,7 +19,7 @@ function FileHasBeenModified($sourceFile, $compiledFile) {
 }
 
 # Get shader files
-$shaderFiles = Get-ChildItem -Path . -File | Where-Object { $_.Extension -in @('.frag', '.vert') }
+$shaderFiles = Get-ChildItem -Path . -File | Where-Object { $_.Extension -in @('.frag', '.vert', '.comp') }
 
 # Iterate through shader files
 foreach ($shaderFile in $shaderFiles) {

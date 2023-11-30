@@ -20,6 +20,14 @@ enum class ResourceType
 	Other
 };
 
+enum class ShaderStage
+{
+	Vertex,
+	Fragment,
+	Geometry,
+	Compute
+};
+
 struct Resource
 {
 	void* resource;
@@ -54,7 +62,7 @@ public:
 
 	static std::string GetTexturePath(const std::string& name, const std::string& extension = ".png");
 	static std::string GetShaderPath(const std::string& name, const std::string& extension = ".shader");
-	static std::string GetVulkanShaderPath(const std::string& name, int shaderStage);
+	static std::string GetVulkanShaderPath(const std::string& name, ShaderStage shaderStage);
 	static std::string GetFontPath(const std::string& name, const std::string& extension = ".ttf");
 
 	// Methods for loading and retrieving resources

@@ -1,6 +1,6 @@
 #pragma once
+#include "DescriptorLayoutBuilder.h"
 #include "VulkanInit.h"
-
 #include <deque>
 #include <functional>
 
@@ -77,11 +77,21 @@ public:
 
 	AllocatedImage m_drawImage;
 
+	DescriptorAllocator globalDescriptorAllocator;
+
+	VkDescriptorSet m_mainDescriptorSet;
+	VkDescriptorSetLayout m_mainDescriptorLayout;
+
+	VkPipeline m_gradientPipeline;
+	VkPipelineLayout m_gradientPipelineLayout;
+
 private:
 	void InitVulkan();
 	void InitSwapchain();
 	void InitCommands();
 	void InitSyncStructures();
+	void InitDescriptors();
+	void InitPipelines();
 
 	DeletionQueue m_mainDeletionQueue;
 };

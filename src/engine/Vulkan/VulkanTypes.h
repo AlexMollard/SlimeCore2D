@@ -1,4 +1,5 @@
 #pragma once
+#include "engine/ConsoleLog.h"
 #include "vulkan/vk_mem_alloc.h"
 #include <vulkan/vulkan.h>
 
@@ -10,6 +11,27 @@ struct AllocatedImage
 	VmaAllocation m_allocation;
 };
 
+struct VulkanBuffer
+{
+	VulkanBuffer();
+
+	// Setters
+	void SetBufferHandle(VkBuffer handle);
+	void SetAllocation(VmaAllocation alloc);
+	void SetSize(size_t bufferSize);
+
+	// Getters
+	VkBuffer GetBufferHandle() const;
+	VmaAllocation GetAllocation() const;
+	size_t GetSize() const;
+
+private:
+	VkBuffer bufferHandle;
+	VmaAllocation allocation;
+	size_t size;
+};
+
+// DEGUB STUFF BELOW
 static const char* vkResultToString(VkResult res)
 {
 	switch (res)

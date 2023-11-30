@@ -151,3 +151,17 @@ VkImageViewCreateInfo vkinit::ImageviewCreateInfo(VkFormat format, VkImage image
 
 	return info;
 }
+
+VkWriteDescriptorSet vkinit::WriteDescriptorSet(VkDescriptorSet dstSet, VkDescriptorType type, uint32_t binding, VkDescriptorBufferInfo* bufferInfo, uint32_t descriptorCount)
+{
+	VkWriteDescriptorSet write{};
+	write.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.pNext           = nullptr;
+	write.dstSet          = dstSet;
+	write.descriptorType  = type;
+	write.dstBinding      = binding;
+	write.pBufferInfo     = bufferInfo;
+	write.descriptorCount = descriptorCount;
+
+	return write;	
+}

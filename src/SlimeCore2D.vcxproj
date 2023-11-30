@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\Vulkan\DescriptorLayoutBuilder.h" />
     <ClInclude Include="engine\Vulkan\VulkanInit.h" />
     <ClInclude Include="engine\Vulkan\VulkanTypes.h" />
     <ClInclude Include="game\Bullet.h" />
@@ -51,8 +52,10 @@
     <ClInclude Include="engine\TextObject.h" />
     <ClInclude Include="engine\Vulkan\VulkanEngine.h" />
     <ClInclude Include="engine\Vulkan\VulkanImages.h" />
+    <ClInclude Include="engine\Vulkan\Pipeline.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="engine\Vulkan\DescriptorLayoutBuilder.cpp" />
     <ClCompile Include="engine\BatchRenderer.cpp" />
     <ClCompile Include="engine\BoundingBox.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
@@ -66,6 +69,7 @@
     <ClCompile Include="engine\Shader.cpp" />
     <ClCompile Include="engine\Texture.cpp" />
     <ClCompile Include="engine\Vulkan\VulkanInit.cpp" />
+    <ClCompile Include="engine\Vulkan\VulkanTypes.cpp" />
     <ClCompile Include="engine\Window.cpp" />
     <ClCompile Include="engine\RenderTarget.cpp" />
     <ClCompile Include="engine\ResourceManager.cpp" />
@@ -83,6 +87,7 @@
     <ClCompile Include="engine\TextObject.cpp" />
     <ClCompile Include="engine\Vulkan\VulkanEngine.cpp" />
     <ClCompile Include="engine\Vulkan\VulkanImages.cpp" />
+    <ClCompile Include="engine\Vulkan\Pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
