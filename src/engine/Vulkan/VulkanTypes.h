@@ -2,6 +2,7 @@
 #include "engine/ConsoleLog.h"
 #include "vulkan/vk_mem_alloc.h"
 #include <vulkan/vulkan.h>
+#include "glm.hpp"
 
 struct AllocatedImage
 {
@@ -18,6 +19,15 @@ struct AllocatedBuffer
 	VkBuffer buffer;
 	VmaAllocation allocation;
 	VmaAllocationInfo info;
+};
+
+struct Vertex
+{
+	glm::vec3 position;
+	float uv_x;
+	glm::vec3 normal;
+	float uv_y;
+	glm::vec4 color;
 };
 
 struct GPUMeshBuffers
@@ -111,7 +121,7 @@ static const char* vkResultToString(VkResult res)
 		VkResult err = x;                                                                                                                                                     \
 		if (err != VK_SUCCESS)                                                                                                                                                              \
 		{                                                                                                                                                                     \
-			SLIME_ERROR("Detected Vulkan error: {}", vkResultToString(err));                                                                                                  \
+			SLIME_ERROR("Detected Vulkan error: %s", vkResultToString(err));                                                                                                  \
 		}                                                                                                                                                                     \
 	}                                                                                                                                                                         \
 	while (0)

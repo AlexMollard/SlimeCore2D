@@ -133,6 +133,12 @@ private:
 	void InitMeshPipeline();
 	void InitImgui();
 
+	AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+	void DestroyBuffer(const AllocatedBuffer& buffer);
+
+	GPUMeshBuffers UploadMesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices);
+	void InitDefaultData();
+
 	DeletionQueue m_mainDeletionQueue;
 
 	std::vector<ComputeEffect*> backgroundEffects;

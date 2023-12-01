@@ -112,45 +112,48 @@ public:
 	static void internalInfo(const std::string& message, const char* file, int line)
 	{
 		std::stringstream ss;
-		ss << file << "(" << line << ") : ";
+		ss << " : " << file << "(" << line << ")]";
+		std::cout << "[";
 
 		ConsoleLog::set(ConsoleColor::Cyan);
 		std::cout << "INFO";
 		ConsoleLog::reset();
 
-		ss << " - " << message << std::endl;
+		ss << "\n " << message << std::endl;
 
-		ConsoleLog::log(ss.str(), ConsoleColor::Cyan);
+		ConsoleLog::log(ss.str(), ConsoleColor::White);
 	}
 
 	// Function for debugging with file and line information (WARN)
 	static void internalWarn(const std::string& message, const char* file, int line)
 	{
 		std::stringstream ss;
-		ss << file << "(" << line << ") : ";
+		ss << " : " << file << "(" << line << ")]";
+		std::cout << "[";
 
 		ConsoleLog::set(ConsoleColor::Yellow);
 		std::cout << "WARN";
 		ConsoleLog::reset();
 
-		ss << " - " << message << std::endl;
+		ss << "\n " << message << std::endl;
 
-		ConsoleLog::log(ss.str(), ConsoleColor::Yellow);
+		ConsoleLog::log(ss.str(), ConsoleColor::White);
 	}
 
 	// Function for debugging with file and line information (ERROR)
 	static void internalError(const std::string& message, const char* file, int line)
 	{
 		std::stringstream ss;
-		ss << file << "(" << line << ") : ";
+		ss << " : " << file << "(" << line << ")]";
+		std::cout << "[";
 
 		ConsoleLog::set(ConsoleColor::Red);
 		std::cout << "ERROR";
 		ConsoleLog::reset();
 
-		ss << " - " << message << std::endl;
+		ss << "\n " << message << std::endl;
 
-		ConsoleLog::log(ss.str(), ConsoleColor::Red);
+		ConsoleLog::log(ss.str(), ConsoleColor::White);
 	}
 };
 

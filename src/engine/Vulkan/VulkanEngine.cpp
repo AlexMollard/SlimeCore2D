@@ -1,5 +1,8 @@
 #include "VulkanEngine.h"
 #define VMA_IMPLEMENTATION
+#include "engine/ConsoleLog.h"
+
+#define VMA_DEBUG_LOG(format, ...) printf(format, __VA_ARGS__); printf("\n")
 
 #include "Pipeline.h"
 #include "VkBootstrap.h"
@@ -15,9 +18,9 @@
 #include <regex>
 #include <sstream>
 
-#include "engine/ConsoleLog.h"
 #include "engine/MemoryDebugging.h"
 #include "engine/ResourceManager.h"
+#include <array>
 
 constexpr uint64_t ONE_SECOND = 1000000000;
 
@@ -101,6 +104,7 @@ void VulkanEngine::InitSwapchain()
 	VkImageUsageFlags drawImageUsages{};
 	drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
+	drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	VkImageCreateInfo rimg_info = vkinit::ImageCreateInfo(m_drawImage.imageFormat, drawImageUsages, drawImageExtent);
 
@@ -166,8 +170,8 @@ void VulkanEngine::InitVulkan()
 		ConsoleLog::log(pCallbackData->pMessage, ConsoleColor::White);
 		std::cout << std::endl;
 
-		// if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-		//	abort();
+		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+			DebugBreak();
 
 		return VK_FALSE;
 	};
@@ -188,24 +192,27 @@ void VulkanEngine::InitVulkan()
 
 	SDL_Vulkan_CreateSurface(m_window, m_instance, nullptr, &m_surface);
 
-	VkPhysicalDeviceVulkan13Features features{};
-	features.dynamicRendering = true;
-	features.synchronization2 = true;
+	//VkPhysicalDeviceVulkan11Features features11{};
+	
+	VkPhysicalDeviceVulkan12Features features12{};
+	features12.bufferDeviceAddress = true;
+	features12.descriptorIndexing  = true;
+
+	VkPhysicalDeviceVulkan13Features features13{};
+	features13.dynamicRendering = true;
+	features13.synchronization2 = true;
 
 	// use vkbootstrap to select a gpu.
 	// We want a gpu that can write to the SDL surface and supports vulkan 1.3
 	vkb::PhysicalDeviceSelector selector{ vkbInst };
+
 	vkb::PhysicalDevice physicalDevice = selector
 	                                         .set_minimum_version(1, 3)          // require Vulkan 1.3.0 or higher
-	                                         .set_required_features_13(features) // require Vulkan 1.3.0 or higher
+	                                         .set_required_features_12(features12) // require Vulkan 1.3.0 or higher
+	                                         .set_required_features_13(features13) // require Vulkan 1.3.0 or higher
 	                                         .set_surface(m_surface)             // Set the current surface as this is needed to determine what the gpu requires
 	                                         .select()                           // Select the best gpu
 	                                         .value();                           // Get the selected gpu
-
-	if (!physicalDevice.enable_extension_if_present(VK_NV_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME))
-	{
-		SLIME_ERROR("The graphics card doesnt support compute shader derivatives!");
-	}
 
 	// create the final vulkan device
 	vkb::DeviceBuilder deviceBuilder{ physicalDevice };
@@ -224,7 +231,10 @@ void VulkanEngine::InitVulkan()
 	allocatorInfo.physicalDevice         = m_chosenGPU;
 	allocatorInfo.device                 = m_device;
 	allocatorInfo.instance               = m_instance;
+	allocatorInfo.flags                  = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 	vmaCreateAllocator(&allocatorInfo, &m_allocator);
+
+	m_mainDeletionQueue.push_function([=]() { vmaDestroyAllocator(m_allocator); });
 }
 
 void VulkanEngine::InitCommands()
@@ -327,6 +337,8 @@ void VulkanEngine::InitPipelines()
 	// Graphics pipelines
 	InitTrianglePipeline();
 	InitMeshPipeline();
+
+	InitDefaultData();
 }
 
 void VulkanEngine::InitBackgroundPipelines()
@@ -350,7 +362,6 @@ void VulkanEngine::InitBackgroundPipelines()
 	VkShaderModule skyShader        = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Sky", ShaderStage::Compute).c_str(), m_device);
 	VkShaderModule mandelbrotShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mandelbrot", ShaderStage::Compute).c_str(), m_device);
 	VkShaderModule waterShader      = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("water", ShaderStage::Compute).c_str(), m_device);
-	VkShaderModule cubeShader       = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("CubeLines", ShaderStage::Compute).c_str(), m_device);
 	VkShaderModule raytracingShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Raytracing", ShaderStage::Compute).c_str(), m_device);
 
 	VkPipelineShaderStageCreateInfo stageinfo{};
@@ -375,7 +386,6 @@ void VulkanEngine::InitBackgroundPipelines()
 
 	ComputeEffect* mandelbrot = CreateComputeEffect("mandelbrot", mandelbrotShader, m_gradientPipelineLayout, computePipelineCreateInfo);
 	ComputeEffect* water      = CreateComputeEffect("water", waterShader, m_gradientPipelineLayout, computePipelineCreateInfo);
-	ComputeEffect* cube       = CreateComputeEffect("cube", cubeShader, m_gradientPipelineLayout, computePipelineCreateInfo);
 	ComputeEffect* raytracing = CreateComputeEffect("raytracing", raytracingShader, m_gradientPipelineLayout, computePipelineCreateInfo);
 
 	m_mainDeletionQueue.push_function(
@@ -442,7 +452,7 @@ void VulkanEngine::InitMeshPipeline()
 {
 	//> rectangle_shaders
 	VkShaderModule triangleVertexShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("TriangleMesh", ShaderStage::Vertex).c_str(), m_device);
-	VkShaderModule triangleFragShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Triangle", ShaderStage::Fragment).c_str(), m_device);
+	VkShaderModule triangleFragShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("TriangleMesh", ShaderStage::Fragment).c_str(), m_device);
 
 	VkPushConstantRange bufferRange{};
 	bufferRange.offset     = 0;
@@ -455,9 +465,6 @@ void VulkanEngine::InitMeshPipeline()
 
 	VK_CHECK(vkCreatePipelineLayout(m_device, &pipeline_layout_info, nullptr, &m_meshPipelineLayout));
 
-	//< rectangle_shaders
-
-	//> rectangle_shaders2
 	vkutil::PipelineBuilder pipelineBuilder;
 
 	// use the triangle layout we created
@@ -472,9 +479,8 @@ void VulkanEngine::InitMeshPipeline()
 	pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
 	// no multisampling
 	pipelineBuilder.SetMultisamplingNone();
-	// no blending
-	//pipelineBuilder.enable_blending_additive(); << ADDD THIS
-	pipelineBuilder.DisableBlending();
+	// blending
+	pipelineBuilder.EnableBlendingAdditive();
 	// no depth testing
 	pipelineBuilder.DisableDepthtest();
 
@@ -561,6 +567,126 @@ void VulkanEngine::InitImgui()
 		    ImGui_ImplVulkan_Shutdown();
 		    vkDestroyDescriptorPool(m_device, imguiPool, nullptr);
 	    });
+}
+
+AllocatedBuffer VulkanEngine::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) 
+{
+	// allocate buffer
+	VkBufferCreateInfo bufferInfo = {};
+	bufferInfo.sType              = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.pNext              = nullptr;
+	bufferInfo.size               = allocSize;
+
+	bufferInfo.usage = usage;
+
+	VmaAllocationCreateInfo vmaallocInfo = {};
+	vmaallocInfo.usage                   = memoryUsage;
+	vmaallocInfo.flags                   = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	AllocatedBuffer newBuffer;
+	
+	// allocate the buffer
+	VK_CHECK(vmaCreateBuffer(m_allocator, &bufferInfo, &vmaallocInfo, &newBuffer.buffer, &newBuffer.allocation, &newBuffer.info));
+
+	return newBuffer;
+}
+
+void VulkanEngine::DestroyBuffer(const AllocatedBuffer& buffer) 
+{
+	vmaDestroyBuffer(m_allocator, buffer.buffer, buffer.allocation);
+}
+
+GPUMeshBuffers VulkanEngine::UploadMesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices)
+{
+	const size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
+	const size_t indexBufferSize  = indices.size() * sizeof(uint32_t);
+
+	GPUMeshBuffers newSurface;
+
+	// create vertex buffer
+	newSurface.vertexBuffer = CreateBuffer(vertexBufferSize,
+	                                        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+	                                        VMA_MEMORY_USAGE_GPU_ONLY);
+
+	// find the adress of the vertex buffer
+	VkBufferDeviceAddressInfo deviceAdressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer = newSurface.vertexBuffer.buffer };
+	newSurface.vertexBufferAddress = vkGetBufferDeviceAddress(m_device, &deviceAdressInfo);
+
+	// create index buffer
+	newSurface.indexBuffer = CreateBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
+	AllocatedBuffer staging = CreateBuffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+
+	void* data = staging.allocation->GetMappedData();
+
+	// Copy the vertex data
+	memcpy(data, vertices.data(), vertexBufferSize);
+
+	// Copy the index data
+	memcpy((void*)((size_t)data + vertexBufferSize), indices.data(), indexBufferSize);
+
+	ImmediateSubmit([=](VkCommandBuffer cmd)
+	    {
+		    VkBufferCopy vertexCopy{ 0 };
+		    vertexCopy.dstOffset = 0;
+		    vertexCopy.srcOffset = 0;
+		    vertexCopy.size      = vertexBufferSize;
+
+		    vkCmdCopyBuffer(cmd, staging.buffer, newSurface.vertexBuffer.buffer, 1, &vertexCopy);
+
+		    VkBufferCopy indexCopy{ 0 };
+		    indexCopy.dstOffset = 0;
+		    indexCopy.srcOffset = vertexBufferSize;
+		    indexCopy.size      = indexBufferSize;
+
+		    vkCmdCopyBuffer(cmd, staging.buffer, newSurface.indexBuffer.buffer, 1, &indexCopy);
+	    });
+
+	DestroyBuffer(staging);
+
+	return newSurface;
+}
+
+void VulkanEngine::InitDefaultData()
+{
+	std::vector<Vertex> rect_vertices = {};
+	// Insert 4 vertices
+	rect_vertices.reserve(4);
+
+	rect_vertices.emplace_back();
+	rect_vertices.emplace_back();
+	rect_vertices.emplace_back();
+	rect_vertices.emplace_back();
+
+
+	rect_vertices[0].position = { 0.5, -0.5, 0 };
+	rect_vertices[1].position = { 0.5, 0.5, 0 };
+	rect_vertices[2].position = { -0.5, -0.5, 0 };
+	rect_vertices[3].position = { -0.5, 0.5, 0 };
+
+	rect_vertices[0].color = { 0, 0, 0, 1 };
+	rect_vertices[1].color = { 0.5, 0.5, 0.5, 1 };
+	rect_vertices[2].color = { 1, 0, 0, 1 };
+	rect_vertices[3].color = { 0, 1, 0, 1 };
+
+	std::vector<uint32_t> rect_indices;
+	rect_indices.reserve(6);
+
+	rect_indices.emplace_back();
+	rect_indices.emplace_back();
+	rect_indices.emplace_back();
+	rect_indices.emplace_back();
+	rect_indices.emplace_back();
+	rect_indices.emplace_back();
+
+	rect_indices[0] = 0;
+	rect_indices[1] = 1;
+	rect_indices[2] = 2;
+
+	rect_indices[3] = 2;
+	rect_indices[4] = 1;
+	rect_indices[5] = 3;
+
+	rectangle = UploadMesh(rect_vertices, rect_indices);
 }
 
 void VulkanEngine::Update()
@@ -808,12 +934,12 @@ void VulkanEngine::DrawGeometry(VkCommandBuffer cmd)
 	// launch a draw command to draw 3 vertices
 	vkCmdDraw(cmd, 3, 1, 0, 0);
 
-	//vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_meshPipeline);
+	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_meshPipeline);
 
-	//vkCmdPushConstants(cmd, m_meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &rectangle.vertexBufferAddress);
-	//vkCmdBindIndexBuffer(cmd, rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdPushConstants(cmd, m_meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &rectangle.vertexBufferAddress);
+	vkCmdBindIndexBuffer(cmd, rectangle.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-//	vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
+	vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
 
 	vkCmdEndRendering(cmd);
 }
@@ -824,9 +950,12 @@ void VulkanEngine::Cleanup()
 	{
 		if (m_isInitialized)
 		{
-
 			// make sure the gpu has stopped doing its things
 			vkDeviceWaitIdle(m_device);
+			DestroyBuffer(rectangle.vertexBuffer);
+			DestroyBuffer(rectangle.indexBuffer);
+			m_drawImage.Destroy(m_device, m_allocator);
+
 			m_mainDeletionQueue.flush();
 
 			for (auto& frame : m_frames)
@@ -849,9 +978,7 @@ void VulkanEngine::Cleanup()
 				vkDestroyImageView(m_device, m_swapchainImageViews[i], nullptr);
 			}
 
-			m_drawImage.Destroy(m_device, m_allocator);
 
-			vmaDestroyAllocator(m_allocator);
 			vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 			vkDestroyDevice(m_device, nullptr);
 			vkb::destroy_debug_utils_messenger(m_instance, m_debug_messenger);
@@ -884,5 +1011,5 @@ void VulkanEngine::ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& fu
 	//  _renderFence will now block until the graphic commands finish execution
 	VK_CHECK(vkQueueSubmit2(m_graphicsQueue, 1, &submit, m_immFence));
 
-	VK_CHECK(vkWaitForFences(m_device, 1, &m_immFence, true, ONE_SECOND));
+	VK_CHECK(vkWaitForFences(m_device, 1, &m_immFence, true, 9999999999));
 }

@@ -1,7 +1,7 @@
 #version 450
 #extension GL_EXT_buffer_reference : require
 
-layout (location = 0) out vec3 outColor;
+layout (location = 0) out vec4 outColor;
 
 struct Vertex {
 
@@ -29,5 +29,5 @@ void main()
 
 	//output data
 	gl_Position = vec4(v.position, 1.0f);
-	outColor = v.color.xyz;
+	outColor = v.color;
 }
