@@ -12,6 +12,7 @@ const std::string ResourceManager::BASE_TEXTURE_PATH       = "../resources/textu
 const std::string ResourceManager::BASE_SHADER_PATH        = "../resources/shaders/";
 const std::string ResourceManager::BASE_VULKAN_SHADER_PATH = "../resources/shaders/compiled/";
 const std::string ResourceManager::BASE_FONT_PATH          = "../resources/fonts/";
+const std::string ResourceManager::BASE_MODEL_PATH         = "../resources/models/";
 
 std::string ResourceManager::GetTexturePath(const std::string& name, const std::string& extension)
 {
@@ -39,6 +40,11 @@ std::string ResourceManager::GetShaderPath(const std::string& name, const std::s
 std::string ResourceManager::GetFontPath(const std::string& name, const std::string& extension)
 {
 	return BASE_FONT_PATH + name + extension;
+}
+
+std::string ResourceManager::GetModelPath(const std::string& name, const std::string& extension) 
+{
+	return BASE_MODEL_PATH + name + extension;
 }
 
 ResourceManager::~ResourceManager()

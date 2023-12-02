@@ -1,17 +1,26 @@
 #pragma once
-#include "engine/ConsoleLog.h"
-#include "vulkan/vk_mem_alloc.h"
-#include <vulkan/vulkan.h>
-#include "glm.hpp"
 
+#include <mat4x4.hpp>
+#include <memory>
+#include <optional>
+#include <span>
+#include <string>
+#include <vec4.hpp>
+#include <vector>
+#include <vulkan/vk_enum_string_helper.h>
+#include <vulkan/vk_mem_alloc.h>
+#include <vulkan/vulkan.h>
+
+#include "engine/ConsoleLog.h"
+
+// we will add our main reusable types here
 struct AllocatedImage
 {
-	VkFormat imageFormat;
 	VkImage image;
 	VkImageView imageView;
 	VmaAllocation allocation;
-
-	void Destroy(VkDevice device, VmaAllocator allocator);
+	VkExtent3D imageExtent;
+	VkFormat imageFormat;
 };
 
 struct AllocatedBuffer
@@ -21,8 +30,44 @@ struct AllocatedBuffer
 	VmaAllocationInfo info;
 };
 
+struct GPUGLTFMaterial
+{
+	glm::vec4 colorFactors;
+	glm::vec4 metal_rough_factors;
+	glm::vec4 extra[14];
+};
+
+static_assert(sizeof(GPUGLTFMaterial) == 256);
+
+struct GPUSceneData
+{
+	glm::mat4 view;
+	glm::mat4 proj;
+	glm::mat4 viewproj;
+	glm::vec4 ambientColor;
+	glm::vec4 sunlightDirection; // w for sun power
+	glm::vec4 sunlightColor;
+};
+
+enum class MaterialPass : uint8_t
+{
+	MainColor,
+	Transparent,
+	Other
+};
+
+struct MaterialData
+{
+	VkPipeline pipeline;
+	VkPipelineLayout layout;
+	VkDescriptorSet materialSet;
+
+	MaterialPass passType;
+};
+
 struct Vertex
 {
+
 	glm::vec3 position;
 	float uv_x;
 	glm::vec3 normal;
@@ -30,98 +75,69 @@ struct Vertex
 	glm::vec4 color;
 };
 
+// holds the resources needed for a mesh
 struct GPUMeshBuffers
 {
+
 	AllocatedBuffer indexBuffer;
 	AllocatedBuffer vertexBuffer;
 	VkDeviceAddress vertexBufferAddress;
 };
 
-struct VulkanBuffer
+struct GPUDrawPushConstants
 {
-	VulkanBuffer();
-
-	// Setters
-	void SetBufferHandle(VkBuffer handle);
-	void SetAllocation(VmaAllocation alloc);
-	void SetSize(size_t bufferSize);
-
-	// Getters
-	VkBuffer GetBufferHandle() const;
-	VmaAllocation GetAllocation() const;
-	size_t GetSize() const;
-
-private:
-	VkBuffer bufferHandle;
-	VmaAllocation allocation;
-	size_t size;
+	glm::mat4 worldMatrix;
+	VkDeviceAddress vertexBuffer;
 };
 
-// DEGUB STUFF BELOW
-static const char* vkResultToString(VkResult res)
+struct DrawContext;
+
+// base class for a renderable dynamic object
+class IRenderable
 {
-	switch (res)
+
+	virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) = 0;
+};
+
+// implementation of a drawable scene node.
+// the scene node can hold children and will also keep a transform to propagate
+// to them
+struct Node : public IRenderable
+{
+
+	// parent pointer must be a weak pointer to avoid circular dependencies
+	std::weak_ptr<Node> parent;
+	std::vector<std::shared_ptr<Node>> children;
+
+	glm::mat4 localTransform;
+	glm::mat4 worldTransform;
+
+	void refreshTransform(const glm::mat4& parentMatrix)
 	{
-#define CASE(x)                                                                                                                                                               \
-	case VK_##x: return #x;
-		CASE(SUCCESS)
-		CASE(NOT_READY)
-		CASE(TIMEOUT)
-		CASE(EVENT_SET)
-		CASE(EVENT_RESET)
-		CASE(INCOMPLETE)
-		CASE(ERROR_OUT_OF_HOST_MEMORY)
-		CASE(ERROR_OUT_OF_DEVICE_MEMORY)
-		CASE(ERROR_INITIALIZATION_FAILED)
-		CASE(ERROR_DEVICE_LOST)
-		CASE(ERROR_MEMORY_MAP_FAILED)
-		CASE(ERROR_LAYER_NOT_PRESENT)
-		CASE(ERROR_EXTENSION_NOT_PRESENT)
-		CASE(ERROR_FEATURE_NOT_PRESENT)
-		CASE(ERROR_INCOMPATIBLE_DRIVER)
-		CASE(ERROR_TOO_MANY_OBJECTS)
-		CASE(ERROR_FORMAT_NOT_SUPPORTED)
-		CASE(ERROR_FRAGMENTED_POOL)
-		CASE(ERROR_UNKNOWN)
-		CASE(ERROR_OUT_OF_POOL_MEMORY)
-		CASE(ERROR_INVALID_EXTERNAL_HANDLE)
-		CASE(ERROR_FRAGMENTATION)
-		CASE(ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS)
-		CASE(PIPELINE_COMPILE_REQUIRED)
-		CASE(ERROR_SURFACE_LOST_KHR)
-		CASE(ERROR_NATIVE_WINDOW_IN_USE_KHR)
-		CASE(SUBOPTIMAL_KHR)
-		CASE(ERROR_OUT_OF_DATE_KHR)
-		CASE(ERROR_INCOMPATIBLE_DISPLAY_KHR)
-		CASE(ERROR_VALIDATION_FAILED_EXT)
-		CASE(ERROR_INVALID_SHADER_NV)
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-		CASE(ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR)
-		CASE(ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR)
-		CASE(ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR)
-		CASE(ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR)
-		CASE(ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR)
-		CASE(ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR)
-#endif
-		CASE(ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT)
-		CASE(ERROR_NOT_PERMITTED_KHR)
-		CASE(ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT)
-		CASE(THREAD_IDLE_KHR)
-		CASE(THREAD_DONE_KHR)
-		CASE(OPERATION_DEFERRED_KHR)
-		CASE(OPERATION_NOT_DEFERRED_KHR)
-	default: return "unknown";
+		worldTransform = parentMatrix * localTransform;
+		for (auto c : children)
+		{
+			c->refreshTransform(worldTransform);
+		}
 	}
-#undef CASE
-}
+
+	virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx)
+	{
+		// draw children
+		for (auto& c : children)
+		{
+			c->Draw(topMatrix, ctx);
+		}
+	}
+};
 
 #define VK_CHECK(x)                                                                                                                                                           \
 	do                                                                                                                                                                        \
 	{                                                                                                                                                                         \
 		VkResult err = x;                                                                                                                                                     \
-		if (err != VK_SUCCESS)                                                                                                                                                              \
+		if (err != VK_SUCCESS)                                                                                                                                                \
 		{                                                                                                                                                                     \
-			SLIME_ERROR("Detected Vulkan error: %s", vkResultToString(err));                                                                                                  \
+			SLIME_ERROR("Detected Vulkan error: %s", string_VkResult(err));                                                                                                   \
 		}                                                                                                                                                                     \
 	}                                                                                                                                                                         \
 	while (0)

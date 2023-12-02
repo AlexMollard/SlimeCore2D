@@ -24,20 +24,19 @@
 // 			// Output to another platform's debug stream
 // #endif
 // 		}
-// 
+//
 // 		return c;
 // 	}
 // };
-// 
+//
 // class CustomStream : public std::ostream
 // {
 // public:
 // 	CustomStream() : std::ostream(&buffer) {}
-// 
+//
 // private:
 // 	CustomStreamBuffer buffer;
 // };
-
 
 enum ConsoleColor
 {
@@ -108,7 +107,7 @@ public:
 		reset();
 	}
 
-// Function for debugging with file and line information (INFO)
+	// Function for debugging with file and line information (INFO)
 	static void internalInfo(const std::string& message, const char* file, int line)
 	{
 		std::stringstream ss;
@@ -166,7 +165,7 @@ public:
 	{                                                                                                                                                                         \
 		std::string __message__ = formatString(__VA_ARGS__);                                                                                                                  \
 		ConsoleLog::internalError(__message__, __FILE__, __LINE__);                                                                                                           \
-		throw std::runtime_error(__message__.c_str());                                                                                                                        \
+		/*throw std::runtime_error(__message__.c_str());*/                                                                                                                    \
 	}                                                                                                                                                                         \
 	while (false)
 

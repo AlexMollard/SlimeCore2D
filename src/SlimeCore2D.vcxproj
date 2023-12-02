@@ -11,8 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine\Vulkan\DescriptorLayoutBuilder.h" />
+    <ClInclude Include="engine\Vulkan\VulkanCamera.h" />
+    <ClInclude Include="engine\Vulkan\VulkanDescriptors.h" />
     <ClInclude Include="engine\Vulkan\VulkanInit.h" />
+    <ClInclude Include="engine\Vulkan\VulkanLoader.h" />
     <ClInclude Include="engine\Vulkan\VulkanTypes.h" />
     <ClInclude Include="game\Bullet.h" />
     <ClInclude Include="engine\ConsoleLog.h" />
@@ -65,7 +67,6 @@
     <ClInclude Include="imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="engine\Vulkan\DescriptorLayoutBuilder.cpp" />
     <ClCompile Include="engine\BatchRenderer.cpp" />
     <ClCompile Include="engine\BoundingBox.cpp" />
     <ClCompile Include="engine\Camera.cpp" />
@@ -78,7 +79,10 @@
     <ClCompile Include="engine\RigidBody.cpp" />
     <ClCompile Include="engine\Shader.cpp" />
     <ClCompile Include="engine\Texture.cpp" />
+    <ClCompile Include="engine\Vulkan\VulkanCamera.cpp" />
+    <ClCompile Include="engine\Vulkan\VulkanDescriptors.cpp" />
     <ClCompile Include="engine\Vulkan\VulkanInit.cpp" />
+    <ClCompile Include="engine\Vulkan\VulkanLoader.cpp" />
     <ClCompile Include="engine\Vulkan\VulkanTypes.cpp" />
     <ClCompile Include="engine\Window.cpp" />
     <ClCompile Include="engine\RenderTarget.cpp" />
@@ -129,7 +133,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>ClangCL</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
@@ -162,7 +166,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;VK_PROTOTYPES;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions);GLEW_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\vk-bootstrap\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\vk-bootstrap\include;$(SolutionDir)dependencies\fastgltf\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -180,8 +184,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;$(VULKAN_SDK)/Lib;$(SolutionDir)Dependencies\vk-bootstrap\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;vulkan-1.lib;vk-bootstrap.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;$(VULKAN_SDK)/Lib;$(SolutionDir)Dependencies\vk-bootstrap\lib\Debug;$(SolutionDir)Dependencies\fastgltf\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;vulkan-1.lib;vk-bootstrap.lib;fastgltf.lib;fastgltf_simdjson.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -202,7 +206,7 @@ xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_image.dll" "$(OutDir)"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;VK_PROTOTYPES;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions);GLEW_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\vk-bootstrap\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\vk-bootstrap\include;$(SolutionDir)dependencies\fastgltf\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -214,8 +218,8 @@ xcopy /y "$(SolutionDir)dependencies\sdl\SDL3_image.dll" "$(OutDir)"</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;$(VULKAN_SDK)/Lib;$(SolutionDir)Dependencies\vk-bootstrap\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;vulkan-1.lib;vk-bootstrap.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;$(VULKAN_SDK)/Lib;$(SolutionDir)Dependencies\vk-bootstrap\lib\Release;$(SolutionDir)Dependencies\fastgltf\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;vulkan-1.lib;vk-bootstrap.lib;fastgltf.lib;fastgltf_simdjson.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y "$(SolutionDir)dependencies\sdl\SDL3.dll" "$(OutDir)"

@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 	// Fully flush the standard output buffer. (Reloading was causing it not too :/)
 	std::cout << std::unitbuf;
 
-	VulkanEngine engine;
+	VulkanEngine& engine = VulkanEngine::Get();
 
 	engine.Init();
 	engine.Update();

@@ -1,9 +1,13 @@
 #pragma once
-#include "DescriptorLayoutBuilder.h"
+#include "VulkanCamera.h"
+#include "VulkanDescriptors.h"
 #include "VulkanInit.h"
+#include "VulkanLoader.h"
+#include "glm.hpp"
 #include <deque>
 #include <functional>
-#include "ext/vector_float4.hpp"
+#include <memory>
+#include <unordered_map>
 
 constexpr unsigned int FRAME_OVERLAP = 2;
 
@@ -46,19 +50,56 @@ struct ComputeEffect
 	ComputePushConstants data;
 };
 
+struct RenderObject
+{
+	uint32_t indexCount;
+	uint32_t firstIndex;
+	VkBuffer indexBuffer;
+
+	MaterialData* material;
+
+	glm::mat4 transform;
+	VkDeviceAddress vertexBufferAddress;
+};
+
+struct DrawContext
+{
+	std::vector<RenderObject> OpaqueSurfaces;
+	std::vector<RenderObject> TransparentSurfaces;
+};
+
 struct FrameData
 {
-	VkCommandPool m_commandPool;
-	VkCommandBuffer m_mainCommandBuffer;
 	VkSemaphore m_swapchainSemaphore;
 	VkSemaphore m_renderSemaphore;
 	VkFence m_renderFence;
+
+	DescriptorAllocator m_frameDescriptors;
 	DeletionQueue m_deletionQueue;
+
+	VkCommandPool m_commandPool;
+	VkCommandBuffer m_mainCommandBuffer;
+
+	AllocatedBuffer cameraBuffer;
+};
+
+struct EngineStats
+{
+	float frameTime;
+	int triangleCount;
+	int drawcallCount;
+	float meshDrawTime;
 };
 
 class VulkanEngine
 {
 public:
+	static VulkanEngine& Get()
+	{
+		static VulkanEngine instance;
+		return instance;
+	}
+
 	bool m_isInitialized = false;
 	int m_frameNumber    = 0;
 
@@ -68,7 +109,7 @@ public:
 	void Init();
 	void Update();
 	void Draw();
-	void DrawBackground(VkCommandBuffer cmd);
+	void DrawMain(VkCommandBuffer cmd);
 	void DrawImgui(VkCommandBuffer cmd, VkImageView targetImageView);
 	void DrawGeometry(VkCommandBuffer cmd);
 	void Cleanup();
@@ -81,7 +122,7 @@ public:
 	VkDevice m_device;                          // Vulkan device for commands
 	VkSurfaceKHR m_surface;                     // Vulkan window surface
 
-	VkSwapchainKHR m_swapchain;     // Swapchain to present images to the screen
+	VkSwapchainKHR m_swapchain;      // Swapchain to present images to the screen
 	VkFormat m_swapchainImageFormat; // Format of the images in the swapchain
 
 	std::vector<VkImage> m_swapchainImages;         // Images that belong to the swapchain
@@ -98,7 +139,12 @@ public:
 	uint32_t m_graphicsQueueFamily;
 	VmaAllocator m_allocator;
 
+	VkFormat m_drawFormat;
 	AllocatedImage m_drawImage;
+	AllocatedImage m_depthImage;
+
+	AllocatedImage m_whiteImage;
+	VkSampler m_defaultSampler;
 
 	DescriptorAllocator globalDescriptorAllocator;
 
@@ -106,19 +152,46 @@ public:
 	VkDescriptorSetLayout m_mainDescriptorLayout;
 
 	VkPipelineLayout m_gradientPipelineLayout;
-	VkPipelineLayout m_trianglePipelineLayout;
-	VkPipeline m_trianglePipeline;
 
-	
 	VkPipelineLayout m_meshPipelineLayout;
 	VkPipeline m_meshPipeline;
 
-	GPUMeshBuffers rectangle;
+	VkDescriptorSet m_defaultGLTFdescriptor;
+
+	VkDescriptorSet m_drawImageDescriptors;
+	VkDescriptorSetLayout m_drawImageDescriptorLayout;
+
+	VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout;
+	VkDescriptorSetLayout m_gltfMatDescriptorLayout;
+
+	MaterialData m_gltfDefaultOpaque;
+	MaterialData m_gltfDefaultTranslucent;
+	AllocatedBuffer m_defaultGLTFMaterialData;
 
 	// immediate submit structures (imm == immediate)
 	VkFence m_immFence;
 	VkCommandBuffer m_immCommandBuffer;
 	VkCommandPool m_immCommandPool;
+	DrawContext m_drawCommands;
+
+	GPUSceneData m_sceneData;
+	vkutil::Camera mainCamera;
+	EngineStats m_stats;
+
+	GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
+	std::vector<MeshAsset> testMeshes;
+
+	AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+	void DestroyBuffer(const AllocatedBuffer& buffer);
+	void InitDefaultData();
+
+	ComputeEffect* CreateComputeEffect(const char* name, VkShaderModule shader, VkPipelineLayout layout, VkComputePipelineCreateInfo computePipelineCreateInfo);
+
+	AllocatedImage CreateImage(void* data, VkExtent3D imageSize, VkFormat format, VkImageUsageFlags usage);
+	AllocatedImage CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage);
+	void DestroyImage(AllocatedImage image);
+
+	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> m_loadedScenes;
 
 private:
 	void InitVulkan();
@@ -126,18 +199,10 @@ private:
 	void InitCommands();
 	void InitSyncStructures();
 	void InitDescriptors();
-	ComputeEffect* CreateComputeEffect(const char* name, VkShaderModule shader, VkPipelineLayout layout, VkComputePipelineCreateInfo computePipelineCreateInfo);
 	void InitPipelines();
 	void InitBackgroundPipelines();
-	void InitTrianglePipeline();
 	void InitMeshPipeline();
 	void InitImgui();
-
-	AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
-	void DestroyBuffer(const AllocatedBuffer& buffer);
-
-	GPUMeshBuffers UploadMesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices);
-	void InitDefaultData();
 
 	DeletionQueue m_mainDeletionQueue;
 

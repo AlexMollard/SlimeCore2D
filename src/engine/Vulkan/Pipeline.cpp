@@ -216,6 +216,19 @@ void vkutil::PipelineBuilder::DisableDepthtest()
 	m_depthStencil.maxDepthBounds        = 1.f;
 }
 
+void vkutil::PipelineBuilder::EnableDepthtest(bool depthWriteEnable, VkCompareOp op) 
+{
+	m_depthStencil.depthTestEnable       = VK_TRUE;
+	m_depthStencil.depthWriteEnable      = depthWriteEnable;
+	m_depthStencil.depthCompareOp        = op;
+	m_depthStencil.depthBoundsTestEnable = VK_FALSE;
+	m_depthStencil.stencilTestEnable     = VK_FALSE;
+	m_depthStencil.front                 = {};
+	m_depthStencil.back                  = {};
+	m_depthStencil.minDepthBounds        = 0.f;
+	m_depthStencil.maxDepthBounds        = 1.f;
+}
+
 void vkutil::PipelineBuilder::EnableBlendingAdditive() 
 {
 	m_colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
