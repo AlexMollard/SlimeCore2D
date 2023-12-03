@@ -134,10 +134,10 @@ public:
 	EngineStats m_stats;
 
 	// Mesh-related functions and data
-	GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
+	GPUMeshBuffers UploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices, const char* name);
 
 	// Buffer creation and destruction
-	AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+	AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, const char* name = nullptr);
 	void DestroyBuffer(const AllocatedBuffer& buffer);
 
 	// Default data initialization

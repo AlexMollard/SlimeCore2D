@@ -8,6 +8,8 @@ layout(set = 0, binding = 0) uniform  SceneData{
 	vec4 sunlightColor;
 } sceneData;
 
+layout(set = 0, binding = 1) uniform sampler2D depthTex;   
+
 layout(set = 1, binding = 0) uniform GLTFMaterialData{   
 
 	vec4 colorFactors;
@@ -15,4 +17,5 @@ layout(set = 1, binding = 0) uniform GLTFMaterialData{
 	
 } materialData;
 
+// We need the albedo and depth textures from the GBuffer
 layout(set = 1, binding = 1) uniform sampler2D albedoTex;

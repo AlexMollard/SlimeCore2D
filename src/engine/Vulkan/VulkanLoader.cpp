@@ -217,8 +217,9 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 
 	if (!asset->materials.empty())
 	{
-		file.materialDataBuffer = engine->CreateBuffer(sizeof(GPUGLTFMaterial) * asset->materials.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-		materialData            = (GPUGLTFMaterial*)file.materialDataBuffer.info.pMappedData;
+		file.materialDataBuffer =
+		    engine->CreateBuffer(sizeof(GPUGLTFMaterial) * asset->materials.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, "materialDataBuffer ");
+		materialData = (GPUGLTFMaterial*)file.materialDataBuffer.info.pMappedData;
 	}
 
 	for (fastgltf::Material& mat : asset->materials)
@@ -362,7 +363,8 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 			newmesh->surfaces.push_back(newSurface);
 		}
 
-		newmesh->meshBuffers = engine->UploadMesh(indices, vertices);
+		const std::string meshName = std::string(mesh.name) + std::to_string(meshes.size());
+		newmesh->meshBuffers       = engine->UploadMesh(indices, vertices, meshName.c_str());
 	}
 
 	// load all nodes and their meshes
