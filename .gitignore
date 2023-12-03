@@ -28,7 +28,6 @@
 *.lai
 *.la
 *.a
-#*.lib
 
 # Executables
 *.exe
@@ -81,9 +80,9 @@ $RECYCLE.BIN/
 mono_crash.*
 
 # Build results
-[Dd]ebug/
+#[Dd]ebug/
 [Dd]ebugPublic/
-[Rr]elease/
+#[Rr]elease/
 [Rr]eleases/
 x64/
 x86/
@@ -136,7 +135,6 @@ StyleCopReport.xml
 *_h.h
 *.ilk
 *.iobj
-*.pdb
 *.ipdb
 *.pgc
 *.pgd
