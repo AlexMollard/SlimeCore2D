@@ -108,6 +108,7 @@ void VulkanEngine::InitSwapchain()
 
 	// allocate and create the image
 	vmaCreateImage(m_allocator, &rimg_info, &rimg_allocinfo, &m_drawImage.image, &m_drawImage.allocation, nullptr);
+	vmaSetAllocationName(m_allocator, m_drawImage.allocation, "Draw Image");
 
 	// build a image-view for the draw image to use for rendering
 	VkImageViewCreateInfo rview_info = vkinit::ImageviewCreateInfo(m_drawImage.imageFormat, m_drawImage.image, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -124,6 +125,7 @@ void VulkanEngine::InitSwapchain()
 
 	// allocate and create the image
 	vmaCreateImage(m_allocator, &dimg_info, &rimg_allocinfo, &m_depthImage.image, &m_depthImage.allocation, nullptr);
+	vmaSetAllocationName(m_allocator, m_depthImage.allocation, "Depth Image");
 
 	// build a image-view for the draw image to use for rendering
 	VkImageViewCreateInfo dview_info = vkinit::ImageviewCreateInfo(m_depthImage.imageFormat, m_depthImage.image, VK_IMAGE_ASPECT_DEPTH_BIT);
@@ -262,6 +264,10 @@ void VulkanEngine::InitCommands()
 		VkCommandBufferAllocateInfo cmdAllocInfo = vkinit::CommandBufferAllocateInfo(m_frames[i].m_commandPool, 1);
 
 		VK_CHECK(vkAllocateCommandBuffers(m_device, &cmdAllocInfo, &m_frames[i].m_mainCommandBuffer));
+		
+		m_mainDeletionQueue.push_function([=]() {
+			vkDestroyCommandPool(m_device, m_frames[i].m_commandPool, nullptr);
+		});
 	}
 
 	VK_CHECK(vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_immCommandPool));
@@ -351,7 +357,7 @@ void VulkanEngine::InitDescriptors()
 	{
 		// default white image descriptor
 		uint32_t whitepixel = 0xFFFFFFFF;
-		m_whiteImage        = CreateImage((void*)&whitepixel, VkExtent3D{ 1, 1, 1 }, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+		m_whiteImage        = CreateImage((void*)&whitepixel, VkExtent3D{ 1, 1, 1 }, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, "White Image");
 
 		VkSamplerCreateInfo sampl = {};
 		sampl.pNext               = nullptr;
@@ -417,7 +423,7 @@ ComputeEffect* VulkanEngine::CreateComputeEffect(const char* name, VkShaderModul
 	return effect;
 }
 
-AllocatedImage VulkanEngine::CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage)
+AllocatedImage VulkanEngine::CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, const char* name)
 {
 	AllocatedImage newImage;
 	newImage.imageFormat = format;
@@ -432,6 +438,7 @@ AllocatedImage VulkanEngine::CreateImage(VkExtent3D size, VkFormat format, VkIma
 
 	// allocate and create the image
 	VK_CHECK(vmaCreateImage(m_allocator, &img_info, &allocinfo, &newImage.image, &newImage.allocation, nullptr));
+	vmaSetAllocationName(m_allocator, newImage.allocation, name);
 
 	// if the format is a depth format, we will need to have it use the correct
 	// aspect flag
@@ -449,14 +456,14 @@ AllocatedImage VulkanEngine::CreateImage(VkExtent3D size, VkFormat format, VkIma
 	return newImage;
 }
 
-AllocatedImage VulkanEngine::CreateImage(void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage)
+AllocatedImage VulkanEngine::CreateImage(void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, const char* name)
 {
 	size_t data_size             = size.depth * size.width * size.height * 4;
 	AllocatedBuffer uploadbuffer = CreateBuffer(data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
 	memcpy(uploadbuffer.info.pMappedData, data, data_size);
 
-	AllocatedImage new_image = CreateImage(size, format, usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+	AllocatedImage new_image = CreateImage(size, format, usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT, name);
 
 	ImmediateSubmit(
 	    [&](VkCommandBuffer cmd)
@@ -493,6 +500,26 @@ void VulkanEngine::DestroyImage(AllocatedImage image)
 	image.image      = VK_NULL_HANDLE;
 	image.imageView  = VK_NULL_HANDLE;
 	image.allocation = VK_NULL_HANDLE;
+}
+
+void VulkanEngine::AddToDeletionQueue(AllocatedImage image) 
+{
+	m_mainDeletionQueue.push_function([=]() { DestroyImage(image); });
+}
+
+void VulkanEngine::AddToDeletionQueue(VkImage image)
+{
+	m_mainDeletionQueue.push_function([=]() { vkDestroyImage(m_device, image, nullptr); });
+}
+
+void VulkanEngine::AddToDeletionQueue(VkImageView imageView) 
+{
+	m_mainDeletionQueue.push_function([=]() { vkDestroyImageView(m_device, imageView, nullptr); });
+}
+
+void VulkanEngine::AddToDeletionQueue(VkBuffer buffer) 
+{
+	m_mainDeletionQueue.push_function([=]() { vkDestroyBuffer(m_device, buffer, nullptr); });
 }
 
 void VulkanEngine::InitPipelines()

@@ -187,11 +187,16 @@ public:
 
 	ComputeEffect* CreateComputeEffect(const char* name, VkShaderModule shader, VkPipelineLayout layout, VkComputePipelineCreateInfo computePipelineCreateInfo);
 
-	AllocatedImage CreateImage(void* data, VkExtent3D imageSize, VkFormat format, VkImageUsageFlags usage);
-	AllocatedImage CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage);
+	AllocatedImage CreateImage(void* data, VkExtent3D imageSize, VkFormat format, VkImageUsageFlags usage, const char* name = nullptr);
+	AllocatedImage CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, const char* name = nullptr);
 	void DestroyImage(AllocatedImage image);
 
 	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> m_loadedScenes;
+
+	void AddToDeletionQueue(AllocatedImage image);
+	void AddToDeletionQueue(VkImage image);
+	void AddToDeletionQueue(VkImageView imageView);
+	void AddToDeletionQueue(VkBuffer buffer);
 
 private:
 	void InitVulkan();

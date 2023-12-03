@@ -40,7 +40,7 @@ std::optional<AllocatedImage> LoadImage(VulkanEngine* engine, fastgltf::Asset& a
 			        imagesize.height = height;
 			        imagesize.depth  = 1;
 
-			        newImage = engine->CreateImage(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+			        newImage = engine->CreateImage(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, path.c_str());
 
 			        stbi_image_free(data);
 		        }
@@ -55,7 +55,7 @@ std::optional<AllocatedImage> LoadImage(VulkanEngine* engine, fastgltf::Asset& a
 			        imagesize.height = height;
 			        imagesize.depth  = 1;
 
-			        newImage = engine->CreateImage(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+			        newImage = engine->CreateImage(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, image.name.c_str());
 
 			        stbi_image_free(data);
 		        }
@@ -80,7 +80,7 @@ std::optional<AllocatedImage> LoadImage(VulkanEngine* engine, fastgltf::Asset& a
 				                                      imagesize.height = height;
 				                                      imagesize.depth  = 1;
 
-				                                      newImage = engine->CreateImage(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+				                                      newImage = engine->CreateImage(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, image.name.c_str());
 
 				                                      stbi_image_free(data);
 			                                      }
@@ -106,7 +106,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 {
 	VulkanEngine* engine = &VulkanEngine::Get();
 
-	std::cout << "Loading GLTF: " << filePath << std::endl;
+	SLIME_INFO("Loading glTF file: %s", filePath.data());
 
 	std::shared_ptr<LoadedGLTF> scene = std::make_shared<LoadedGLTF>();
 	LoadedGLTF& file                  = *scene.get();
@@ -168,7 +168,8 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 
 	// default white image descriptor
 	uint32_t whitepixel = 0xFFFFFFFF;
-	file.defaultImage   = engine->CreateImage((void*)&whitepixel, VkExtent3D{ 1, 1, 1 }, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+	file.defaultImage   = engine->CreateImage((void*)&whitepixel, VkExtent3D{ 1, 1, 1 }, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, "Default Texture");
+	engine->AddToDeletionQueue(file.defaultImage);
 
 	// load samplers
 	for (fastgltf::Sampler& sampler : asset->samplers)
@@ -205,7 +206,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 			// we failed to load, so lets give the slot a default white texture to not
 			// completely break loading
 			images.push_back(file.defaultImage);
-			std::cout << "gltf failed to load texture " << image.name << std::endl;
+			SLIME_ERROR("Failed to load image: %s", image.name.c_str());
 		}
 	}
 
