@@ -5,10 +5,15 @@
 
 using namespace vkutil;
 
+glm::mat4 vkutil::Camera::CalculateProjectionMatrix(float aspectRatio)
+{
+	return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+}
+
 glm::mat4 Camera::GetViewMatrix()
 {
+	glm::mat4 cameraRotation = GetRotationMatrix();
 	glm::mat4 cameraTranslation = glm::translate(glm::mat4(1.f), position);
-	glm::mat4 cameraRotation    = GetRotationMatrix();
 	return glm::inverse(cameraTranslation * cameraRotation);
 }
 
@@ -62,7 +67,8 @@ void Camera::ProcessSDLEvent(SDL_Event& e)
 		}
 	}
 
-	if (e.type == SDL_EVENT_MOUSE_MOTION)
+	// If the mouse  is moving and the left button is down
+	if (e.type == SDL_EVENT_MOUSE_MOTION && e.motion.state & SDL_BUTTON_LMASK)
 	{
 		yaw += (float)e.motion.xrel / 200.f;
 		pitch -= (float)e.motion.yrel / 200.f;

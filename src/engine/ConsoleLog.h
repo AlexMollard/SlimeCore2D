@@ -165,7 +165,7 @@ public:
 	{                                                                                                                                                                         \
 		std::string __message__ = formatString(__VA_ARGS__);                                                                                                                  \
 		ConsoleLog::internalError(__message__, __FILE__, __LINE__);                                                                                                           \
-		/*throw std::runtime_error(__message__.c_str());*/                                                                                                                    \
+		throw std::runtime_error(__message__.c_str());                                                                                                                        \
 	}                                                                                                                                                                         \
 	while (false)
 

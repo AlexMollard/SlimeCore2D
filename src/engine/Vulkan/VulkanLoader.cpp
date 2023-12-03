@@ -2,11 +2,10 @@
 
 #include "VulkanEngine.h"
 #include "VulkanInit.h"
-#include <gtx/quaternion.hpp>
-
+#include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/parser.hpp>
 #include <fastgltf/tools.hpp>
-#include <fastgltf/glm_element_traits.hpp>
+#include <gtx/quaternion.hpp>
 #include <stb_image.h>
 
 // needed for the fastgltf variants
@@ -211,9 +210,14 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 	}
 
 	// create buffer to hold the material data
-	file.materialDataBuffer       = engine->CreateBuffer(sizeof(GPUGLTFMaterial) * asset->materials.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-	int data_index                = 0;
-	GPUGLTFMaterial* materialData = (GPUGLTFMaterial*)file.materialDataBuffer.info.pMappedData;
+	int data_index = 0;
+	GPUGLTFMaterial* materialData = nullptr;
+	
+	if (!asset->materials.empty())
+	{
+		file.materialDataBuffer       = engine->CreateBuffer(sizeof(GPUGLTFMaterial) * asset->materials.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		materialData = (GPUGLTFMaterial*) file.materialDataBuffer.info.pMappedData;
+	}
 
 	for (fastgltf::Material& mat : asset->materials)
 	{
@@ -266,6 +270,12 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 		vkUpdateDescriptorSets(engine->m_device, 2, writes, 0, nullptr);
 
 		data_index++;
+	}
+
+
+	if (materials.empty())
+	{
+		materials.push_back(std::make_shared<GLTFMaterial>(engine->m_gltfDefaultOpaque));
 	}
 
 	// use the same vectors for all meshes so that the memory doesnt reallocate as
@@ -341,13 +351,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 			if (p.materialIndex.has_value())
 			{
 				newSurface.material = materials[p.materialIndex.value()];
-			}
-			else if (materials.empty())
-			{
-				// if there are no materials, we need to create a default one
-				std::shared_ptr<GLTFMaterial> newMat = std::make_shared<GLTFMaterial>();
-				newMat->data                         = engine->m_gltfDefaultOpaque;
-				newSurface.material				  = newMat;
 			}
 			else
 			{

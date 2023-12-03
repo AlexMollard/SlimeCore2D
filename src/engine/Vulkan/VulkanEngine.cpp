@@ -1,7 +1,10 @@
 #include "VulkanEngine.h"
-#define VMA_IMPLEMENTATION
 
-// #define VMA_DEBUG_LOG(format, ...) printf(format, __VA_ARGS__); printf("\n")
+#define VMA_IMPLEMENTATION
+#define VMA_DEBUG_INITIALIZE_ALLOCATIONS 1
+#define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
+#define VMA_DEBUG_LOG(format, ...) printf(format, __VA_ARGS__); printf("\n")
+#include "vulkan/vk_mem_alloc.h"
 
 #include "Pipeline.h"
 #include "VkBootstrap.h"
@@ -13,7 +16,6 @@
 #include "imgui/backends/imgui_impl_sdl3.h"
 #include "imgui/backends/imgui_impl_vulkan.h"
 #include "imgui/imgui.h"
-#include "vulkan/vk_mem_alloc.h"
 #include <SDL3/SDL_vulkan.h>
 
 #include "engine/ConsoleLog.h"
@@ -113,7 +115,6 @@ void VulkanEngine::InitSwapchain()
 	VK_CHECK(vkCreateImageView(m_device, &rview_info, nullptr, &m_drawImage.imageView));
 
 	// create a depth image too
-	// hardcoding the draw format to 32 bit float
 	m_depthImage.imageFormat = VK_FORMAT_D32_SFLOAT;
 
 	VkImageUsageFlags depthImageUsages{};
@@ -243,7 +244,7 @@ void VulkanEngine::InitVulkan()
 	allocatorInfo.flags                  = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 	vmaCreateAllocator(&allocatorInfo, &m_allocator);
 
-	m_mainDeletionQueue.push_function([=]() { vmaDestroyAllocator(m_allocator); });
+	// m_mainDeletionQueue.push_function([=]() { vmaDestroyAllocator(m_allocator); });
 }
 
 void VulkanEngine::InitCommands()
@@ -549,15 +550,13 @@ void VulkanEngine::InitBackgroundPipelines()
 	ComputeEffect* sky = CreateComputeEffect("sky", skyShader, m_gradientPipelineLayout, computePipelineCreateInfo);
 	sky->data.data1    = glm::vec4(0.1, 0.2, 0.4, 0.97);
 
-	ComputeEffect* mandelbrot = CreateComputeEffect("mandelbrot", mandelbrotShader, m_gradientPipelineLayout, computePipelineCreateInfo);
-	ComputeEffect* water      = CreateComputeEffect("water", waterShader, m_gradientPipelineLayout, computePipelineCreateInfo);
-	ComputeEffect* raytracing = CreateComputeEffect("raytracing", raytracingShader, m_gradientPipelineLayout, computePipelineCreateInfo);
+	CreateComputeEffect("mandelbrot", mandelbrotShader, m_gradientPipelineLayout, computePipelineCreateInfo);
+	CreateComputeEffect("water", waterShader, m_gradientPipelineLayout, computePipelineCreateInfo);
+	CreateComputeEffect("raytracing", raytracingShader, m_gradientPipelineLayout, computePipelineCreateInfo);
 
 	m_mainDeletionQueue.push_function(
 	    [this]()
 	    {
-		    vkDestroyPipelineLayout(m_device, m_gradientPipelineLayout, nullptr);
-
 		    for (auto effect : backgroundEffects)
 		    {
 			    vkDestroyPipeline(m_device, effect->pipeline, nullptr);
@@ -602,7 +601,7 @@ void VulkanEngine::InitMeshPipeline()
 	pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
 	pipelineBuilder.SetMultisamplingNone();
 	pipelineBuilder.DisableBlending();
-	pipelineBuilder.EnableDepthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
+	pipelineBuilder.EnableDepthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
 
 	// render format
 	pipelineBuilder.SetColorAttachmentFormat(m_drawImage.imageFormat);
@@ -618,7 +617,7 @@ void VulkanEngine::InitMeshPipeline()
 	// create the transparent variant
 	pipelineBuilder.EnableBlendingAdditive();
 
-	pipelineBuilder.EnableDepthtest(false, VK_COMPARE_OP_GREATER_OR_EQUAL);
+	pipelineBuilder.EnableDepthtest(false, VK_COMPARE_OP_LESS_OR_EQUAL);
 
 	m_gltfDefaultTranslucent.pipeline = pipelineBuilder.BuildPipeline(m_device);
 	m_gltfDefaultTranslucent.passType = MaterialPass::Transparent;
@@ -783,10 +782,10 @@ GPUMeshBuffers VulkanEngine::UploadMesh(std::span<uint32_t> indices, std::span<V
 
 void VulkanEngine::InitDefaultData()
 {
-// 	std::string structurePath = ResourceManager::GetModelPath("structure", ".glb");
-// 	auto structureFile        = LoadGltf(structurePath);
-// 	assert(structureFile.has_value());
-// 	m_loadedScenes["structure"] = *structureFile;
+	std::string structurePath = ResourceManager::GetModelPath("structure", ".glb");
+	auto structureFile        = LoadGltf(structurePath);
+	assert(structureFile.has_value());
+	m_loadedScenes["structure"] = *structureFile;
 
 
 	std::string monkeyPath = ResourceManager::GetModelPath("monkey2", ".glb");
@@ -893,7 +892,7 @@ void VulkanEngine::Update()
 		glm::mat4 view = mainCamera.GetViewMatrix();
 
 		// camera projection
-		glm::mat4 projection = glm::perspective(glm::radians(70.f), 1700.f / 900.f, 0.1f, 1000000.0f);
+		glm::mat4 projection = mainCamera.CalculateProjectionMatrix(16.0f / 9.0f);
 
 		// invert the Y direction on projection matrix so that we are more similar
 		// to opengl and gltf axis
@@ -902,7 +901,11 @@ void VulkanEngine::Update()
 		m_sceneData.view     = view;
 		m_sceneData.proj     = projection;
 		m_sceneData.viewproj = projection * view;
+		m_sceneData.sunlightColor = glm::vec4(1.0f, 0.6f, 0.8f, 10.0f);
+		m_sceneData.ambientColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.1f);
+		m_sceneData.sunlightDirection = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
+		m_loadedScenes["structure"]->Draw(glm::mat4{ 1.f }, m_drawCommands);
 		m_loadedScenes["monkey"]->Draw(glm::mat4{ 1.f }, m_drawCommands);
 
 		if (!skipDrawing)
@@ -1022,15 +1025,16 @@ void VulkanEngine::DrawMain(VkCommandBuffer cmd)
 	// DRAW BACKGROUND
 	ComputeEffect* effect = backgroundEffects[currentBackgroundEffect];
 
-	// bind the background compute pipeline
+	// Bind the background compute pipeline
 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect->pipeline);
 
-	// bind the descriptor set containing the draw image for the compute pipeline
+	// Bind the descriptor set containing the draw image for the compute pipeline
 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_gradientPipelineLayout, 0, 1, &m_drawImageDescriptors, 0, nullptr);
 
 	vkCmdPushConstants(cmd, m_gradientPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &effect->data);
-	// execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
-	vkCmdDispatch(cmd, std::ceil(m_windowExtent.width / 16.0), std::ceil(m_windowExtent.height / 16.0), 1);
+
+	// Execute the compute pipeline dispatch. We are using a 16x16 workgroup size, so we need to divide by it
+	vkCmdDispatch(cmd, static_cast<uint32_t>(std::ceil(m_windowExtent.width / 16.0)), static_cast<uint32_t>(std::ceil(m_windowExtent.height / 16.0)), 1);
 
 	// DRAW GEOMETRY
 	VkRenderingAttachmentInfo colorAttachment = vkinit::AttachmentInfo(m_drawImage.imageView, nullptr, VK_IMAGE_LAYOUT_GENERAL);
@@ -1038,17 +1042,21 @@ void VulkanEngine::DrawMain(VkCommandBuffer cmd)
 
 	VkRenderingInfo renderInfo = vkinit::RenderingInfo(m_windowExtent, &colorAttachment, &depthAttachment);
 
+	// Begin the render pass for both depth pass and color pass
 	vkCmdBeginRendering(cmd, &renderInfo);
+
+	// Color pass (Geometry)
 	auto start = std::chrono::system_clock::now();
 	DrawGeometry(cmd);
-
 	auto end     = std::chrono::system_clock::now();
 	auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 	m_stats.meshDrawTime = elapsed.count() / 1000.f;
 
+	// End the render pass
 	vkCmdEndRendering(cmd);
 }
+
 
 void VulkanEngine::DrawImgui(VkCommandBuffer cmd, VkImageView targetImageView)
 {

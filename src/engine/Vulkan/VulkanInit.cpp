@@ -247,7 +247,7 @@ VkRenderingAttachmentInfo vkinit::DepthAttachmentInfo(VkImageView view, VkImageL
 	depthAttachment.imageLayout                   = layout;
 	depthAttachment.loadOp                        = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	depthAttachment.storeOp                       = VK_ATTACHMENT_STORE_OP_STORE;
-	depthAttachment.clearValue.depthStencil.depth = 0.f;
+	depthAttachment.clearValue.depthStencil.depth = 1.f;
 
 	return depthAttachment;
 }
