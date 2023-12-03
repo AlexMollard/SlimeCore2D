@@ -80,7 +80,8 @@ std::optional<AllocatedImage> LoadImage(VulkanEngine* engine, fastgltf::Asset& a
 				                                      imagesize.height = height;
 				                                      imagesize.depth  = 1;
 
-				                                      newImage = engine->CreateImage(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, image.name.c_str());
+				                                      newImage =
+				                                          engine->CreateImage(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, image.name.c_str());
 
 				                                      stbi_image_free(data);
 			                                      }
@@ -211,13 +212,13 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 	}
 
 	// create buffer to hold the material data
-	int data_index = 0;
+	int data_index                = 0;
 	GPUGLTFMaterial* materialData = nullptr;
-	
+
 	if (!asset->materials.empty())
 	{
-		file.materialDataBuffer       = engine->CreateBuffer(sizeof(GPUGLTFMaterial) * asset->materials.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-		materialData = (GPUGLTFMaterial*) file.materialDataBuffer.info.pMappedData;
+		file.materialDataBuffer = engine->CreateBuffer(sizeof(GPUGLTFMaterial) * asset->materials.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		materialData            = (GPUGLTFMaterial*)file.materialDataBuffer.info.pMappedData;
 	}
 
 	for (fastgltf::Material& mat : asset->materials)
@@ -272,7 +273,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 
 		data_index++;
 	}
-
 
 	if (materials.empty())
 	{
@@ -362,7 +362,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 			newmesh->surfaces.push_back(newSurface);
 		}
 
-		newmesh->meshBuffers = engine->UploadMesh(indices, vertices); //! This could be a trouble area
+		newmesh->meshBuffers = engine->UploadMesh(indices, vertices);
 	}
 
 	// load all nodes and their meshes
@@ -383,20 +383,33 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 		nodes.push_back(newNode);
 		file.nodes[node.name.c_str()];
 
-		std::visit(overloaded{ [&](fastgltf::Node::TransformMatrix matrix) { memcpy(&newNode->localTransform, matrix.data(), sizeof(matrix)); },
-		                       [&](fastgltf::Node::TRS transform)
-		                       {
-			                       glm::vec3 tl(transform.translation[0], transform.translation[1], transform.translation[2]);
-			                       glm::quat rot(transform.rotation[3], transform.rotation[0], transform.rotation[1], transform.rotation[2]);
-			                       glm::vec3 sc(transform.scale[0], transform.scale[1], transform.scale[2]);
+		auto& transform = node.transform;
 
-			                       glm::mat4 tm = glm::translate(glm::mat4(1.f), tl);
-			                       glm::mat4 rm = glm::toMat4(rot);
-			                       glm::mat4 sm = glm::scale(glm::mat4(1.f), sc);
+		if (auto matrixPtr = std::get_if<fastgltf::Node::TransformMatrix>(&transform))
+		{
+			// Handle TransformMatrix case
+			const fastgltf::Node::TransformMatrix& matrix = *matrixPtr;
+			memcpy(&newNode->localTransform, matrix.data(), sizeof(matrix));
+		}
+		else if (auto transformPtr = std::get_if<fastgltf::Node::TRS>(&transform))
+		{
+			// Handle TRS case
+			const fastgltf::Node::TRS& transform = *transformPtr;
 
-			                       newNode->localTransform = tm * rm * sm;
-		                       } },
-		           node.transform);
+			glm::vec3 tl(transform.translation[0], transform.translation[1], transform.translation[2]);
+			glm::quat rot(transform.rotation[3], transform.rotation[0], transform.rotation[1], transform.rotation[2]);
+			glm::vec3 sc(transform.scale[0], transform.scale[1], transform.scale[2]);
+
+			glm::mat4 tm = glm::translate(glm::mat4(1.f), tl);
+			glm::mat4 rm = glm::toMat4(rot);
+			glm::mat4 sm = glm::scale(glm::mat4(1.f), sc);
+
+			newNode->localTransform = tm * rm * sm;
+		}
+		else
+		{
+			SLIME_ERROR("Unknown node transform type");
+		}
 	}
 
 	// run loop again to setup transform hierarchy

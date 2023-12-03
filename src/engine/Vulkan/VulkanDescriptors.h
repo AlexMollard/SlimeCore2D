@@ -30,7 +30,6 @@ struct DescriptorWriter
 
 struct DescriptorAllocator
 {
-
 	struct PoolSizeRatio
 	{
 		VkDescriptorType type;

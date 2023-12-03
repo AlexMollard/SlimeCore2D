@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\DeletionQueue.h" />
     <ClInclude Include="engine\Vulkan\VulkanCamera.h" />
     <ClInclude Include="engine\Vulkan\VulkanDescriptors.h" />
     <ClInclude Include="engine\Vulkan\VulkanInit.h" />
@@ -126,7 +127,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>ClangCL</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>

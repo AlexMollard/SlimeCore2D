@@ -12,6 +12,7 @@
 #include <vulkan/vulkan.h>
 
 #include "engine/ConsoleLog.h"
+#include "engine/DeletionQueue.h"
 
 // we will add our main reusable types here
 struct AllocatedImage
@@ -75,10 +76,8 @@ struct Vertex
 	glm::vec4 color;
 };
 
-// holds the resources needed for a mesh
 struct GPUMeshBuffers
 {
-
 	AllocatedBuffer indexBuffer;
 	AllocatedBuffer vertexBuffer;
 	VkDeviceAddress vertexBufferAddress;
@@ -88,6 +87,42 @@ struct GPUDrawPushConstants
 {
 	glm::mat4 worldMatrix;
 	VkDeviceAddress vertexBuffer;
+};
+
+struct ComputePushConstants
+{
+	glm::vec4 data1;
+	glm::vec4 data2;
+	glm::vec4 data3;
+	glm::vec4 data4;
+};
+
+struct ComputeEffect
+{
+	const char* name;
+
+	VkPipeline pipeline;
+	VkPipelineLayout layout;
+
+	ComputePushConstants data;
+};
+
+struct RenderObject
+{
+	uint32_t indexCount;
+	uint32_t firstIndex;
+	VkBuffer indexBuffer;
+
+	MaterialData* material;
+
+	glm::mat4 transform;
+	VkDeviceAddress vertexBufferAddress;
+};
+
+struct DrawContext
+{
+	std::vector<RenderObject> OpaqueSurfaces;
+	std::vector<RenderObject> TransparentSurfaces;
 };
 
 struct DrawContext;

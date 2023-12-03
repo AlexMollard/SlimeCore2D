@@ -1,10 +1,11 @@
 #include "VulkanEngine.h"
 
 #define VMA_IMPLEMENTATION
-#define VMA_DEBUG_INITIALIZE_ALLOCATIONS 1
-#define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
-#define VMA_DEBUG_LOG(format, ...) printf(format, __VA_ARGS__); printf("\n")
-#include "vulkan/vk_mem_alloc.h"
+// #define VMA_DEBUG_INITIALIZE_ALLOCATIONS  1
+// #define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
+// #define VMA_DEBUG_LOG(format, ...)                                                                                                                                            \
+// 	printf(format, __VA_ARGS__);                                                                                                                                              \
+// 	printf("\n")
 
 #include "Pipeline.h"
 #include "VkBootstrap.h"
@@ -16,6 +17,7 @@
 #include "imgui/backends/imgui_impl_sdl3.h"
 #include "imgui/backends/imgui_impl_vulkan.h"
 #include "imgui/imgui.h"
+#include "vulkan/vk_mem_alloc.h"
 #include <SDL3/SDL_vulkan.h>
 
 #include "engine/ConsoleLog.h"
@@ -69,6 +71,15 @@ void VulkanEngine::Init()
 
 void VulkanEngine::InitSwapchain()
 {
+	// First we need to check if we have already created a swapchain before
+	// If we have, then we need to clean up existing swapchain before we continue
+	bool recreateSwapchain = m_swapchain != VK_NULL_HANDLE;
+	if (recreateSwapchain)
+	{
+		// we clean up the old swapchain using our custom cleanup function
+		CleanupSwapchain();
+	}
+
 	vkb::SwapchainBuilder swapchainBuilder{ m_chosenGPU, m_device, m_surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
@@ -132,6 +143,13 @@ void VulkanEngine::InitSwapchain()
 
 	VK_CHECK(vkCreateImageView(m_device, &dview_info, nullptr, &m_depthImage.imageView));
 
+	if (recreateSwapchain)
+	{
+		// Dont add the swapchain to the deletion queue, as we already did that earlier
+		// in this function
+		return;
+	}
+
 	// add to deletion queues
 	m_mainDeletionQueue.push_function(
 	    [=]()
@@ -142,6 +160,41 @@ void VulkanEngine::InitSwapchain()
 		    vkDestroyImageView(m_device, m_depthImage.imageView, nullptr);
 		    vmaDestroyImage(m_allocator, m_depthImage.image, m_depthImage.allocation);
 	    });
+}
+
+void VulkanEngine::CleanupSwapchain()
+{
+	// add a queue wait for the render fences, so we don't delete them while
+	// rendering
+	for (int i = 0; i < FRAME_OVERLAP; i++)
+	{
+		vkWaitForFences(m_device, 1, &m_frames[i].m_renderFence, true, 1000000000);
+	}
+
+	// clean up swapchain related resources
+	vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+
+	for (auto imageView : m_swapchainImageViews)
+	{
+		vkDestroyImageView(m_device, imageView, nullptr);
+	}
+
+	vkDestroyImageView(m_device, m_drawImage.imageView, nullptr);
+	vmaDestroyImage(m_allocator, m_drawImage.image, m_drawImage.allocation);
+
+	vkDestroyImageView(m_device, m_depthImage.imageView, nullptr);
+	vmaDestroyImage(m_allocator, m_depthImage.image, m_depthImage.allocation);
+
+	// clear the swapchain related members of the renderer
+	m_swapchain           = VK_NULL_HANDLE;
+	m_swapchainImages     = {};
+	m_swapchainImageViews = {};
+
+	m_drawImage  = {};
+	m_depthImage = {};
+
+	// Now we need to clean up all vulkan objects that were created using the
+	// swapchain images (Graphics pipelines, Descriptor sets)
 }
 
 void VulkanEngine::InitVulkan()
@@ -264,10 +317,8 @@ void VulkanEngine::InitCommands()
 		VkCommandBufferAllocateInfo cmdAllocInfo = vkinit::CommandBufferAllocateInfo(m_frames[i].m_commandPool, 1);
 
 		VK_CHECK(vkAllocateCommandBuffers(m_device, &cmdAllocInfo, &m_frames[i].m_mainCommandBuffer));
-		
-		m_mainDeletionQueue.push_function([=]() {
-			vkDestroyCommandPool(m_device, m_frames[i].m_commandPool, nullptr);
-		});
+
+		m_mainDeletionQueue.push_function([=]() { vkDestroyCommandPool(m_device, m_frames[i].m_commandPool, nullptr); });
 	}
 
 	VK_CHECK(vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_immCommandPool));
@@ -502,7 +553,7 @@ void VulkanEngine::DestroyImage(AllocatedImage image)
 	image.allocation = VK_NULL_HANDLE;
 }
 
-void VulkanEngine::AddToDeletionQueue(AllocatedImage image) 
+void VulkanEngine::AddToDeletionQueue(AllocatedImage image)
 {
 	m_mainDeletionQueue.push_function([=]() { DestroyImage(image); });
 }
@@ -512,12 +563,12 @@ void VulkanEngine::AddToDeletionQueue(VkImage image)
 	m_mainDeletionQueue.push_function([=]() { vkDestroyImage(m_device, image, nullptr); });
 }
 
-void VulkanEngine::AddToDeletionQueue(VkImageView imageView) 
+void VulkanEngine::AddToDeletionQueue(VkImageView imageView)
 {
 	m_mainDeletionQueue.push_function([=]() { vkDestroyImageView(m_device, imageView, nullptr); });
 }
 
-void VulkanEngine::AddToDeletionQueue(VkBuffer buffer) 
+void VulkanEngine::AddToDeletionQueue(VkBuffer buffer)
 {
 	m_mainDeletionQueue.push_function([=]() { vkDestroyBuffer(m_device, buffer, nullptr); });
 }
@@ -814,9 +865,8 @@ void VulkanEngine::InitDefaultData()
 	assert(structureFile.has_value());
 	m_loadedScenes["structure"] = *structureFile;
 
-
 	std::string monkeyPath = ResourceManager::GetModelPath("monkey2", ".glb");
-	auto monkeyFile     = LoadGltf(monkeyPath);
+	auto monkeyFile        = LoadGltf(monkeyPath);
 	assert(monkeyFile.has_value());
 	m_loadedScenes["monkey"] = *monkeyFile;
 }
@@ -824,118 +874,19 @@ void VulkanEngine::InitDefaultData()
 void VulkanEngine::Update()
 {
 	SDL_Event e;
-	bool running            = true;
-	static bool skipDrawing = false;
+	bool running = true;
 
 	// main loop
 	while (running)
 	{
 		auto start = std::chrono::system_clock::now();
-		// Handle events on queue
-		while (SDL_PollEvent(&e) != 0)
-		{
-			// close the window when user clicks the X button or alt-f4s
-			if (e.type == SDL_EVENT_QUIT)
-				running = false;
 
-			// If the user presses esc
-			if (e.type == SDL_EVENT_KEY_DOWN)
-			{
-				if (e.key.keysym.sym == SDLK_ESCAPE)
-				{
-					running = false;
-				}
-			}
-			if (e.type == SDL_EVENT_WINDOW_MINIMIZED)
-			{
-				skipDrawing = true;
-			}
-			if (e.type == SDL_EVENT_WINDOW_RESTORED)
-			{
-				skipDrawing = false;
-			}
-			if (e.type == SDL_EVENT_WINDOW_RESIZED)
-			{
-				InitSwapchain();
-			}
+		running = HandleSDLEvents(e);
 
-			mainCamera.ProcessSDLEvent(e);
+		UpdateImgui();
+		UpdateSceneData();
 
-			// send SDL event to imgui for handling
-			ImGui_ImplSDL3_ProcessEvent(&e);
-		}
-
-		// imgui new frame
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplSDL3_NewFrame();
-		ImGui::NewFrame();
-		if (ImGui::Begin("Stats", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
-		{
-			// Set the window to be at the top left of the screen
-			ImGui::SetWindowSize(ImVec2(200.0f, 100.0f));
-			ImVec2 windowPos = ImVec2(0.0f, 0.0f);
-			ImGui::SetWindowPos(windowPos);
-
-			ImGui::Text("frametime %f ms", m_stats.frameTime);
-			ImGui::Text("drawtime %f ms", m_stats.meshDrawTime);
-			ImGui::Text("triangles %i", m_stats.triangleCount);
-			ImGui::Text("draws %i", m_stats.drawcallCount);
-			ImGui::End();
-		}
-		if (ImGui::Begin("background", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
-		{
-			// Set the window position to the bottom right corner
-			ImGui::SetWindowSize(ImVec2(300.0f, 150.0f));
-			ImVec2 windowPos = ImVec2(ImGui::GetIO().DisplaySize.x - ImGui::GetWindowWidth(), ImGui::GetIO().DisplaySize.y - ImGui::GetWindowHeight());
-			ImGui::SetWindowPos(windowPos);
-
-			ComputeEffect* selected = backgroundEffects[currentBackgroundEffect];
-
-			ImGui::Text("Selected effect: ", selected->name);
-
-			ImGui::SliderInt("Effect Index", &currentBackgroundEffect, 0, backgroundEffects.size() - 1);
-
-			ImGui::SliderFloat4("data1", (float*)&selected->data.data1, 0.0f, 1.0f);
-			ImGui::SliderFloat4("data2", (float*)&selected->data.data2, 0.0f, 1.0f);
-			ImGui::SliderFloat4("data3", (float*)&selected->data.data3, 0.0f, 1.0f);
-			// ImGui::SliderFloat4("data4", (float*)&selected.data.data4, 0.0f, 1.0f); // This will be adjusted automatically in this update
-
-			// update data4
-			float time             = SDL_GetTicks() / 1000.0f;
-			selected->data.data4.x = time;
-
-			// Mouse pos is y and z
-			selected->data.data4.y = ImGui::GetIO().MousePos.x;
-			selected->data.data4.z = ImGui::GetIO().MousePos.y;
-
-			ImGui::End();
-		}
-
-		// make imgui calculate internal draw structures
-		ImGui::Render();
-
-		mainCamera.Update();
-
-		glm::mat4 view = mainCamera.GetViewMatrix();
-
-		// camera projection
-		glm::mat4 projection = mainCamera.CalculateProjectionMatrix(16.0f / 9.0f);
-
-		// invert the Y direction on projection matrix so that we are more similar
-		// to opengl and gltf axis
-		projection[1][1] *= -1;
-
-		m_sceneData.view     = view;
-		m_sceneData.proj     = projection;
-		m_sceneData.viewproj = projection * view;
-		m_sceneData.sunlightColor = glm::vec4(1.0f, 0.6f, 0.8f, 10.0f);
-		m_sceneData.ambientColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.1f);
-		m_sceneData.sunlightDirection = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
-
-		m_loadedScenes["structure"]->Draw(glm::mat4{ 1.f }, m_drawCommands);
-		m_loadedScenes["monkey"]->Draw(glm::mat4{ 1.f }, m_drawCommands);
-
-		if (!skipDrawing)
+		if (!m_skipDrawing)
 		{
 			Draw();
 		}
@@ -948,7 +899,151 @@ void VulkanEngine::Update()
 		auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 		m_stats.frameTime = elapsed.count() / 1000.f;
+
+		    // Add the current frame time to the deque
+		m_stats.frameTimes.push_back(m_stats.frameTime);
+
+		// Keep only the last N frame times (adjust N based on your needs)
+		const size_t maxFrameTimes = 100;
+		while (m_stats.frameTimes.size() > maxFrameTimes)
+		{
+			m_stats.frameTimes.pop_front();
+		}
+
+		// Calculate average FPS
+		if (!m_stats.frameTimes.empty())
+		{
+			float totalFrameTime = 0.0f;
+			for (const auto& time : m_stats.frameTimes)
+			{
+				totalFrameTime += time;
+			}
+
+			float averageFrameTime = totalFrameTime / static_cast<float>(m_stats.frameTimes.size());
+			m_stats.fps             = 1000.0f / averageFrameTime;
+		}
 	}
+}
+
+// Returns false if application is closing
+bool VulkanEngine::HandleSDLEvents(SDL_Event& e)
+{
+	while (SDL_PollEvent(&e) != 0)
+	{
+		// close the window when user clicks the X button or alt-f4s
+		if (e.type == SDL_EVENT_QUIT)
+			return false;
+
+		// If the user presses esc
+		if (e.type == SDL_EVENT_KEY_DOWN)
+		{
+			if (e.key.keysym.sym == SDLK_ESCAPE)
+			{
+				return false;
+			}
+		}
+		if (e.type == SDL_EVENT_WINDOW_MINIMIZED)
+		{
+			m_skipDrawing = true;
+		}
+		if (e.type == SDL_EVENT_WINDOW_RESTORED)
+		{
+			m_skipDrawing = false;
+		}
+		if (e.type == SDL_EVENT_WINDOW_RESIZED)
+		{
+			// InitSwapchain(); // BROKEN ATM
+		}
+
+		mainCamera.ProcessSDLEvent(e);
+
+		// send SDL event to imgui for handling
+		ImGui_ImplSDL3_ProcessEvent(&e);
+	}
+
+	// Not quiting
+	return true;
+}
+
+void VulkanEngine::UpdateImgui()
+{
+	// imgui new frame
+	ImGui_ImplVulkan_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+	ImGui::NewFrame();
+	if (ImGui::Begin("Stats", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+	{
+		// Set the window to be at the top left of the screen
+		ImGui::SetWindowSize(ImVec2(250.0f, 100.0f));
+		ImVec2 windowPos = ImVec2(0.0f, 0.0f);
+		ImGui::SetWindowPos(windowPos);
+
+		ImGui::Text("frametime %f ms (%.0f FPS)", m_stats.frameTime, m_stats.fps);
+		ImGui::Text("drawtime %f ms", m_stats.meshDrawTime);
+		ImGui::Text("triangles %i", m_stats.triangleCount);
+		ImGui::Text("draws %i", m_stats.drawcallCount);
+		ImGui::End();
+	}
+	if (ImGui::Begin("background", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+	{
+		// Set the window position to the bottom right corner
+		ImGui::SetWindowSize(ImVec2(300.0f, 150.0f));
+		ImVec2 windowPos = ImVec2(ImGui::GetIO().DisplaySize.x - ImGui::GetWindowWidth(), ImGui::GetIO().DisplaySize.y - ImGui::GetWindowHeight());
+		ImGui::SetWindowPos(windowPos);
+
+		ComputeEffect* selected = backgroundEffects[currentBackgroundEffect];
+
+		ImGui::Text("Selected effect: ", selected->name);
+
+		ImGui::SliderInt("Effect Index", &currentBackgroundEffect, 0, backgroundEffects.size() - 1);
+
+		ImGui::SliderFloat4("data1", (float*)&selected->data.data1, 0.0f, 1.0f);
+		ImGui::SliderFloat4("data2", (float*)&selected->data.data2, 0.0f, 1.0f);
+		ImGui::SliderFloat4("data3", (float*)&selected->data.data3, 0.0f, 1.0f);
+		// ImGui::SliderFloat4("data4", (float*)&selected.data.data4, 0.0f, 1.0f); // This will be adjusted automatically in this update
+
+		// update data4
+		float time             = SDL_GetTicks() / 1000.0f;
+		selected->data.data4.x = time;
+
+		// Mouse pos is y and z
+		selected->data.data4.y = ImGui::GetIO().MousePos.x;
+		selected->data.data4.z = ImGui::GetIO().MousePos.y;
+
+		ImGui::End();
+	}
+
+	// make imgui calculate internal draw structures
+	ImGui::Render();
+}
+
+void VulkanEngine::UpdateSceneData()
+{
+	mainCamera.Update();
+
+	glm::mat4 view = mainCamera.GetViewMatrix();
+
+	// camera projection
+	glm::mat4 projection = mainCamera.CalculateProjectionMatrix(16.0f / 9.0f);
+
+	// invert the Y direction on projection matrix so that we are more similar
+	// to opengl and gltf axis
+	projection[1][1] *= -1;
+
+	m_sceneData.view              = view;
+	m_sceneData.proj              = projection;
+	m_sceneData.viewproj          = projection * view;
+	m_sceneData.sunlightColor     = glm::vec4(1.0f, 0.6f, 0.8f, 10.0f);
+	m_sceneData.ambientColor      = glm::vec4(0.2f, 0.2f, 0.2f, 0.1f);
+	m_sceneData.sunlightDirection = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+
+	m_loadedScenes["structure"]->Draw(glm::mat4{ 1.f }, m_drawCommands);
+	m_loadedScenes["monkey"]->Draw(glm::mat4{ 1.f }, m_drawCommands);
+}
+
+FrameData& VulkanEngine::GetCurrentFrame()
+{
+	return m_frames[m_frameNumber % FRAME_OVERLAP];
 }
 
 void VulkanEngine::Draw()
@@ -1083,7 +1178,6 @@ void VulkanEngine::DrawMain(VkCommandBuffer cmd)
 	// End the render pass
 	vkCmdEndRendering(cmd);
 }
-
 
 void VulkanEngine::DrawImgui(VkCommandBuffer cmd, VkImageView targetImageView)
 {

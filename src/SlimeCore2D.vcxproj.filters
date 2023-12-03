@@ -186,6 +186,9 @@
     <ClInclude Include="engine\Vulkan\VulkanCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="engine\DeletionQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\BoundingBox.cpp">
