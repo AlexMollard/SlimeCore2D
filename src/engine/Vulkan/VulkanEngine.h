@@ -18,7 +18,7 @@ struct FrameData
 	VkSemaphore m_renderSemaphore;
 	VkFence m_renderFence;
 
-	DescriptorAllocator m_frameDescriptors;
+	vkutil::DescriptorAllocator m_frameDescriptors;
 	DeletionQueue m_deletionQueue;
 
 	VkCommandPool m_commandPool;
@@ -97,7 +97,7 @@ public:
 	VkSampler m_defaultSampler;
 
 	// Descriptor sets and layouts
-	DescriptorAllocator globalDescriptorAllocator;
+	vkutil::DescriptorAllocator globalDescriptorAllocator;
 	VkDescriptorSet m_mainDescriptorSet;
 	VkDescriptorSetLayout m_mainDescriptorLayout;
 
@@ -151,12 +151,19 @@ public:
 	AllocatedImage CreateImage(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, const char* name = nullptr);
 	void DestroyImage(AllocatedImage image);
 
+	// Background effects
+	std::vector<ComputeEffect*> backgroundEffects;
+	int currentBackgroundEffect = 0;
+
 	// Loaded scenes and deletion queue
 	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> m_loadedScenes;
 	void AddToDeletionQueue(AllocatedImage image);
 	void AddToDeletionQueue(VkImage image);
 	void AddToDeletionQueue(VkImageView imageView);
 	void AddToDeletionQueue(VkBuffer buffer);
+
+	// Lastly function pointer deletion queue
+	void AddToDeletionQueue(std::function<void()>&& function);
 
 private:
 	// Vulkan initialization and cleanup functions
@@ -168,10 +175,7 @@ private:
 	void InitSwapchain();
 	void InitCommands();
 	void InitSyncStructures();
-	void InitDescriptors();
 	void InitPipelines();
-	void InitBackgroundPipelines();
-	void InitMeshPipeline();
 	void InitImgui();
 
 	// Update functions
@@ -183,8 +187,4 @@ private:
 
 	// Deletion queue for cleanup
 	DeletionQueue m_mainDeletionQueue;
-
-	// Background effects
-	std::vector<ComputeEffect*> backgroundEffects;
-	int currentBackgroundEffect = 0;
 };

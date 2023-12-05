@@ -5,9 +5,10 @@
 #include <span>
 #include <vector>
 
+namespace vkutil
+{
 struct DescriptorLayoutBuilder
 {
-
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
 	void AddBinding(uint32_t binding, VkDescriptorType type);
@@ -44,3 +45,6 @@ struct DescriptorAllocator
 
 	VkDescriptorSet Allocate(VkDevice device, VkDescriptorSetLayout layout);
 };
+
+void InitDescriptors();
+} // namespace vkutil

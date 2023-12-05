@@ -1,9 +1,11 @@
 #include "Pipeline.h"
 
+#include "VulkanEngine.h"
+#include "VulkanInit.h"
 #include <engine/ConsoleLog.h>
+#include <engine/ResourceManager.h>
 #include <fstream>
 #include <vector>
-#include "VulkanInit.h"
 
 VkShaderModule vkutil::LoadShaderModule(const char* filePath, VkDevice device)
 {
@@ -59,6 +61,140 @@ VkShaderModule vkutil::LoadShaderModule(const char* filePath, VkDevice device)
 	}
 
 	return shaderModule;
+}
+
+void vkutil::InitBackgroundPipelines()
+{
+	VulkanEngine& engine = VulkanEngine::Get();
+
+	VkPipelineLayoutCreateInfo computeLayout{};
+	computeLayout.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	computeLayout.pNext          = nullptr;
+	computeLayout.pSetLayouts    = &engine.m_drawImageDescriptorLayout;
+	computeLayout.setLayoutCount = 1;
+
+	VkPushConstantRange pushConstant{};
+	pushConstant.offset     = 0;
+	pushConstant.size       = sizeof(ComputePushConstants);
+	pushConstant.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+
+	computeLayout.pPushConstantRanges    = &pushConstant;
+	computeLayout.pushConstantRangeCount = 1;
+
+	VK_CHECK(vkCreatePipelineLayout(engine.m_device, &computeLayout, nullptr, &engine.m_gradientPipelineLayout));
+
+	VkShaderModule gradientShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Basic", ShaderStage::Compute).c_str(), engine.m_device);
+	VkShaderModule skyShader        = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Sky", ShaderStage::Compute).c_str(), engine.m_device);
+	VkShaderModule mandelbrotShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mandelbrot", ShaderStage::Compute).c_str(), engine.m_device);
+	VkShaderModule waterShader      = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("water", ShaderStage::Compute).c_str(), engine.m_device);
+	VkShaderModule raytracingShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Raytracing", ShaderStage::Compute).c_str(), engine.m_device);
+
+	VkPipelineShaderStageCreateInfo stageinfo{};
+	stageinfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	stageinfo.pNext  = nullptr;
+	stageinfo.stage  = VK_SHADER_STAGE_COMPUTE_BIT;
+	stageinfo.module = gradientShader;
+	stageinfo.pName  = "main";
+
+	VkComputePipelineCreateInfo computePipelineCreateInfo{};
+	computePipelineCreateInfo.sType  = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+	computePipelineCreateInfo.pNext  = nullptr;
+	computePipelineCreateInfo.layout = engine.m_gradientPipelineLayout;
+	computePipelineCreateInfo.stage  = stageinfo;
+
+	ComputeEffect* gradient = engine.CreateComputeEffect("gradient", gradientShader, engine.m_gradientPipelineLayout, computePipelineCreateInfo);
+	gradient->data.data1    = glm::vec4(1, 0, 0, 1);
+	gradient->data.data2    = glm::vec4(0, 0, 1, 1);
+
+	ComputeEffect* sky = engine.CreateComputeEffect("sky", skyShader, engine.m_gradientPipelineLayout, computePipelineCreateInfo);
+	sky->data.data1    = glm::vec4(0.1, 0.2, 0.4, 0.97);
+
+	engine.CreateComputeEffect("mandelbrot", mandelbrotShader, engine.m_gradientPipelineLayout, computePipelineCreateInfo);
+	engine.CreateComputeEffect("water", waterShader, engine.m_gradientPipelineLayout, computePipelineCreateInfo);
+	engine.CreateComputeEffect("raytracing", raytracingShader, engine.m_gradientPipelineLayout, computePipelineCreateInfo);
+
+	engine.AddToDeletionQueue(
+	    [&]()
+	    {
+		    for (auto effect : engine.backgroundEffects)
+		    {
+			    vkDestroyPipeline(engine.m_device, effect->pipeline, nullptr);
+		    }
+	    });
+}
+
+void vkutil::InitMeshPipeline()
+{
+	VulkanEngine& engine = VulkanEngine::Get();
+
+	VkShaderModule meshVertexShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mesh", ShaderStage::Vertex).c_str(), engine.m_device);
+	VkShaderModule meshFragShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mesh", ShaderStage::Fragment).c_str(), engine.m_device);
+
+	// build the pipeline layout that controls the inputs/outputs of the shader
+	// we are not using descriptor sets or other systems yet, so no need to use
+	// anything other than empty default
+
+	VkPushConstantRange matrixRange{};
+	matrixRange.offset     = 0;
+	matrixRange.size       = sizeof(GPUDrawPushConstants);
+	matrixRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayout layouts[] = { engine.m_gpuSceneDataDescriptorLayout, engine.m_gltfMatDescriptorLayout };
+
+	VkPipelineLayoutCreateInfo mesh_layout_info = vkinit::PipelineLayoutCreateInfo();
+	mesh_layout_info.setLayoutCount             = 2;
+	mesh_layout_info.pSetLayouts                = layouts;
+	mesh_layout_info.pPushConstantRanges        = &matrixRange;
+	mesh_layout_info.pushConstantRangeCount     = 1;
+
+	VkPipelineLayout defaultLayout;
+	VK_CHECK(vkCreatePipelineLayout(engine.m_device, &mesh_layout_info, nullptr, &defaultLayout));
+
+	engine.m_gltfDefaultOpaque.layout      = defaultLayout;
+	engine.m_gltfDefaultTranslucent.layout = defaultLayout;
+
+	// build the stage-create-info for both vertex and fragment stages. This lets
+	// the pipeline know the shader modules per stage
+	vkutil::PipelineBuilder pipelineBuilder;
+	pipelineBuilder.SetShaders(meshVertexShader, meshFragShader);
+	pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+	pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
+	pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+	pipelineBuilder.SetMultisamplingNone();
+	pipelineBuilder.DisableBlending();
+	pipelineBuilder.EnableDepthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
+
+	// render format
+	pipelineBuilder.SetColorAttachmentFormat(engine.m_drawImage.imageFormat);
+	pipelineBuilder.SetDepthFormat(engine.m_depthImage.imageFormat);
+
+	// use the triangle layout we created
+	pipelineBuilder.m_pipelineLayout = engine.m_gltfDefaultOpaque.layout;
+
+	// finally build the pipeline
+	engine.m_gltfDefaultOpaque.pipeline = pipelineBuilder.BuildPipeline(engine.m_device);
+	engine.m_gltfDefaultOpaque.passType = MaterialPass::MainColor;
+
+	// create the transparent variant
+	pipelineBuilder.EnableBlendingAdditive();
+
+	pipelineBuilder.EnableDepthtest(false, VK_COMPARE_OP_LESS_OR_EQUAL);
+
+	engine.m_gltfDefaultTranslucent.pipeline = pipelineBuilder.BuildPipeline(engine.m_device);
+	engine.m_gltfDefaultTranslucent.passType = MaterialPass::Transparent;
+
+	vkDestroyShaderModule(engine.m_device, meshFragShader, nullptr);
+	vkDestroyShaderModule(engine.m_device, meshVertexShader, nullptr);
+
+	engine.AddToDeletionQueue(
+	    [&]()
+	    {
+		    vkDestroyPipelineLayout(engine.m_device, engine.m_gradientPipelineLayout, nullptr);
+		    vkDestroyPipelineLayout(engine.m_device, engine.m_gltfDefaultOpaque.layout, nullptr);
+
+		    vkDestroyPipeline(engine.m_device, engine.m_gltfDefaultTranslucent.pipeline, nullptr);
+		    vkDestroyPipeline(engine.m_device, engine.m_gltfDefaultOpaque.pipeline, nullptr);
+	    });
 }
 
 void vkutil::PipelineBuilder::Clear()
@@ -154,7 +290,7 @@ void vkutil::PipelineBuilder::SetShaders(VkShaderModule vertexShader, VkShaderMo
 
 void vkutil::PipelineBuilder::SetInputTopology(VkPrimitiveTopology topology)
 {
-	m_inputAssembly.topology = topology;
+	m_inputAssembly.topology               = topology;
 	m_inputAssembly.primitiveRestartEnable = VK_FALSE;
 }
 
@@ -216,7 +352,7 @@ void vkutil::PipelineBuilder::DisableDepthtest()
 	m_depthStencil.maxDepthBounds        = 1.f;
 }
 
-void vkutil::PipelineBuilder::EnableDepthtest(bool depthWriteEnable, VkCompareOp op) 
+void vkutil::PipelineBuilder::EnableDepthtest(bool depthWriteEnable, VkCompareOp op)
 {
 	m_depthStencil.depthTestEnable       = VK_TRUE;
 	m_depthStencil.depthWriteEnable      = depthWriteEnable;
@@ -229,10 +365,10 @@ void vkutil::PipelineBuilder::EnableDepthtest(bool depthWriteEnable, VkCompareOp
 	m_depthStencil.maxDepthBounds        = 1.f;
 }
 
-void vkutil::PipelineBuilder::EnableBlendingAdditive() 
+void vkutil::PipelineBuilder::EnableBlendingAdditive()
 {
-	m_colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	m_colorBlendAttachment.blendEnable    = VK_TRUE;
+	m_colorBlendAttachment.colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	m_colorBlendAttachment.blendEnable         = VK_TRUE;
 	m_colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
 	m_colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
 	m_colorBlendAttachment.colorBlendOp        = VK_BLEND_OP_ADD;

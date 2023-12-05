@@ -3,8 +3,11 @@
 #include "VulkanDescriptors.h"
 #include <unordered_map>
 #include "VulkanTypes.h"
+#include <cstddef>  // For std::size_t
 
 class VulkanEngine;
+namespace fastgltf { struct Image; }
+namespace fastgltf { class Asset; }
 
 struct GLTFMaterial
 {
@@ -41,7 +44,7 @@ struct LoadedGLTF : public IRenderable
 	// storage for all the data on a given gltf file
 	std::unordered_map<std::string, std::shared_ptr<MeshAsset>> meshes;
 	std::unordered_map<std::string, std::shared_ptr<Node>> nodes;
-	std::unordered_map<std::string, AllocatedImage> images;
+	std::unordered_map<std::string, AllocatedImage> images; 
 	std::unordered_map<std::string, std::shared_ptr<GLTFMaterial>> materials;
 
 	// nodes that dont have a parent, for iterating through the file in tree order
@@ -49,7 +52,7 @@ struct LoadedGLTF : public IRenderable
 
 	std::vector<VkSampler> samplers;
 
-	DescriptorAllocator descriptorPool;
+	vkutil::DescriptorAllocator descriptorPool;
 
 	AllocatedBuffer materialDataBuffer;
 

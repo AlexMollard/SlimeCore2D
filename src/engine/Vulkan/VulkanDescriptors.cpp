@@ -1,7 +1,9 @@
 #include "VulkanDescriptors.h"
 
+#include "VulkanEngine.h"
 #include "VulkanInit.h"
 
+using namespace vkutil;
 void DescriptorLayoutBuilder::AddBinding(uint32_t binding, VkDescriptorType type)
 {
 	VkDescriptorSetLayoutBinding newbind{};
@@ -110,4 +112,104 @@ void DescriptorWriter::Build(VkDevice device, VkDescriptorSet set)
 	}
 
 	vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
+}
+
+void vkutil::InitDescriptors()
+{
+	VulkanEngine& engine = VulkanEngine::Get();
+
+	// create a descriptor pool
+	std::vector<DescriptorAllocator::PoolSizeRatio> sizes = {
+		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 },
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 },
+	};
+
+	engine.globalDescriptorAllocator.InitPool(engine.m_device, 20, sizes);
+	engine.AddToDeletionQueue([&]() { vkDestroyDescriptorPool(engine.m_device, engine.globalDescriptorAllocator.pool, nullptr); });
+
+	{
+		DescriptorLayoutBuilder builder;
+		builder.AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+		engine.m_drawImageDescriptorLayout = builder.Build(engine.m_device, VK_SHADER_STAGE_COMPUTE_BIT);
+	}
+	{
+		DescriptorLayoutBuilder builder;
+		builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		builder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		engine.m_gpuSceneDataDescriptorLayout = builder.Build(engine.m_device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+	}
+	{
+		DescriptorLayoutBuilder builder;
+		builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		builder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		engine.m_gltfMatDescriptorLayout = builder.Build(engine.m_device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+	}
+
+	engine.AddToDeletionQueue(
+	    [&]()
+	    {
+		    vkDestroyDescriptorSetLayout(engine.m_device, engine.m_drawImageDescriptorLayout, nullptr);
+		    vkDestroyDescriptorSetLayout(engine.m_device, engine.m_gpuSceneDataDescriptorLayout, nullptr);
+		    vkDestroyDescriptorSetLayout(engine.m_device, engine.m_gltfMatDescriptorLayout, nullptr);
+	    });
+
+	engine.m_drawImageDescriptors = engine.globalDescriptorAllocator.Allocate(engine.m_device, engine.m_drawImageDescriptorLayout);
+	{
+		DescriptorWriter writer;
+		writer.WriteImage(0, engine.m_drawImage.imageView, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+		writer.Build(engine.m_device, engine.m_drawImageDescriptors);
+	}
+	{
+		// default white image descriptor
+		uint32_t whitepixel = 0xFFFFFFFF;
+		engine.m_whiteImage = engine.CreateImage((void*)&whitepixel, VkExtent3D{ 1, 1, 1 }, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, "White Image");
+
+		VkSamplerCreateInfo sampl = {};
+		sampl.pNext               = nullptr;
+		sampl.sType               = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+
+		vkCreateSampler(engine.m_device, &sampl, nullptr, &engine.m_defaultSampler);
+
+		engine.m_defaultGLTFdescriptor = engine.globalDescriptorAllocator.Allocate(engine.m_device, engine.m_gltfMatDescriptorLayout);
+
+		engine.m_gltfDefaultOpaque.materialSet = engine.m_defaultGLTFdescriptor;
+
+		// default material parameters
+		engine.m_defaultGLTFMaterialData =
+		    engine.CreateBuffer(sizeof(GPUGLTFMaterial), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, "m_defaultGLTFMaterialData");
+
+		DescriptorWriter writer;
+		writer.WriteBuffer(0, engine.m_defaultGLTFMaterialData.buffer, sizeof(GPUGLTFMaterial), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		writer.WriteImage(1, engine.m_whiteImage.imageView, engine.m_defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+		writer.Build(engine.m_device, engine.m_defaultGLTFdescriptor);
+
+		engine.AddToDeletionQueue(
+		    [&]()
+		    {
+			    vkDestroySampler(engine.m_device, engine.m_defaultSampler, nullptr);
+			    engine.DestroyBuffer(engine.m_defaultGLTFMaterialData);
+			    engine.DestroyImage(engine.m_whiteImage);
+		    });
+	}
+	for (int i = 0; i < FRAME_OVERLAP; i++)
+	{
+		// create a descriptor pool
+		std::vector<DescriptorAllocator::PoolSizeRatio> frame_sizes = { { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3 },
+			                                                            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 },
+			                                                            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 } };
+
+		engine.m_frames[i].m_frameDescriptors = DescriptorAllocator{};
+		engine.m_frames[i].m_frameDescriptors.InitPool(engine.m_device, 1000, frame_sizes);
+
+		engine.m_frames[i].cameraBuffer = engine.CreateBuffer(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+		engine.AddToDeletionQueue(
+		    [&, i]()
+		    {
+			    engine.DestroyBuffer(engine.m_frames[i].cameraBuffer);
+			    vkDestroyDescriptorPool(engine.m_device, engine.m_frames[i].m_frameDescriptors.pool, nullptr);
+		    });
+	}
 }

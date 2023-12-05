@@ -42,4 +42,6 @@ public:
 	void EnableBlendingAdditive();
 };
 
+void InitBackgroundPipelines();
+void InitMeshPipeline();
 } // namespace vkutil

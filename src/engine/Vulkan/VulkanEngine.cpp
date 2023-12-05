@@ -1,11 +1,11 @@
 #include "VulkanEngine.h"
 
 #define VMA_IMPLEMENTATION
-#define VMA_DEBUG_INITIALIZE_ALLOCATIONS  1
-#define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
-#define VMA_DEBUG_LOG(format, ...)                                                                                                                                            \
-	printf(format, __VA_ARGS__);                                                                                                                                              \
-	printf("\n")
+// #define VMA_DEBUG_INITIALIZE_ALLOCATIONS  1
+// #define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
+// #define VMA_DEBUG_LOG(format, ...)                                                                                                                                            \
+// 	printf(format, __VA_ARGS__);                                                                                                                                              \
+// 	printf("\n")
 
 #include "Pipeline.h"
 #include "VkBootstrap.h"
@@ -24,6 +24,7 @@
 #include "engine/MemoryDebugging.h"
 #include "engine/ResourceManager.h"
 #include <stdio.h>
+#include "VulkanDescriptors.h"
 
 constexpr uint64_t ONE_SECOND = 1000000000;
 
@@ -53,7 +54,7 @@ void VulkanEngine::Init()
 	InitSyncStructures();
 
 	// Initialize Descriptors
-	InitDescriptors();
+	vkutil::InitDescriptors();
 
 	// Initialize Pipelines
 	InitPipelines();
@@ -364,103 +365,6 @@ void VulkanEngine::InitSyncStructures()
 	}
 }
 
-void VulkanEngine::InitDescriptors()
-{
-	// create a descriptor pool
-	std::vector<DescriptorAllocator::PoolSizeRatio> sizes = {
-		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3 },
-		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 },
-		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 },
-	};
-
-	globalDescriptorAllocator.InitPool(m_device, 20, sizes);
-	m_mainDeletionQueue.push_function([&]() { vkDestroyDescriptorPool(m_device, globalDescriptorAllocator.pool, nullptr); });
-
-	{
-		DescriptorLayoutBuilder builder;
-		builder.AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-		m_drawImageDescriptorLayout = builder.Build(m_device, VK_SHADER_STAGE_COMPUTE_BIT);
-	}
-	{
-		DescriptorLayoutBuilder builder;
-		builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		builder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		m_gpuSceneDataDescriptorLayout = builder.Build(m_device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-	}
-	{
-		DescriptorLayoutBuilder builder;
-		builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		builder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		m_gltfMatDescriptorLayout = builder.Build(m_device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-	}
-
-	m_mainDeletionQueue.push_function(
-	    [&]()
-	    {
-		    vkDestroyDescriptorSetLayout(m_device, m_drawImageDescriptorLayout, nullptr);
-		    vkDestroyDescriptorSetLayout(m_device, m_gpuSceneDataDescriptorLayout, nullptr);
-		    vkDestroyDescriptorSetLayout(m_device, m_gltfMatDescriptorLayout, nullptr);
-	    });
-
-	m_drawImageDescriptors = globalDescriptorAllocator.Allocate(m_device, m_drawImageDescriptorLayout);
-	{
-		DescriptorWriter writer;
-		writer.WriteImage(0, m_drawImage.imageView, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-		writer.Build(m_device, m_drawImageDescriptors);
-	}
-	{
-		// default white image descriptor
-		uint32_t whitepixel = 0xFFFFFFFF;
-		m_whiteImage        = CreateImage((void*)&whitepixel, VkExtent3D{ 1, 1, 1 }, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, "White Image");
-
-		VkSamplerCreateInfo sampl = {};
-		sampl.pNext               = nullptr;
-		sampl.sType               = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-
-		vkCreateSampler(m_device, &sampl, nullptr, &m_defaultSampler);
-
-		m_defaultGLTFdescriptor = globalDescriptorAllocator.Allocate(m_device, m_gltfMatDescriptorLayout);
-
-		m_gltfDefaultOpaque.materialSet = m_defaultGLTFdescriptor;
-
-		// default material parameters
-		m_defaultGLTFMaterialData = CreateBuffer(sizeof(GPUGLTFMaterial), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, "m_defaultGLTFMaterialData");
-
-		DescriptorWriter writer;
-		writer.WriteBuffer(0, m_defaultGLTFMaterialData.buffer, sizeof(GPUGLTFMaterial), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		writer.WriteImage(1, m_whiteImage.imageView, m_defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-
-		writer.Build(m_device, m_defaultGLTFdescriptor);
-
-		m_mainDeletionQueue.push_function(
-		    [&]()
-		    {
-			    vkDestroySampler(m_device, m_defaultSampler, nullptr);
-			    DestroyBuffer(m_defaultGLTFMaterialData);
-			    DestroyImage(m_whiteImage);
-		    });
-	}
-	for (int i = 0; i < FRAME_OVERLAP; i++)
-	{
-		// create a descriptor pool
-		std::vector<DescriptorAllocator::PoolSizeRatio> frame_sizes = { { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3 },
-			                                                            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 },
-			                                                            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 } };
-
-		m_frames[i].m_frameDescriptors = DescriptorAllocator{};
-		m_frames[i].m_frameDescriptors.InitPool(m_device, 1000, frame_sizes);
-
-		m_frames[i].cameraBuffer = CreateBuffer(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-		m_mainDeletionQueue.push_function(
-		    [&, i]()
-		    {
-			    DestroyBuffer(m_frames[i].cameraBuffer);
-			    vkDestroyDescriptorPool(m_device, m_frames[i].m_frameDescriptors.pool, nullptr);
-		    });
-	}
-}
-
 ComputeEffect* VulkanEngine::CreateComputeEffect(const char* name, VkShaderModule shader, VkPipelineLayout layout, VkComputePipelineCreateInfo computePipelineCreateInfo)
 {
 	ComputeEffect* effect = new ComputeEffect();
@@ -512,7 +416,8 @@ AllocatedImage VulkanEngine::CreateImage(VkExtent3D size, VkFormat format, VkIma
 
 AllocatedImage VulkanEngine::CreateImage(void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, const char* name)
 {
-	size_t data_size             = size.depth * size.width * size.height * 4;
+	size_t data_size = size.width * size.height * size.depth * 4;
+
 	AllocatedBuffer uploadbuffer = CreateBuffer(data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, "name");
 
 	memcpy(uploadbuffer.info.pMappedData, data, data_size);
@@ -576,145 +481,33 @@ void VulkanEngine::AddToDeletionQueue(VkBuffer buffer)
 	m_mainDeletionQueue.push_function([=]() { vkDestroyBuffer(m_device, buffer, nullptr); });
 }
 
+void VulkanEngine::AddToDeletionQueue(std::function<void()>&& func) 
+{
+	m_mainDeletionQueue.push_function(std::move(func));
+}
+
 void VulkanEngine::InitPipelines()
 {
 	// Compute pipelines
-	InitBackgroundPipelines();
+	vkutil::InitBackgroundPipelines();
 
 	// Graphics pipelines
-	InitMeshPipeline();
+	vkutil::InitMeshPipeline();
 
 	InitDefaultData();
 }
 
-void VulkanEngine::InitBackgroundPipelines()
+void VulkanEngine::InitDefaultData()
 {
-	VkPipelineLayoutCreateInfo computeLayout{};
-	computeLayout.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	computeLayout.pNext          = nullptr;
-	computeLayout.pSetLayouts    = &m_drawImageDescriptorLayout;
-	computeLayout.setLayoutCount = 1;
+	// 	std::string structurePath = ResourceManager::GetModelPath("structure", ".glb");
+	// 	auto structureFile        = LoadGltf(structurePath);
+	// 	assert(structureFile.has_value());
+	// 	m_loadedScenes["structure"] = *structureFile;
 
-	VkPushConstantRange pushConstant{};
-	pushConstant.offset     = 0;
-	pushConstant.size       = sizeof(ComputePushConstants);
-	pushConstant.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-
-	computeLayout.pPushConstantRanges    = &pushConstant;
-	computeLayout.pushConstantRangeCount = 1;
-
-	VK_CHECK(vkCreatePipelineLayout(m_device, &computeLayout, nullptr, &m_gradientPipelineLayout));
-
-	VkShaderModule gradientShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Basic", ShaderStage::Compute).c_str(), m_device);
-	VkShaderModule skyShader        = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Sky", ShaderStage::Compute).c_str(), m_device);
-	VkShaderModule mandelbrotShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mandelbrot", ShaderStage::Compute).c_str(), m_device);
-	VkShaderModule waterShader      = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("water", ShaderStage::Compute).c_str(), m_device);
-	VkShaderModule raytracingShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Raytracing", ShaderStage::Compute).c_str(), m_device);
-
-	VkPipelineShaderStageCreateInfo stageinfo{};
-	stageinfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	stageinfo.pNext  = nullptr;
-	stageinfo.stage  = VK_SHADER_STAGE_COMPUTE_BIT;
-	stageinfo.module = gradientShader;
-	stageinfo.pName  = "main";
-
-	VkComputePipelineCreateInfo computePipelineCreateInfo{};
-	computePipelineCreateInfo.sType  = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-	computePipelineCreateInfo.pNext  = nullptr;
-	computePipelineCreateInfo.layout = m_gradientPipelineLayout;
-	computePipelineCreateInfo.stage  = stageinfo;
-
-	ComputeEffect* gradient = CreateComputeEffect("gradient", gradientShader, m_gradientPipelineLayout, computePipelineCreateInfo);
-	gradient->data.data1    = glm::vec4(1, 0, 0, 1);
-	gradient->data.data2    = glm::vec4(0, 0, 1, 1);
-
-	ComputeEffect* sky = CreateComputeEffect("sky", skyShader, m_gradientPipelineLayout, computePipelineCreateInfo);
-	sky->data.data1    = glm::vec4(0.1, 0.2, 0.4, 0.97);
-
-	CreateComputeEffect("mandelbrot", mandelbrotShader, m_gradientPipelineLayout, computePipelineCreateInfo);
-	CreateComputeEffect("water", waterShader, m_gradientPipelineLayout, computePipelineCreateInfo);
-	CreateComputeEffect("raytracing", raytracingShader, m_gradientPipelineLayout, computePipelineCreateInfo);
-
-	m_mainDeletionQueue.push_function(
-	    [this]()
-	    {
-		    for (auto effect : backgroundEffects)
-		    {
-			    vkDestroyPipeline(m_device, effect->pipeline, nullptr);
-		    }
-	    });
-}
-
-void VulkanEngine::InitMeshPipeline()
-{
-	VkShaderModule meshVertexShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mesh", ShaderStage::Vertex).c_str(), m_device);
-	VkShaderModule meshFragShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mesh", ShaderStage::Fragment).c_str(), m_device);
-
-	// build the pipeline layout that controls the inputs/outputs of the shader
-	// we are not using descriptor sets or other systems yet, so no need to use
-	// anything other than empty default
-
-	VkPushConstantRange matrixRange{};
-	matrixRange.offset     = 0;
-	matrixRange.size       = sizeof(GPUDrawPushConstants);
-	matrixRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-	VkDescriptorSetLayout layouts[] = { m_gpuSceneDataDescriptorLayout, m_gltfMatDescriptorLayout };
-
-	VkPipelineLayoutCreateInfo mesh_layout_info = vkinit::PipelineLayoutCreateInfo();
-	mesh_layout_info.setLayoutCount             = 2;
-	mesh_layout_info.pSetLayouts                = layouts;
-	mesh_layout_info.pPushConstantRanges        = &matrixRange;
-	mesh_layout_info.pushConstantRangeCount     = 1;
-
-	VkPipelineLayout defaultLayout;
-	VK_CHECK(vkCreatePipelineLayout(m_device, &mesh_layout_info, nullptr, &defaultLayout));
-
-	m_gltfDefaultOpaque.layout      = defaultLayout;
-	m_gltfDefaultTranslucent.layout = defaultLayout;
-
-	// build the stage-create-info for both vertex and fragment stages. This lets
-	// the pipeline know the shader modules per stage
-	vkutil::PipelineBuilder pipelineBuilder;
-	pipelineBuilder.SetShaders(meshVertexShader, meshFragShader);
-	pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-	pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
-	pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-	pipelineBuilder.SetMultisamplingNone();
-	pipelineBuilder.DisableBlending();
-	pipelineBuilder.EnableDepthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
-
-	// render format
-	pipelineBuilder.SetColorAttachmentFormat(m_drawImage.imageFormat);
-	pipelineBuilder.SetDepthFormat(m_depthImage.imageFormat);
-
-	// use the triangle layout we created
-	pipelineBuilder.m_pipelineLayout = m_gltfDefaultOpaque.layout;
-
-	// finally build the pipeline
-	m_gltfDefaultOpaque.pipeline = pipelineBuilder.BuildPipeline(m_device);
-	m_gltfDefaultOpaque.passType = MaterialPass::MainColor;
-
-	// create the transparent variant
-	pipelineBuilder.EnableBlendingAdditive();
-
-	pipelineBuilder.EnableDepthtest(false, VK_COMPARE_OP_LESS_OR_EQUAL);
-
-	m_gltfDefaultTranslucent.pipeline = pipelineBuilder.BuildPipeline(m_device);
-	m_gltfDefaultTranslucent.passType = MaterialPass::Transparent;
-
-	vkDestroyShaderModule(m_device, meshFragShader, nullptr);
-	vkDestroyShaderModule(m_device, meshVertexShader, nullptr);
-
-	m_mainDeletionQueue.push_function(
-	    [&]()
-	    {
-		    vkDestroyPipelineLayout(m_device, m_gradientPipelineLayout, nullptr);
-		    vkDestroyPipelineLayout(m_device, m_gltfDefaultOpaque.layout, nullptr);
-
-		    vkDestroyPipeline(m_device, m_gltfDefaultTranslucent.pipeline, nullptr);
-		    vkDestroyPipeline(m_device, m_gltfDefaultOpaque.pipeline, nullptr);
-	    });
+	std::string monkeyPath = ResourceManager::GetModelPath("book", ".glb");
+	auto monkeyFile        = LoadGltf(monkeyPath);
+	assert(monkeyFile.has_value());
+	m_loadedScenes["monkey"] = *monkeyFile;
 }
 
 void VulkanEngine::InitImgui()
@@ -862,19 +655,6 @@ GPUMeshBuffers VulkanEngine::UploadMesh(std::span<uint32_t> indices, std::span<V
 	DestroyBuffer(staging);
 
 	return newSurface;
-}
-
-void VulkanEngine::InitDefaultData()
-{
-// 	std::string structurePath = ResourceManager::GetModelPath("structure", ".glb");
-// 	auto structureFile        = LoadGltf(structurePath);
-// 	assert(structureFile.has_value());
-// 	m_loadedScenes["structure"] = *structureFile;
-
-	std::string monkeyPath = ResourceManager::GetModelPath("structure_mat", ".glb");
-	auto monkeyFile        = LoadGltf(monkeyPath);
-	assert(monkeyFile.has_value());
-	m_loadedScenes["monkey"] = *monkeyFile;
 }
 
 void VulkanEngine::Update()
@@ -1039,9 +819,14 @@ void VulkanEngine::UpdateSceneData()
 	m_sceneData.view              = view;
 	m_sceneData.proj              = projection;
 	m_sceneData.viewproj          = projection * view;
-	m_sceneData.sunlightColor     = glm::vec4(1.0f, 0.6f, 0.8f, 10.0f);
-	m_sceneData.ambientColor      = glm::vec4(0.2f, 0.2f, 0.2f, 0.1f);
-	m_sceneData.sunlightDirection = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+	m_sceneData.ambientColor      = glm::vec4(1.0f, 1.0f, 1.0f, 0.01f);
+	m_sceneData.sunlightColor     = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	float sunPitch = 3.14f / 2.0f;
+	float sunYaw   = 3.14f / 2.0f;
+
+	glm::vec3 sunDirection = glm::vec3(cos(sunYaw) * cos(sunPitch), sin(sunPitch), sin(sunYaw) * cos(sunPitch));
+	m_sceneData.sunlightDirection = glm::vec4(sunDirection, 0.0f);
 
 /*	m_loadedScenes["structure"]->Draw(glm::mat4{ 1.f }, m_drawCommands);*/
 	m_loadedScenes["monkey"]->Draw(glm::mat4{ 1.f }, m_drawCommands);
@@ -1218,7 +1003,7 @@ void VulkanEngine::DrawGeometry(VkCommandBuffer cmd)
 
 	VkDescriptorSet globalDescriptor = GetCurrentFrame().m_frameDescriptors.Allocate(m_device, m_gpuSceneDataDescriptorLayout);
 
-	DescriptorWriter writer;
+	vkutil::DescriptorWriter writer;
 	writer.WriteBuffer(0, GetCurrentFrame().cameraBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 	writer.WriteImage(1, m_depthImage.imageView, m_defaultSampler, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 	writer.Build(m_device, globalDescriptor);

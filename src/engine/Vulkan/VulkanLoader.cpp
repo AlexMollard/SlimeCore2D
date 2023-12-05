@@ -135,7 +135,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 		}
 		else
 		{
-			std::cerr << "Failed to load glTF: " << fastgltf::to_underlying(load.error()) << std::endl;
+			SLIME_ERROR("Failed to load glTF: %s", fastgltf::to_underlying(load.error()));
 			return {};
 		}
 	}
@@ -148,7 +148,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 		}
 		else
 		{
-			std::cerr << "Failed to load glTF: " << fastgltf::to_underlying(load.error()) << std::endl;
+			SLIME_ERROR("Failed to load glTF: %s", fastgltf::to_underlying(load.error()));
 			return {};
 		}
 	}
@@ -161,9 +161,9 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 	auto asset = &gltf;
 
 	// we can stimate the descriptors we will need accurately
-	std::vector<DescriptorAllocator::PoolSizeRatio> sizes = { { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 },
-		                                                      { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
-		                                                      { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1 } };
+	std::vector<vkutil::DescriptorAllocator::PoolSizeRatio> sizes = { { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 },
+		                                                              { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
+		                                                              { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1 } };
 
 	file.descriptorPool.InitPool(engine->m_device, gltf.meshes.size() + gltf.materials.size(), sizes);
 
@@ -199,8 +199,26 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 
 		if (img.has_value())
 		{
-			images.push_back(*img);
-			file.images[image.name.c_str()] = *img;
+			// Try to emplace the image into the file.images map
+			auto result = file.images.try_emplace(image.name.c_str(), *img);
+
+			if (!result.second)
+			{
+				// Duplicate image found
+
+				// Replace the value in the images vector with the one in the file.images map
+				images.push_back(result.first->second);
+
+				// Destroy the duplicate image
+				engine->DestroyImage(*img);
+
+				SLIME_WARN("Duplicate image found: %s", image.name.c_str());
+			}
+			else
+			{
+				// Image was successfully emplaced into the map
+				images.push_back(*img);
+			}
 		}
 		else
 		{
@@ -285,86 +303,104 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 	std::vector<uint32_t> indices;
 	std::vector<Vertex> vertices;
 
+	// Duplicate manager for meshes
+	std::unordered_map<std::string, std::shared_ptr<MeshAsset>> meshDuplicateManager;
+
 	for (fastgltf::Mesh& mesh : asset->meshes)
 	{
 		std::shared_ptr<MeshAsset> newmesh = std::make_shared<MeshAsset>();
 		meshes.push_back(newmesh);
-		file.meshes[mesh.name.c_str()] = newmesh;
-		newmesh->name                  = mesh.name;
 
-		// clear the mesh arrays each mesh, we dont want to merge them by error
-		indices.clear();
-		vertices.clear();
+		// Check for duplicates in the duplicate manager
+		auto duplicateMeshIter = meshDuplicateManager.find(mesh.name.c_str());
 
-		for (auto&& p : mesh.primitives)
+		if (duplicateMeshIter != meshDuplicateManager.end())
 		{
-			GeoSurface newSurface;
-			newSurface.startIndex   = (uint32_t)indices.size();
-			newSurface.vertexOffset = (uint32_t)vertices.size();
-			newSurface.count        = (uint32_t)asset->accessors[p.indicesAccessor.value()].count;
-
-			{
-				fastgltf::Accessor& indexaccessor = asset->accessors[p.indicesAccessor.value()];
-
-				fastgltf::iterateAccessor<std::uint32_t>(*asset, indexaccessor, [&](std::uint32_t idx) { indices.push_back(idx + newSurface.vertexOffset); });
-			}
-
-			fastgltf::Accessor& posAccessor = asset->accessors[p.findAttribute("POSITION")->second];
-
-			vertices.resize(newSurface.vertexOffset + posAccessor.count);
-
-			size_t vidx = newSurface.vertexOffset;
-			fastgltf::iterateAccessor<glm::vec3>(*asset, posAccessor, [&](glm::vec3 v) { vertices[vidx++].position = v; });
-
-			auto normals = p.findAttribute("NORMAL");
-			if (normals != p.attributes.end())
-			{
-				vidx = newSurface.vertexOffset;
-				fastgltf::iterateAccessor<glm::vec3>(*asset, asset->accessors[(*normals).second], [&](glm::vec3 v) { vertices[vidx++].normal = v; });
-			}
-
-			auto uv = p.findAttribute("TEXCOORD_0");
-			if (uv != p.attributes.end())
-			{
-				vidx = newSurface.vertexOffset;
-				fastgltf::iterateAccessor<glm::vec2>(*asset, asset->accessors[(*uv).second],
-				                                     [&](glm::vec2 v)
-				                                     {
-					                                     vertices[vidx].uv_x = v.x;
-					                                     vertices[vidx].uv_y = v.y;
-					                                     vidx++;
-				                                     });
-			}
-
-			auto colors = p.findAttribute("COLOR_0");
-			if (colors != p.attributes.end())
-			{
-				vidx = newSurface.vertexOffset;
-				fastgltf::iterateAccessor<glm::vec4>(*asset, asset->accessors[(*colors).second], [&](glm::vec4 v) { vertices[vidx++].color = v; });
-			}
-			else
-			{
-				for (auto& v : vertices)
-				{
-					v.color = glm::vec4(1.f);
-				}
-			}
-
-			if (p.materialIndex.has_value())
-			{
-				newSurface.material = materials[p.materialIndex.value()];
-			}
-			else
-			{
-				// if there are materials, but none specified, we use the first one
-				newSurface.material = materials[0];
-			}
-
-			newmesh->surfaces.push_back(newSurface);
+			// Duplicate mesh found, use the existing mesh
+			newmesh = duplicateMeshIter->second;
+			SLIME_WARN("Duplicate mesh found: %s", mesh.name.c_str());
 		}
+		else
+		{
+			meshDuplicateManager[mesh.name.c_str()] = newmesh;
 
-		const std::string meshName = std::string(mesh.name) + std::to_string(meshes.size());
-		newmesh->meshBuffers       = engine->UploadMesh(indices, vertices, meshName.c_str());
+			file.meshes[mesh.name.c_str()] = newmesh;
+			newmesh->name                  = mesh.name;
+
+			// clear the mesh arrays each mesh, we dont want to merge them by error
+			indices.clear();
+			vertices.clear();
+
+			for (auto&& p : mesh.primitives)
+			{
+				GeoSurface newSurface;
+				newSurface.startIndex   = (uint32_t)indices.size();
+				newSurface.vertexOffset = (uint32_t)vertices.size();
+				newSurface.count        = (uint32_t)asset->accessors[p.indicesAccessor.value()].count;
+
+				{
+					fastgltf::Accessor& indexaccessor = asset->accessors[p.indicesAccessor.value()];
+
+					fastgltf::iterateAccessor<std::uint32_t>(*asset, indexaccessor, [&](std::uint32_t idx) { indices.push_back(idx + newSurface.vertexOffset); });
+				}
+
+				fastgltf::Accessor& posAccessor = asset->accessors[p.findAttribute("POSITION")->second];
+
+				vertices.resize(newSurface.vertexOffset + posAccessor.count);
+
+				size_t vidx = newSurface.vertexOffset;
+				fastgltf::iterateAccessor<glm::vec3>(*asset, posAccessor, [&](glm::vec3 v) { vertices[vidx++].position = v; });
+
+				auto normals = p.findAttribute("NORMAL");
+				if (normals != p.attributes.end())
+				{
+					vidx = newSurface.vertexOffset;
+					fastgltf::iterateAccessor<glm::vec3>(*asset, asset->accessors[(*normals).second], [&](glm::vec3 v) { vertices[vidx++].normal = v; });
+				}
+
+				auto uv = p.findAttribute("TEXCOORD_0");
+				if (uv != p.attributes.end())
+				{
+					vidx = newSurface.vertexOffset;
+					fastgltf::iterateAccessor<glm::vec2>(*asset, asset->accessors[(*uv).second],
+					                                     [&](glm::vec2 v)
+					                                     {
+						                                     vertices[vidx].uv_x = v.x;
+						                                     vertices[vidx].uv_y = v.y;
+						                                     vidx++;
+					                                     });
+				}
+
+				auto colors = p.findAttribute("COLOR_0");
+				if (colors != p.attributes.end())
+				{
+					vidx = newSurface.vertexOffset;
+					fastgltf::iterateAccessor<glm::vec4>(*asset, asset->accessors[(*colors).second], [&](glm::vec4 v) { vertices[vidx++].color = v; });
+				}
+				else
+				{
+					for (auto& v : vertices)
+					{
+						v.color = glm::vec4(1.f);
+					}
+				}
+
+				if (p.materialIndex.has_value())
+				{
+					newSurface.material = materials[p.materialIndex.value()];
+				}
+				else
+				{
+					// if there are materials, but none specified, we use the first one
+					newSurface.material = materials[0];
+				}
+
+				newmesh->surfaces.push_back(newSurface);
+			}
+
+			const std::string meshName = std::string(mesh.name) + std::to_string(meshes.size());
+			newmesh->meshBuffers       = engine->UploadMesh(indices, vertices, meshName.c_str());
+		}
 	}
 
 	// load all nodes and their meshes
