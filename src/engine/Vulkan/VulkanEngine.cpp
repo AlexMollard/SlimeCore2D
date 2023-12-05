@@ -3,12 +3,13 @@
 #define VMA_IMPLEMENTATION
 // #define VMA_DEBUG_INITIALIZE_ALLOCATIONS  1
 // #define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
-// #define VMA_DEBUG_LOG(format, ...)                                                                                                                                            \
+// #define VMA_DEBUG_LOG(format, ...) \
 // 	printf(format, __VA_ARGS__);                                                                                                                                              \
 // 	printf("\n")
 
 #include "Pipeline.h"
 #include "VkBootstrap.h"
+#include "VulkanDescriptors.h"
 #include "VulkanImages.h"
 #include "VulkanInit.h"
 #include "VulkanLoader.h"
@@ -19,12 +20,11 @@
 #include "imgui/imgui.h"
 #include "vulkan/vk_mem_alloc.h"
 #include <SDL3/SDL_vulkan.h>
+#include <stdio.h>
 
 #include "engine/ConsoleLog.h"
 #include "engine/MemoryDebugging.h"
 #include "engine/ResourceManager.h"
-#include <stdio.h>
-#include "VulkanDescriptors.h"
 
 constexpr uint64_t ONE_SECOND = 1000000000;
 
@@ -238,7 +238,7 @@ void VulkanEngine::InitVulkan()
 		ConsoleLog::log(pCallbackData->pMessage, ConsoleColor::White);
 		std::cout << std::endl;
 
-		//if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+		// if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 		//	DebugBreak();
 
 		return VK_FALSE;
@@ -263,8 +263,15 @@ void VulkanEngine::InitVulkan()
 	// VkPhysicalDeviceVulkan11Features features11{};
 
 	VkPhysicalDeviceVulkan12Features features12{};
-	features12.bufferDeviceAddress = true;
-	features12.descriptorIndexing  = true;
+	features12.bufferDeviceAddress                           = true;
+	features12.descriptorIndexing                            = true;
+	features12.descriptorBindingUniformBufferUpdateAfterBind = true;
+	features12.descriptorBindingPartiallyBound               = true;
+	features12.shaderSampledImageArrayNonUniformIndexing     = true;
+	features12.descriptorBindingSampledImageUpdateAfterBind  = true;
+	features12.shaderUniformBufferArrayNonUniformIndexing    = true;
+	features12.shaderStorageBufferArrayNonUniformIndexing    = true;
+	features12.descriptorBindingStorageBufferUpdateAfterBind = true;
 
 	VkPhysicalDeviceVulkan13Features features13{};
 	features13.dynamicRendering = true;
@@ -481,7 +488,7 @@ void VulkanEngine::AddToDeletionQueue(VkBuffer buffer)
 	m_mainDeletionQueue.push_function([=]() { vkDestroyBuffer(m_device, buffer, nullptr); });
 }
 
-void VulkanEngine::AddToDeletionQueue(std::function<void()>&& func) 
+void VulkanEngine::AddToDeletionQueue(std::function<void()>&& func)
 {
 	m_mainDeletionQueue.push_function(std::move(func));
 }
@@ -611,8 +618,7 @@ GPUMeshBuffers VulkanEngine::UploadMesh(std::span<uint32_t> indices, std::span<V
 
 	const std::string vertexName = std::string(name) + " vertexBuffer";
 	// create vertex buffer
-	newSurface.vertexBuffer = CreateBuffer(vertexBufferSize,
-	                                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+	newSurface.vertexBuffer = CreateBuffer(vertexBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
 	                                       VMA_MEMORY_USAGE_GPU_ONLY, vertexName.c_str());
 
 	// find the adress of the vertex buffer
@@ -621,7 +627,7 @@ GPUMeshBuffers VulkanEngine::UploadMesh(std::span<uint32_t> indices, std::span<V
 
 	// create index buffer
 	const std::string indexName = std::string(name) + " indexBuffer";
-	newSurface.indexBuffer      = CreateBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, indexName.c_str());
+	newSurface.indexBuffer = CreateBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, indexName.c_str());
 
 	const std::string stagingName = std::string(name) + " stagingBuffer";
 	AllocatedBuffer staging       = CreateBuffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, stagingName.c_str());
@@ -686,7 +692,7 @@ void VulkanEngine::Update()
 
 		m_stats.frameTime = elapsed.count() / 1000.f;
 
-		    // Add the current frame time to the deque
+		// Add the current frame time to the deque
 		m_stats.frameTimes.push_back(m_stats.frameTime);
 
 		// Keep only the last N frame times (adjust N based on your needs)
@@ -706,7 +712,7 @@ void VulkanEngine::Update()
 			}
 
 			float averageFrameTime = totalFrameTime / static_cast<float>(m_stats.frameTimes.size());
-			m_stats.fps             = 1000.0f / averageFrameTime;
+			m_stats.fps            = 1000.0f / averageFrameTime;
 		}
 	}
 }
@@ -816,19 +822,19 @@ void VulkanEngine::UpdateSceneData()
 	// to opengl and gltf axis
 	projection[1][1] *= -1;
 
-	m_sceneData.view              = view;
-	m_sceneData.proj              = projection;
-	m_sceneData.viewproj          = projection * view;
-	m_sceneData.ambientColor      = glm::vec4(1.0f, 1.0f, 1.0f, 0.01f);
-	m_sceneData.sunlightColor     = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_sceneData.view          = view;
+	m_sceneData.proj          = projection;
+	m_sceneData.viewproj      = projection * view;
+	m_sceneData.ambientColor  = glm::vec4(1.0f, 1.0f, 1.0f, 0.01f);
+	m_sceneData.sunlightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	float sunPitch = 3.14f / 2.0f;
 	float sunYaw   = 3.14f / 2.0f;
 
-	glm::vec3 sunDirection = glm::vec3(cos(sunYaw) * cos(sunPitch), sin(sunPitch), sin(sunYaw) * cos(sunPitch));
+	glm::vec3 sunDirection        = glm::vec3(cos(sunYaw) * cos(sunPitch), sin(sunPitch), sin(sunYaw) * cos(sunPitch));
 	m_sceneData.sunlightDirection = glm::vec4(sunDirection, 0.0f);
 
-/*	m_loadedScenes["structure"]->Draw(glm::mat4{ 1.f }, m_drawCommands);*/
+	/*	m_loadedScenes["structure"]->Draw(glm::mat4{ 1.f }, m_drawCommands);*/
 	m_loadedScenes["monkey"]->Draw(glm::mat4{ 1.f }, m_drawCommands);
 }
 
@@ -1007,7 +1013,7 @@ void VulkanEngine::DrawGeometry(VkCommandBuffer cmd)
 	writer.WriteBuffer(0, GetCurrentFrame().cameraBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 	writer.WriteImage(1, m_depthImage.imageView, m_defaultSampler, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 	writer.Build(m_device, globalDescriptor);
-	
+
 	VkPipeline lastPipeline    = VK_NULL_HANDLE;
 	MaterialData* lastMaterial = nullptr;
 	VkBuffer lastIndexBuffer   = VK_NULL_HANDLE;

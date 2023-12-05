@@ -114,9 +114,8 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 
 	fastgltf::Parser parser{};
 
-	constexpr auto gltfOptions =
-	    fastgltf::Options::DontRequireValidAssetMember | fastgltf::Options::AllowDouble | fastgltf::Options::LoadGLBBuffers | fastgltf::Options::LoadExternalBuffers;
-	// fastgltf::Options::LoadExternalImages;
+	constexpr auto gltfOptions = fastgltf::Options::DontRequireValidAssetMember | fastgltf::Options::AllowDouble | fastgltf::Options::LoadGLBBuffers |
+	                             fastgltf::Options::LoadExternalBuffers | fastgltf::Options::LoadExternalImages;
 
 	fastgltf::GltfDataBuffer data;
 	data.loadFromFile(filePath);
@@ -310,97 +309,95 @@ std::optional<std::shared_ptr<LoadedGLTF>> LoadGltf(std::string_view filePath)
 	{
 		std::shared_ptr<MeshAsset> newmesh = std::make_shared<MeshAsset>();
 		meshes.push_back(newmesh);
+		const char* meshName = mesh.name.c_str();
 
 		// Check for duplicates in the duplicate manager
-		auto duplicateMeshIter = meshDuplicateManager.find(mesh.name.c_str());
+		auto duplicateMeshIter = meshDuplicateManager.find(meshName);
 
 		if (duplicateMeshIter != meshDuplicateManager.end())
 		{
-			// Duplicate mesh found, use the existing mesh
-			newmesh = duplicateMeshIter->second;
-			SLIME_WARN("Duplicate mesh found: %s", mesh.name.c_str());
+			// Give it a unique name
+			std::ostringstream uniqueNameStream;
+			uniqueNameStream << mesh.name << meshes.size();
+			meshName = uniqueNameStream.str().c_str();
 		}
-		else
+
+		meshDuplicateManager[meshName] = newmesh;
+		file.meshes[meshName]          = newmesh;
+		newmesh->name                  = mesh.name;
+
+		// clear the mesh arrays each mesh, we dont want to merge them by error
+		indices.clear();
+		vertices.clear();
+
+		for (auto&& p : mesh.primitives)
 		{
-			meshDuplicateManager[mesh.name.c_str()] = newmesh;
+			GeoSurface newSurface;
+			newSurface.startIndex   = (uint32_t)indices.size();
+			newSurface.vertexOffset = (uint32_t)vertices.size();
+			newSurface.count        = (uint32_t)asset->accessors[p.indicesAccessor.value()].count;
 
-			file.meshes[mesh.name.c_str()] = newmesh;
-			newmesh->name                  = mesh.name;
-
-			// clear the mesh arrays each mesh, we dont want to merge them by error
-			indices.clear();
-			vertices.clear();
-
-			for (auto&& p : mesh.primitives)
 			{
-				GeoSurface newSurface;
-				newSurface.startIndex   = (uint32_t)indices.size();
-				newSurface.vertexOffset = (uint32_t)vertices.size();
-				newSurface.count        = (uint32_t)asset->accessors[p.indicesAccessor.value()].count;
+				fastgltf::Accessor& indexaccessor = asset->accessors[p.indicesAccessor.value()];
 
-				{
-					fastgltf::Accessor& indexaccessor = asset->accessors[p.indicesAccessor.value()];
-
-					fastgltf::iterateAccessor<std::uint32_t>(*asset, indexaccessor, [&](std::uint32_t idx) { indices.push_back(idx + newSurface.vertexOffset); });
-				}
-
-				fastgltf::Accessor& posAccessor = asset->accessors[p.findAttribute("POSITION")->second];
-
-				vertices.resize(newSurface.vertexOffset + posAccessor.count);
-
-				size_t vidx = newSurface.vertexOffset;
-				fastgltf::iterateAccessor<glm::vec3>(*asset, posAccessor, [&](glm::vec3 v) { vertices[vidx++].position = v; });
-
-				auto normals = p.findAttribute("NORMAL");
-				if (normals != p.attributes.end())
-				{
-					vidx = newSurface.vertexOffset;
-					fastgltf::iterateAccessor<glm::vec3>(*asset, asset->accessors[(*normals).second], [&](glm::vec3 v) { vertices[vidx++].normal = v; });
-				}
-
-				auto uv = p.findAttribute("TEXCOORD_0");
-				if (uv != p.attributes.end())
-				{
-					vidx = newSurface.vertexOffset;
-					fastgltf::iterateAccessor<glm::vec2>(*asset, asset->accessors[(*uv).second],
-					                                     [&](glm::vec2 v)
-					                                     {
-						                                     vertices[vidx].uv_x = v.x;
-						                                     vertices[vidx].uv_y = v.y;
-						                                     vidx++;
-					                                     });
-				}
-
-				auto colors = p.findAttribute("COLOR_0");
-				if (colors != p.attributes.end())
-				{
-					vidx = newSurface.vertexOffset;
-					fastgltf::iterateAccessor<glm::vec4>(*asset, asset->accessors[(*colors).second], [&](glm::vec4 v) { vertices[vidx++].color = v; });
-				}
-				else
-				{
-					for (auto& v : vertices)
-					{
-						v.color = glm::vec4(1.f);
-					}
-				}
-
-				if (p.materialIndex.has_value())
-				{
-					newSurface.material = materials[p.materialIndex.value()];
-				}
-				else
-				{
-					// if there are materials, but none specified, we use the first one
-					newSurface.material = materials[0];
-				}
-
-				newmesh->surfaces.push_back(newSurface);
+				fastgltf::iterateAccessor<std::uint32_t>(*asset, indexaccessor, [&](std::uint32_t idx) { indices.push_back(idx + newSurface.vertexOffset); });
 			}
 
-			const std::string meshName = std::string(mesh.name) + std::to_string(meshes.size());
-			newmesh->meshBuffers       = engine->UploadMesh(indices, vertices, meshName.c_str());
+			fastgltf::Accessor& posAccessor = asset->accessors[p.findAttribute("POSITION")->second];
+
+			vertices.resize(newSurface.vertexOffset + posAccessor.count);
+
+			size_t vidx = newSurface.vertexOffset;
+			fastgltf::iterateAccessor<glm::vec3>(*asset, posAccessor, [&](glm::vec3 v) { vertices[vidx++].position = v; });
+
+			auto normals = p.findAttribute("NORMAL");
+			if (normals != p.attributes.end())
+			{
+				vidx = newSurface.vertexOffset;
+				fastgltf::iterateAccessor<glm::vec3>(*asset, asset->accessors[(*normals).second], [&](glm::vec3 v) { vertices[vidx++].normal = v; });
+			}
+
+			auto uv = p.findAttribute("TEXCOORD_0");
+			if (uv != p.attributes.end())
+			{
+				vidx = newSurface.vertexOffset;
+				fastgltf::iterateAccessor<glm::vec2>(*asset, asset->accessors[(*uv).second],
+				                                     [&](glm::vec2 v)
+				                                     {
+					                                     vertices[vidx].uv_x = v.x;
+					                                     vertices[vidx].uv_y = v.y;
+					                                     vidx++;
+				                                     });
+			}
+
+			auto colors = p.findAttribute("COLOR_0");
+			if (colors != p.attributes.end())
+			{
+				vidx = newSurface.vertexOffset;
+				fastgltf::iterateAccessor<glm::vec4>(*asset, asset->accessors[(*colors).second], [&](glm::vec4 v) { vertices[vidx++].color = v; });
+			}
+			else
+			{
+				for (auto& v : vertices)
+				{
+					v.color = glm::vec4(1.f);
+				}
+			}
+
+			if (p.materialIndex.has_value())
+			{
+				newSurface.material = materials[p.materialIndex.value()];
+			}
+			else
+			{
+				// if there are materials, but none specified, we use the first one
+				newSurface.material = materials[0];
+			}
+
+			newmesh->surfaces.push_back(newSurface);
 		}
+
+		newmesh->meshBuffers = engine->UploadMesh(indices, vertices, meshName);
 	}
 
 	// load all nodes and their meshes
