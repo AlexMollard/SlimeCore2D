@@ -1,4 +1,7 @@
 #pragma once
+
+#include "volk.h"
+
 #include "VulkanCamera.h"
 #include "VulkanDescriptors.h"
 #include "VulkanInit.h"
@@ -63,18 +66,18 @@ public:
 	void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 
 	// Vulkan-related member variables
-	VkInstance m_instance;
-	VkDebugUtilsMessengerEXT m_debug_messenger;
-	VkPhysicalDevice m_chosenGPU;
-	VkDevice m_device;
-	VkSurfaceKHR m_surface;
+	VkInstance m_instance{};
+	VkDebugUtilsMessengerEXT m_debug_messenger{};
+	VkPhysicalDevice m_chosenGPU{};
+	VkDevice m_device{};
+	VkSurfaceKHR m_surface{};
 
 	// Window-related member variables
 	VkExtent2D m_windowExtent{ 1700, 900 };
 	struct SDL_Window* m_window = nullptr;
 
 	// Swapchain
-	VkSwapchainKHR m_swapchain;
+	VkSwapchainKHR m_swapchain{};
 	VkFormat m_swapchainImageFormat;
 	std::vector<VkImage> m_swapchainImages;
 	std::vector<VkImageView> m_swapchainImageViews;
@@ -85,56 +88,56 @@ public:
 	FrameData& GetCurrentFrame();
 
 	// Queues and allocator
-	VkQueue m_graphicsQueue;
-	uint32_t m_graphicsQueueFamily;
-	VmaAllocator m_allocator;
+	VkQueue m_graphicsQueue{};
+	uint32_t m_graphicsQueueFamily{};
+	VmaAllocator m_allocator{};
 
 	// Image and buffer resources
 	VkFormat m_drawFormat;
-	AllocatedImage m_drawImage;
-	AllocatedImage m_depthImage;
-	AllocatedImage m_whiteImage;
-	VkSampler m_defaultSampler;
+	AllocatedImage m_drawImage{};
+	AllocatedImage m_depthImage{};
+	AllocatedImage m_whiteImage{};
+	VkSampler m_defaultSampler{};
 
 	// Descriptor sets and layouts
-	vkutil::DescriptorAllocator globalDescriptorAllocator;
-	VkDescriptorSet m_mainDescriptorSet;
-	VkDescriptorSetLayout m_mainDescriptorLayout;
+	vkutil::DescriptorAllocator globalDescriptorAllocator{};
+	VkDescriptorSet m_mainDescriptorSet{};
+	VkDescriptorSetLayout m_mainDescriptorLayout{};
 	// Bindless descriptors
 	vkutil::BindlessDescriptorWriter m_bindlessWriter;
 
 
 	// Pipelines and pipeline layouts
-	VkPipelineLayout m_gradientPipelineLayout;
-	VkPipelineLayout m_meshPipelineLayout;
-	VkPipelineLayout m_bindlessPipelineLayout;
-	VkPipeline m_meshPipeline;
-	VkPipeline m_bindlessPipeline;
+	VkPipelineLayout m_gradientPipelineLayout{};
+	VkPipelineLayout m_meshPipelineLayout{};
+	VkPipelineLayout m_bindlessPipelineLayout{};
+	VkPipeline m_meshPipeline{};
+	VkPipeline m_bindlessPipeline{};
 
 	// Default GLTF descriptor
-	VkDescriptorSet m_defaultGLTFdescriptor;
+	VkDescriptorSet m_defaultGLTFdescriptor{};
 
 	// Draw image descriptors and layout
-	VkDescriptorSet m_drawImageDescriptors;
-	VkDescriptorSetLayout m_drawImageDescriptorLayout;
+	VkDescriptorSet m_drawImageDescriptors{};
+	VkDescriptorSetLayout m_drawImageDescriptorLayout{};
 
 	// Other descriptor layouts
-	VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout;
-	VkDescriptorSetLayout m_gltfMatDescriptorLayout;
+	VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout{};
+	VkDescriptorSetLayout m_gltfMatDescriptorLayout{};
 
 	// Default GLTF materials
-	MaterialData m_gltfDefaultOpaque;
-	MaterialData m_gltfDefaultTranslucent;
-	AllocatedBuffer m_defaultGLTFMaterialData;
+	MaterialData m_gltfDefaultOpaque{};
+	MaterialData m_gltfDefaultTranslucent{};
+	AllocatedBuffer m_defaultGLTFMaterialData{};
 
 	// Immediate submit structures
-	VkFence m_immFence;
-	VkCommandBuffer m_immCommandBuffer;
-	VkCommandPool m_immCommandPool;
+	VkFence m_immFence{};
+	VkCommandBuffer m_immCommandBuffer{};
+	VkCommandPool m_immCommandPool{};
 	DrawContext m_drawCommands;
 
 	// Scene data, camera, and stats
-	GPUSceneData m_sceneData;
+	GPUSceneData m_sceneData{};
 	vkutil::Camera mainCamera;
 	EngineStats m_stats;
 

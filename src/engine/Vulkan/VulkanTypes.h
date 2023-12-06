@@ -1,5 +1,6 @@
 #pragma once
 
+#include "engine/Vulkan/volk.h"
 #include <mat4x4.hpp>
 #include <memory>
 #include <optional>
@@ -9,7 +10,6 @@
 #include <vector>
 #include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vk_mem_alloc.h>
-#include <vulkan/vulkan.h>
 
 #include "engine/ConsoleLog.h"
 #include "engine/DeletionQueue.h"

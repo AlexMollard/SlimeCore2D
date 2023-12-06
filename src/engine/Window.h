@@ -1,5 +1,5 @@
 #include <SDL.h>
-#include <vulkan/vulkan.hpp>
+#include "vulkan/volk.h"
 
 class VulkanInstance;
 class VulkanDevice;
@@ -41,7 +41,7 @@ protected:
 	VulkanDevice* m_device = nullptr;
 	VulkanSwapchain* m_swapchain = nullptr;
 	VulkanPipeline* m_graphicsPipeline = nullptr;
-	vk::SurfaceKHR m_surface;
+	VkSurfaceKHR m_surface;
 	VkPhysicalDevice m_physicalDevice;
 	VkQueue m_graphicsQueue;
 

@@ -1,11 +1,16 @@
 #include "VulkanEngine.h"
 
 #define VMA_IMPLEMENTATION
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
+#define VMA_STATIC_VULKAN_FUNCTIONS  0
+
 #define VMA_DEBUG_INITIALIZE_ALLOCATIONS  1
 #define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
-#define VMA_DEBUG_LOG(format, ...) \
+#define VMA_DEBUG_LOG(format, ...)                                                                                                                                            \
 	printf(format, __VA_ARGS__);                                                                                                                                              \
 	printf("\n")
+
+#define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
 
 #include "Pipeline.h"
 #include "VkBootstrap.h"
@@ -27,6 +32,44 @@
 #include "engine/ResourceManager.h"
 
 constexpr uint64_t ONE_SECOND = 1000000000;
+
+// If we are in debug enable validation layers
+#ifdef _DEBUG
+constexpr bool useValidationLayers = true;
+#else
+constexpr bool useValidationLayers = false;
+#endif // DEBUG
+
+VkBool32 callBackFunc(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+                      const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+{
+	auto severity = vkb::to_string_message_severity(messageSeverity);
+	auto type     = vkb::to_string_message_type(messageType);
+
+	ConsoleColor color = ConsoleColor::White;
+
+	// Set the color depending on the warning
+	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+		color = ConsoleColor::White;
+	else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+		color = ConsoleColor::Blue;
+	else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+		color = ConsoleColor::Yellow;
+	else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+		color = ConsoleColor::Red;
+
+	std::stringstream ss;
+	ss << "[" << severity << ": " << type << "]";
+
+	ConsoleLog::log(ss.str(), color);
+	ConsoleLog::log(pCallbackData->pMessage, ConsoleColor::White);
+	std::cout << std::endl;
+
+	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+		DebugBreak();
+
+	return VK_FALSE;
+};
 
 void VulkanEngine::Init()
 {
@@ -202,53 +245,24 @@ void VulkanEngine::CleanupSwapchain()
 
 void VulkanEngine::InitVulkan()
 {
-	vkb::InstanceBuilder builder;
+	VkResult volkRes = volkInitialize();
 
-	// If we are in debug enable validation layers
-#ifdef _DEBUG
-	bool useValidationLayers = true;
-#else
-	bool useValidationLayers = false;
-#endif // DEBUG
-
-	auto debugCallBackOutPut = [](VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-	                              VkDebugUtilsMessageTypeFlagsEXT messageType,
-	                              const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-	                              void* pUserData) -> VkBool32
+	if (volkRes == VK_SUCCESS)
 	{
-		auto severity = vkb::to_string_message_severity(messageSeverity);
-		auto type     = vkb::to_string_message_type(messageType);
+		SLIME_INFO("Volk initialized successfully");
+	}
+	else
+	{
+		SLIME_ERROR("Volk failed to initialize");
+	}
 
-		ConsoleColor color = ConsoleColor::White;
-
-		// Set the color depending on the warning
-		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
-			color = ConsoleColor::White;
-		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-			color = ConsoleColor::Blue;
-		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-			color = ConsoleColor::Yellow;
-		else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-			color = ConsoleColor::Red;
-
-		std::stringstream ss;
-		ss << "[" << severity << ": " << type << "]";
-
-		ConsoleLog::log(ss.str(), color);
-		ConsoleLog::log(pCallbackData->pMessage, ConsoleColor::White);
-		std::cout << std::endl;
-
-		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-			DebugBreak();
-
-		return VK_FALSE;
-	};
+	vkb::InstanceBuilder builder;
 
 	// make the vulkan instance, with basic debug features
 	auto instRet = builder
 	                   .set_app_name("Example Vulkan Application")     // name of the application
 	                   .request_validation_layers(useValidationLayers) // enable validation layers
-	                   .set_debug_callback(debugCallBackOutPut)        // enable default debug messenger
+	                   .set_debug_callback(callBackFunc)               // enable default debug messenger
 	                   .require_api_version(1, 3, 0)                   // require Vulkan 1.3.0 or higher
 	                   .build();                                       // build the instance
 
@@ -258,6 +272,7 @@ void VulkanEngine::InitVulkan()
 	m_instance        = vkbInst.instance;
 	m_debug_messenger = vkbInst.debug_messenger;
 
+	volkLoadInstance(m_instance);
 	SDL_Vulkan_CreateSurface(m_window, m_instance, nullptr, &m_surface);
 
 	// VkPhysicalDeviceVulkan11Features features11{};
@@ -301,15 +316,35 @@ void VulkanEngine::InitVulkan()
 	m_graphicsQueue       = vkbDevice.get_queue(vkb::QueueType::graphics).value();
 	m_graphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
 
+	VmaVulkanFunctions vulkanFunctions                  = {};
+	vulkanFunctions.vkGetInstanceProcAddr               = vkGetInstanceProcAddr;
+	vulkanFunctions.vkGetDeviceProcAddr                 = vkGetDeviceProcAddr;
+	vulkanFunctions.vkCreateImage                       = vkCreateImage;
+	vulkanFunctions.vkDestroyImage                      = vkDestroyImage;
+	vulkanFunctions.vkCreateBuffer                      = vkCreateBuffer;
+	vulkanFunctions.vkDestroyBuffer                     = vkDestroyBuffer;
+	vulkanFunctions.vkAllocateMemory                    = vkAllocateMemory;
+	vulkanFunctions.vkFreeMemory                        = vkFreeMemory;
+	vulkanFunctions.vkMapMemory                         = vkMapMemory;
+	vulkanFunctions.vkUnmapMemory                       = vkUnmapMemory;
+	vulkanFunctions.vkFlushMappedMemoryRanges           = vkFlushMappedMemoryRanges;
+	vulkanFunctions.vkInvalidateMappedMemoryRanges      = vkInvalidateMappedMemoryRanges;
+	vulkanFunctions.vkBindBufferMemory                  = vkBindBufferMemory;
+	vulkanFunctions.vkBindImageMemory                   = vkBindImageMemory;
+	vulkanFunctions.vkGetBufferMemoryRequirements       = vkGetBufferMemoryRequirements;
+	vulkanFunctions.vkGetImageMemoryRequirements        = vkGetImageMemoryRequirements;
+	vulkanFunctions.vkGetPhysicalDeviceProperties       = vkGetPhysicalDeviceProperties;
+	vulkanFunctions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+	vulkanFunctions.vkCmdCopyBuffer                     = vkCmdCopyBuffer;
+
 	// initialize the memory allocator
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice         = m_chosenGPU;
 	allocatorInfo.device                 = m_device;
 	allocatorInfo.instance               = m_instance;
 	allocatorInfo.flags                  = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+	allocatorInfo.pVulkanFunctions       = &vulkanFunctions;
 	vmaCreateAllocator(&allocatorInfo, &m_allocator);
-
-	// m_mainDeletionQueue.push_function([=]() { vmaDestroyAllocator(m_allocator); });
 }
 
 void VulkanEngine::InitCommands()
@@ -547,6 +582,9 @@ void VulkanEngine::InitImgui()
 	VK_CHECK(vkCreateDescriptorPool(m_device, &pool_info, nullptr, &imguiPool));
 
 	// 2: initialize imgui library
+	ImGui_ImplVulkan_LoadFunctions([](const char* function_name, void* vulkan_instance)
+	                               { return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(vulkan_instance)), function_name); },
+	                               &m_instance);
 
 	// this initializes the core structures of imgui
 	ImGui::CreateContext();
@@ -565,8 +603,16 @@ void VulkanEngine::InitImgui()
 	init_info.ImageCount                = 3;
 	init_info.UseDynamicRendering       = true;
 	init_info.ColorAttachmentFormat     = m_swapchainImageFormat;
-
-	init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+	init_info.MSAASamples               = VK_SAMPLE_COUNT_1_BIT;
+	init_info.Allocator                 = m_allocator->GetAllocationCallbacks();
+	init_info.CheckVkResultFn           = [](VkResult err)
+	{
+		if (err == 0)
+			return;
+		std::cout << "[vulkan] Error: VkResult = " << err << std::endl;
+		if (err < 0)
+			abort();
+	};
 
 	ImGui_ImplVulkan_Init(&init_info, VK_NULL_HANDLE);
 
