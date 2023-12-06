@@ -130,10 +130,6 @@ void vkutil::InitMeshPipeline()
 	VkShaderModule meshVertexShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mesh", ShaderStage::Vertex).c_str(), engine.m_device);
 	VkShaderModule meshFragShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("Mesh", ShaderStage::Fragment).c_str(), engine.m_device);
 
-	// build the pipeline layout that controls the inputs/outputs of the shader
-	// we are not using descriptor sets or other systems yet, so no need to use
-	// anything other than empty default
-
 	VkPushConstantRange matrixRange{};
 	matrixRange.offset     = 0;
 	matrixRange.size       = sizeof(GPUDrawPushConstants);
@@ -197,9 +193,57 @@ void vkutil::InitMeshPipeline()
 	    });
 }
 
+void vkutil::InitBindlessPipeline()
+{
+	VulkanEngine& engine                  = VulkanEngine::Get();
+	VkDescriptorSetLayout& bindlessLayout = engine.m_bindlessWriter.bindlessLayout;
+
+	VkShaderModule bindlessVertexShader = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("BasicBindless", ShaderStage::Vertex).c_str(), engine.m_device);
+	VkShaderModule bindlessFragShader   = vkutil::LoadShaderModule(ResourceManager::GetVulkanShaderPath("BasicBindless", ShaderStage::Fragment).c_str(), engine.m_device);
+
+	// build the pipeline layout that controls the inputs/outputs of the shader
+	// we are going to be using a bindingless texture array, so we dont need to
+	// specify any descriptors in the layout itself
+
+	VkPipelineLayoutCreateInfo layoutInfo = vkinit::PipelineLayoutCreateInfo();
+	layoutInfo.setLayoutCount             = 1;
+	layoutInfo.pSetLayouts                = &bindlessLayout;
+
+	VK_CHECK(vkCreatePipelineLayout(engine.m_device, &layoutInfo, nullptr, &engine.m_bindlessPipelineLayout));
+
+	// build the stage-create-info for both vertex and fragment stages. This lets
+	// the pipeline know the shader modules per stage and their entry points
+	vkutil::PipelineBuilder pipelineBuilder;
+	pipelineBuilder.SetShaders(bindlessVertexShader, bindlessFragShader);
+	pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+	pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
+	pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+	pipelineBuilder.SetMultisamplingNone();
+	pipelineBuilder.DisableBlending();
+	pipelineBuilder.EnableDepthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
+
+	// render format
+	pipelineBuilder.SetColorAttachmentFormat(engine.m_drawImage.imageFormat);
+	pipelineBuilder.SetDepthFormat(engine.m_depthImage.imageFormat);
+
+	pipelineBuilder.m_pipelineLayout = engine.m_bindlessPipelineLayout;
+
+	engine.m_bindlessPipeline = pipelineBuilder.BuildPipeline(engine.m_device);
+
+	vkDestroyShaderModule(engine.m_device, bindlessFragShader, nullptr);
+	vkDestroyShaderModule(engine.m_device, bindlessVertexShader, nullptr);
+
+	engine.AddToDeletionQueue(
+	    [&]()
+	    {
+		    vkDestroyPipelineLayout(engine.m_device, engine.m_bindlessPipelineLayout, nullptr);
+		    vkDestroyPipeline(engine.m_device, engine.m_bindlessPipeline, nullptr);
+	    });
+}
+
 void vkutil::PipelineBuilder::Clear()
 {
-	// clear all of the structs we need back to 0 with their correct stype
+	// clear all of th.m_gltfBindlessOpaque.layout;ith their correct stype
 
 	m_inputAssembly = { .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
 

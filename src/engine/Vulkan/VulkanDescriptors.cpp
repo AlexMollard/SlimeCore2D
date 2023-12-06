@@ -114,6 +114,25 @@ void DescriptorWriter::Build(VkDevice device, VkDescriptorSet set)
 	vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }
 
+uint32_t vkutil::GetPadSizeToMinAlignment(uint32_t originalSize)
+{
+	VulkanEngine& engine = VulkanEngine::Get();
+
+	VkPhysicalDeviceProperties properties;
+	vkGetPhysicalDeviceProperties(engine.m_chosenGPU, &properties);
+
+	auto minUniformBufferOffsetAlignment = static_cast<uint32_t>(properties.limits.minUniformBufferOffsetAlignment);
+
+	if (minUniformBufferOffsetAlignment > 0)
+	{
+		return (originalSize + minUniformBufferOffsetAlignment - 1) & ~(minUniformBufferOffsetAlignment - 1);
+	}
+	else
+	{
+		return originalSize;
+	}
+}
+
 void vkutil::InitDescriptors()
 {
 	VulkanEngine& engine = VulkanEngine::Get();
@@ -212,4 +231,235 @@ void vkutil::InitDescriptors()
 			    vkDestroyDescriptorPool(engine.m_device, engine.m_frames[i].m_frameDescriptors.pool, nullptr);
 		    });
 	}
+
+	// Setup the BindlessDescriptorWriter
+	engine.m_bindlessWriter.Build();
+	engine.AddToDeletionQueue([&]() { engine.m_bindlessWriter.Clear(); });
+
+	struct Camera
+	{
+		glm::mat4 viewProjection;
+		glm::mat4 view;
+		glm::mat4 projection;
+	};
+
+
+
+	BindlessParams params{ 256 };
+	params.addRange(Camera({}));
+	params.build(engine.m_device, engine.m_allocator, engine.m_bindlessWriter.bindlessPool);
 }
+
+void BindlessDescriptorWriter::Build()
+{
+	VulkanEngine& engine = VulkanEngine::Get();
+
+	std::array<VkDescriptorSetLayoutBinding, 3> bindings{};
+	std::array<VkDescriptorBindingFlags, 3> flags{};
+	std::array<VkDescriptorType, 3> types{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER };
+
+	for (uint32_t i = 0; i < 3; ++i)
+	{
+		bindings.at(i).binding        = i;
+		bindings.at(i).descriptorType = types.at(i);
+		// Due to partially bound bit, this value
+		// is used as an upper bound, which we have set to
+		// 1000 to keep it simple for the sake of this post
+		bindings.at(i).descriptorCount = 1000;
+		bindings.at(i).stageFlags      = VK_SHADER_STAGE_ALL;
+		flags.at(i)                    = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+	}
+
+	VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlags{};
+	bindingFlags.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+	bindingFlags.pNext         = nullptr;
+	bindingFlags.pBindingFlags = flags.data();
+	bindingFlags.bindingCount  = 3;
+
+	VkDescriptorSetLayoutCreateInfo createInfo{};
+	createInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	createInfo.bindingCount = 3;
+	createInfo.pBindings    = bindings.data();
+	createInfo.flags        = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+	createInfo.pNext        = &bindingFlags;
+
+	// Create layout
+	vkCreateDescriptorSetLayout(engine.m_device, &createInfo, nullptr, &bindlessLayout);
+
+	// Create pool
+	VkDescriptorPoolSize poolSize{};
+	poolSize.type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSize.descriptorCount = 1000;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.maxSets       = 1000;
+	poolInfo.poolSizeCount = 1;
+	poolInfo.pPoolSizes    = &poolSize;
+	poolInfo.flags         = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+
+	vkCreateDescriptorPool(engine.m_device, &poolInfo, nullptr, &bindlessPool);
+
+	// Allocate descriptor set
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool     = bindlessPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts        = &bindlessLayout;
+
+	vkAllocateDescriptorSets(engine.m_device, &allocInfo, &bindlessDescriptor);
+}
+
+vkutil::TextureHandle BindlessDescriptorWriter::StoreTexture(VkImageView imageView, VkSampler sampler)
+{
+	size_t newHandle = textures.size();
+	textures.push_back(imageView);
+
+	VkDescriptorImageInfo imageInfo{};
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo.imageView   = imageView;
+	imageInfo.sampler     = sampler;
+
+	VkWriteDescriptorSet write{};
+	write.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	write.dstBinding      = TextureBinding;
+	write.dstSet          = bindlessDescriptor;
+	write.descriptorCount = 1;
+	write.dstArrayElement = newHandle;
+	write.pImageInfo      = &imageInfo;
+
+	vkUpdateDescriptorSets(VulkanEngine::Get().m_device, 1, &write, 0, nullptr);
+	return static_cast<TextureHandle>(newHandle);
+}
+
+vkutil::BufferHandle BindlessDescriptorWriter::StoreBuffer(VkBuffer buffer, VkBufferUsageFlagBits usage)
+{
+	size_t newHandle = buffers.size();
+	buffers.push_back(buffer);
+
+	std::array<VkWriteDescriptorSet, 2> writes{};
+	for (auto& write : writes)
+	{
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = buffer;
+		bufferInfo.offset = 0;
+		bufferInfo.range  = VK_WHOLE_SIZE;
+
+		write.dstSet = bindlessDescriptor;
+		// Write one buffer that is being added
+		write.descriptorCount = 1;
+		// The array element that we are going to write to
+		// is the index, which we refer to as our handles
+		write.dstArrayElement = newHandle;
+		write.pBufferInfo     = &bufferInfo;
+	}
+
+	size_t index = 0;
+	if ((usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT) == VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
+	{
+		writes.at(index).dstBinding     = UniformBinding;
+		writes.at(index).descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		index++;
+	}
+
+	if ((usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) == VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+	{
+		writes.at(index).dstBinding     = StorageBinding;
+		writes.at(index).descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	}
+
+	vkUpdateDescriptorSets(VulkanEngine::Get().m_device, index, writes.data(), 0, nullptr);
+
+	return static_cast<BufferHandle>(newHandle);
+}
+
+void BindlessDescriptorWriter::Clear()
+{
+	textures.clear();
+	buffers.clear();
+
+	VulkanEngine& engine = VulkanEngine::Get();
+	vkDestroyDescriptorSetLayout(engine.m_device, bindlessLayout, nullptr);
+	vkDestroyDescriptorPool(engine.m_device, bindlessPool, nullptr);
+}
+
+VkDescriptorSetLayout BindlessParams::getDescriptorSetLayout()
+{
+	return m_layout;
+}
+
+VkDescriptorSet BindlessParams::getDescriptorSet()
+{
+	return m_descriptorSet;
+}
+
+void BindlessParams::build(VkDevice device, VmaAllocator allocator, VkDescriptorPool descriptorPool)
+{
+	VulkanEngine& engine = VulkanEngine::Get();
+
+	size_t allocSize = 0;
+	for (auto& range : m_ranges)
+	{
+		allocSize += range.size;
+	}
+	VkBufferUsageFlags usage   = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	VmaMemoryUsage memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+	const char* name           = "BindlessParams";
+	AllocatedBuffer buffer     = engine.CreateBuffer(allocSize, usage, memoryUsage, name);
+	m_buffer 				 = buffer.buffer;
+
+	// Copy ranges to buffer
+	uint8_t* data = nullptr;
+	vmaMapMemory(allocator, buffer.allocation, (void**)&data);
+	for (const auto& range : m_ranges)
+	{
+		memcpy(data + range.offset, range.data, range.size);
+	}
+	vmaUnmapMemory(allocator, buffer.allocation);
+
+	// Create layout for descriptor set
+	VkDescriptorSetLayoutBinding binding{};
+	binding.binding         = 0;
+	binding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	binding.descriptorCount = 1;
+	binding.stageFlags      = VK_SHADER_STAGE_ALL;
+
+	VkDescriptorSetLayoutCreateInfo createInfo{};
+	createInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	createInfo.bindingCount = 1;
+	createInfo.pBindings    = &binding;
+	vkCreateDescriptorSetLayout(device, &createInfo, nullptr, &m_layout);
+
+	// Get maximum size of a single range
+	uint32_t maxRangeSize = 0;
+	for (auto& range : m_ranges)
+	{
+		maxRangeSize = std::max(range.size, maxRangeSize);
+	}
+
+	// Create descriptor
+	VkDescriptorSetAllocateInfo allocateInfo{};
+	allocateInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocateInfo.pNext              = nullptr;
+	allocateInfo.descriptorPool     = descriptorPool;
+	allocateInfo.pSetLayouts        = &m_layout;
+	allocateInfo.descriptorSetCount = 1;
+	vkAllocateDescriptorSets(device, &allocateInfo, &m_descriptorSet);
+
+	VkDescriptorBufferInfo bufferInfo{};
+	bufferInfo.buffer = m_buffer;
+	bufferInfo.offset = 0;
+	bufferInfo.range  = maxRangeSize;
+
+	VkWriteDescriptorSet write{};
+	write.sType		   = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	write.dstBinding      = 0;
+	write.dstSet          = m_descriptorSet;
+	write.descriptorCount = 1;
+	write.dstArrayElement = 0;
+	write.pBufferInfo     = &bufferInfo;
+	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+}
+
+BindlessParams::BindlessParams(uint32_t minAlignment) : m_minAlignment(minAlignment) {}

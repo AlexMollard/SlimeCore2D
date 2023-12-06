@@ -100,11 +100,16 @@ public:
 	vkutil::DescriptorAllocator globalDescriptorAllocator;
 	VkDescriptorSet m_mainDescriptorSet;
 	VkDescriptorSetLayout m_mainDescriptorLayout;
+	// Bindless descriptors
+	vkutil::BindlessDescriptorWriter m_bindlessWriter;
+
 
 	// Pipelines and pipeline layouts
 	VkPipelineLayout m_gradientPipelineLayout;
 	VkPipelineLayout m_meshPipelineLayout;
+	VkPipelineLayout m_bindlessPipelineLayout;
 	VkPipeline m_meshPipeline;
+	VkPipeline m_bindlessPipeline;
 
 	// Default GLTF descriptor
 	VkDescriptorSet m_defaultGLTFdescriptor;

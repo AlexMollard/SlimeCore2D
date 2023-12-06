@@ -1,11 +1,11 @@
 #include "VulkanEngine.h"
 
 #define VMA_IMPLEMENTATION
-// #define VMA_DEBUG_INITIALIZE_ALLOCATIONS  1
-// #define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
-// #define VMA_DEBUG_LOG(format, ...) \
-// 	printf(format, __VA_ARGS__);                                                                                                                                              \
-// 	printf("\n")
+#define VMA_DEBUG_INITIALIZE_ALLOCATIONS  1
+#define VMA_DEBUG_ALWAYS_DEDICATED_MEMORY 1
+#define VMA_DEBUG_LOG(format, ...) \
+	printf(format, __VA_ARGS__);                                                                                                                                              \
+	printf("\n")
 
 #include "Pipeline.h"
 #include "VkBootstrap.h"
@@ -238,8 +238,8 @@ void VulkanEngine::InitVulkan()
 		ConsoleLog::log(pCallbackData->pMessage, ConsoleColor::White);
 		std::cout << std::endl;
 
-		// if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-		//	DebugBreak();
+		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+			DebugBreak();
 
 		return VK_FALSE;
 	};
@@ -500,6 +500,8 @@ void VulkanEngine::InitPipelines()
 
 	// Graphics pipelines
 	vkutil::InitMeshPipeline();
+
+	vkutil::InitBindlessPipeline();
 
 	InitDefaultData();
 }

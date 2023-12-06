@@ -44,4 +44,5 @@ public:
 
 void InitBackgroundPipelines();
 void InitMeshPipeline();
+void InitBindlessPipeline();
 } // namespace vkutil
