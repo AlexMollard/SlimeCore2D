@@ -10,6 +10,9 @@ Game2D::Game2D()
 
 	GameScene* gameScene = new GameScene();
 	m_stateMachine.ChangeState(gameScene, this);
+
+	m_manager = new FMODManager();
+
 }
 
 Game2D::~Game2D()
@@ -23,7 +26,7 @@ void Game2D::Update(float deltaTime)
 	m_camera.Update(deltaTime);
 	m_physicsScene.update(deltaTime);
 	m_objectManager.UpdateFrames(deltaTime);
-
+	m_manager->Update();
 	m_stateMachine.Update(this, deltaTime);
 }
 
