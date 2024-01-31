@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FMODManager.h" />
     <ClInclude Include="game\Bullet.h" />
     <ClInclude Include="engine\ConsoleLog.h" />
     <ClInclude Include="engine\BatchRenderer.h" />
@@ -64,6 +65,7 @@
     <ClCompile Include="engine\Window.cpp" />
     <ClCompile Include="engine\RenderTarget.cpp" />
     <ClCompile Include="engine\ResourceManager.cpp" />
+    <ClCompile Include="FMODManager.cpp" />
     <ClCompile Include="game\GameScene.cpp" />
     <ClCompile Include="game\Cloud.cpp" />
     <ClCompile Include="game\CloudManager.cpp" />
@@ -131,7 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)external\stb</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\fmod\studio\include;$(SolutionDir)src;$(SolutionDir)dependencies\glew\include;$(SolutionDir)dependencies\sdl\include;$(SolutionDir)external\glm;$(SolutionDir)dependencies\fmod\core\include;$(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -149,8 +151,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)Dependencies\sdl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glew;$(SolutionDir)dependencies\fmod\studio;$(SolutionDir)dependencies\fmod\core;$(SolutionDir)Dependencies\sdl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_ttf.lib;SDL3_image.lib;glew32s.lib;opengl32.lib;fmodstudio_vc.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>

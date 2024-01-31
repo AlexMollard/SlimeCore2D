@@ -5,6 +5,7 @@
 #include "engine/PhysicsScene.h"
 #include "engine/ObjectManager.h"
 #include "GameScene.h"
+#include "FMODManager.h"
 
 class Game2D
 {
@@ -16,7 +17,7 @@ public:
 	void Draw();
 
 	float GetTime() const { return m_time; }
-	
+
 	Camera* GetCamera() { return &m_camera; }
 	Camera* GetScreenCamera() { return &m_screenCamera; }
 
@@ -35,4 +36,6 @@ private:
 	Renderer2D m_renderer = Renderer2D(&m_camera, &m_screenCamera);
 	PhysicsScene m_physicsScene = PhysicsScene();
 	ObjectManager m_objectManager;
+
+	FMODManager* m_manager = nullptr;
 };
