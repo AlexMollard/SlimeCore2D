@@ -1,5 +1,6 @@
 #include "QuadBatchRenderer.h"
 #include "engine/MemoryDebugging.h"
+#include "engine/ConsoleLog.h"
 
 #include "Constants.h"
 
@@ -33,6 +34,11 @@ struct RendererData
 
 	std::array<uint32_t, MAX_TEXTURE_COUNT> textureSlots = {};
 	uint32_t textureSlotIndex                            = 1;
+
+	// Simple runtime stats for profiling
+	uint32_t statsDrawCalls = 0;
+	uint32_t statsFlushes = 0;
+	uint32_t statsQuadCount = 0;
 };
 
 QuadBatchRenderer::QuadBatchRenderer()
@@ -104,21 +110,7 @@ QuadBatchRenderer::~QuadBatchRenderer()
 	BatchRenderer::~BatchRenderer();
 }
 
-void QuadBatchRenderer::SetSpriteUvs(glm::vec4 uvRect)
-{
-	m_uvs.clear();
 
-	// Calculate UV coordinates based on the uvRect
-	auto uv_down_left  = glm::vec2(uvRect.x, uvRect.y);
-	auto uv_down_right = glm::vec2(uvRect.x + uvRect.z, uvRect.y);
-	auto uv_up_right   = glm::vec2(uvRect.x + uvRect.z, uvRect.y + uvRect.w);
-	auto uv_up_left    = glm::vec2(uvRect.x, uvRect.y + uvRect.w);
-
-	m_uvs.push_back(uv_down_left);
-	m_uvs.push_back(uv_down_right);
-	m_uvs.push_back(uv_up_right);
-	m_uvs.push_back(uv_up_left);
-}
 
 void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 {
@@ -139,7 +131,6 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 			textureIndex = AddTextureSlot(batchData.texture);
 		}
 	}
-	SetSpriteUvs(batchData.uvRect);
 
 	uint32_t maskIndex = 0;
 	if (batchData.maskTexture)
@@ -150,6 +141,13 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 			maskIndex = AddTextureSlot(batchData.maskTexture);
 		}
 	}
+
+	// Inline UV calculation to avoid per-quad allocations
+	glm::vec2 uvs[4];
+	uvs[0] = glm::vec2(batchData.uvRect.x, batchData.uvRect.y);
+	uvs[1] = glm::vec2(batchData.uvRect.x + batchData.uvRect.z, batchData.uvRect.y);
+	uvs[2] = glm::vec2(batchData.uvRect.x + batchData.uvRect.z, batchData.uvRect.y + batchData.uvRect.w);
+	uvs[3] = glm::vec2(batchData.uvRect.x, batchData.uvRect.y + batchData.uvRect.w);
 
 	float z                = batchData.position.z;
 	glm::vec2 halfSize     = glm::vec2(batchData.size.x / 2.0f, batchData.size.y / 2.0f);
@@ -179,7 +177,7 @@ void QuadBatchRenderer::DrawQuad(const QuadBatchData& batchData)
 	{
 		data->quadBufferPtr->position  = positions[i];
 		data->quadBufferPtr->color     = batchData.color;
-		data->quadBufferPtr->texCoords = m_uvs[i];
+		data->quadBufferPtr->texCoords = uvs[i];
 		data->quadBufferPtr->texIndex  = tIndex;
 		data->quadBufferPtr->maskIndex = mIndex;
 		data->quadBufferPtr++;
@@ -210,8 +208,20 @@ void QuadBatchRenderer::Render(const glm::vec2& camPos, float distanceFromCenter
 		if (!object->GetRender())
 			continue;
 
-		if (m_occulsionCulling && glm::distance(camPos, glm::vec2(object->GetPos())) > distanceFromCenter)
-			continue;
+		// AABB-based culling (faster and better for tiles than radial distance)
+		if (m_occulsionCulling)
+		{
+			auto objPos2 = glm::vec2(object->GetPos());
+			auto size = object->GetScale();
+			auto anchorOffset = glm::vec2(object->GetAnchorPoint().x * size.x, object->GetAnchorPoint().y * size.y);
+			auto min = objPos2 - anchorOffset;
+			auto max = min + size;
+			float half = distanceFromCenter;
+			auto viewMin = camPos - glm::vec2(half, half);
+			auto viewMax = camPos + glm::vec2(half, half);
+			if (max.x < viewMin.x || min.x > viewMax.x || max.y < viewMin.y || min.y > viewMax.y)
+				continue;
+		}
 
 		QuadBatchData batchData = { object->GetPos(),          object->GetAnchorPoint(), object->GetScale(),      { object->GetColor(), 1.0f }, object->GetUVRect(),
 			                        object->GetRotation(),     object->GetTexture(),     object->GetMaskTexture(),    object->GetFlipPolicy()};
@@ -250,6 +260,11 @@ void QuadBatchRenderer::Flush()
 
 	glBindVertexArray(data->quadVA);
 	glDrawElements(GL_TRIANGLES, data->indexCount, GL_UNSIGNED_INT, nullptr);
+
+	// Update simple stats for benchmarking
+	data->statsDrawCalls += 1;
+	data->statsFlushes += 1;
+	data->statsQuadCount += (data->indexCount / 6);
 
 	data->indexCount       = 0;
 	data->textureSlotIndex = 1;
@@ -308,6 +323,20 @@ uint32_t QuadBatchRenderer::AddTextureSlot(GLuint textureID)
 
 	data->textureSlots[data->textureSlotIndex] = textureID;
 	return data->textureSlotIndex++;
+}
+
+void QuadBatchRenderer::ResetStats()
+{
+	RendererData* data = GetData();
+	data->statsDrawCalls = 0;
+	data->statsFlushes = 0;
+	data->statsQuadCount = 0;
+}
+
+void QuadBatchRenderer::PrintStats() const
+{
+	RendererData* data = const_cast<QuadBatchRenderer*>(this)->GetData();
+	SLIME_INFO("[QuadBatchRenderer] drawCalls={} flushes={} quads={}", data->statsDrawCalls, data->statsFlushes, data->statsQuadCount);
 }
 
 float QuadBatchRenderer::GetZOffset() const

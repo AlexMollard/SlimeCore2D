@@ -2,8 +2,7 @@
 #include "engine/MemoryDebugging.h"
 
 #include "Renderer2D.h"
-#include <iostream>
-#include <sstream>
+#include "engine/ConsoleLog.h"
 #include <tuple>
 #include <unordered_map>
 
@@ -11,15 +10,15 @@ void PhysicsScene::addActor(RigidBody* actor, std::string name, bool isKinematic
 {
 	if (std::find(m_actors.begin(), m_actors.end(), actor) != m_actors.end())
 	{
-		std::cout << "Actor already exists in physics scene" << std::endl;
+		SLIME_WARN("Actor already exists in physics scene");
 		return;
-	}
+	} 
 
 	actor->name = name;
 	actor->SetKinematic(isKinematic);
 
 	if (isKinematic)
-		actor->SetMass(std::numeric_limits<float>::max());
+		actor->SetMass((std::numeric_limits<float>::max)());
 	else
 		m_dynamicActors.push_back(actor);
 

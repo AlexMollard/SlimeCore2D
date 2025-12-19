@@ -26,6 +26,10 @@ public:
 	uint32_t AddTextureSlot(Texture* texture) override;
 	uint32_t AddTextureSlot(GLuint textureID) override;
 
+	// Debug / profiling helpers
+	void ResetStats();
+	void PrintStats() const;
+
 	float GetZOffset() const;
 	void SetZOffset(float val);
 
@@ -33,15 +37,12 @@ public:
 	void SetOcclusionCulling(bool val);
 private:
 	void DrawQuad(const QuadBatchData& batchData);
-	void SetSpriteUvs(glm::vec4 uvRect);
 
 	void ShutDown() override;
 
 	void BeginBatch() override;
 	void EndBatch() override;
 	void Flush() override;
-
-	std::vector<glm::vec2> m_uvs;
 
 	float m_zOffset = 0.0f;
 	bool m_occulsionCulling = true;

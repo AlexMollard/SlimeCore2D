@@ -5,8 +5,13 @@
 #include <vector>
 
 #ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #endif
+
+#include <format>
 
 class CustomStreamBuffer : public std::streambuf
 {
@@ -36,7 +41,6 @@ public:
 private:
 	CustomStreamBuffer buffer;
 };
-
 
 enum ConsoleColor
 {
@@ -99,57 +103,167 @@ public:
 	}
 
 	// Overloaded function to log a formatted message with a specified color
+	// Compile-time checked formatting (preferred when using string literals)
 	template<typename... Args>
-	static void logFormatted(ConsoleColor color, const std::string& format, Args... args)
+	static void logFormatted(ConsoleColor color, std::format_string<Args...> fmt, Args&&... args)
 	{
 		set(color);
-		std::cout << std::format(format, args...) << std::endl;
+		std::cout << std::format(fmt, std::forward<Args>(args)...) << std::endl;
+		reset();
+	}
+
+	// Runtime-formattable fallback when the format string is not a compile-time literal
+	template<typename... Args>
+	static void logFormatted(ConsoleColor color, std::string_view fmt, Args&&... args)
+	{
+		set(color);
+		try
+		{
+			std::cout << std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...)) << std::endl;
+		}
+		catch (const std::format_error& e)
+		{
+			// Fallback: print the raw format and the error
+			std::cout << "Format error: " << e.what() << " - format: " << std::string(fmt) << std::endl;
+		}
 		reset();
 	}
 
 	// Function for debugging with file and line information (INFO)
-	static void internalInfo(const std::string& message, const char* file, int line)
+	template<typename... Args>
+	static void internalInfo(const char* file, int line, std::format_string<Args...> fmt, Args&&... args)
 	{
 		std::cout << std::format("{}({}) : ", file, line);
 		ConsoleLog::set(ConsoleColor::Cyan);
 		std::cout << "INFO";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" - {}", message) << std::endl;
+		std::cout << " - " << std::format(fmt, std::forward<Args>(args)...) << std::endl;
+	}
+
+	// Runtime fallback when format string is not a literal
+	template<typename... Args>
+	static void internalInfo(const char* file, int line, std::string_view fmt, Args&&... args)
+	{
+		std::cout << std::format("{}({}) : ", file, line);
+		ConsoleLog::set(ConsoleColor::Cyan);
+		std::cout << "INFO";
+		ConsoleLog::reset();
+
+		try
+		{
+			std::cout << " - " << std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...)) << std::endl;
+		}
+		catch (const std::format_error& e)
+		{
+			std::cout << "Format error: " << e.what() << " - format: " << std::string(fmt) << std::endl;
+		}
 	}
 
 	// Function for debugging with file and line information (WARN)
-	static void internalWarn(const std::string& message, const char* file, int line)
+	template<typename... Args>
+	static void internalWarn(const char* file, int line, std::format_string<Args...> fmt, Args&&... args)
 	{
 		std::cout << std::format("{}({}) : ", file, line);
 		ConsoleLog::set(ConsoleColor::Yellow);
 		std::cout << "WARN";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" - {}", message) << std::endl;
+		std::cout << " - " << std::format(fmt, std::forward<Args>(args)...) << std::endl;
+	}
+
+	// Runtime fallback when format string is not a literal
+	template<typename... Args>
+	static void internalWarn(const char* file, int line, std::string_view fmt, Args&&... args)
+	{
+		std::cout << std::format("{}({}) : ", file, line);
+		ConsoleLog::set(ConsoleColor::Yellow);
+		std::cout << "WARN";
+		ConsoleLog::reset();
+
+		try
+		{
+			std::cout << " - " << std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...)) << std::endl;
+		}
+		catch (const std::format_error& e)
+		{
+			std::cout << "Format error: " << e.what() << " - format: " << std::string(fmt) << std::endl;
+		}
 	}
 
 	// Function for debugging with file and line information (ERROR)
-	static void internalError(const std::string& message, const char* file, int line)
+	template<typename... Args>
+	static void internalError(const char* file, int line, std::format_string<Args...> fmt, Args&&... args)
 	{
 		std::cout << std::format("{}({}) : ", file, line);
 		ConsoleLog::set(ConsoleColor::Red);
 		std::cout << "ERROR";
 		ConsoleLog::reset();
 
-		std::cout << std::format(" - {}", message) << std::endl;
+		std::cout << " - " << std::format(fmt, std::forward<Args>(args)...) << std::endl;
+	}
+
+	// Runtime fallback when format string is not a literal
+	template<typename... Args>
+	static void internalError(const char* file, int line, std::string_view fmt, Args&&... args)
+	{
+		std::cout << std::format("{}({}) : ", file, line);
+		ConsoleLog::set(ConsoleColor::Red);
+		std::cout << "ERROR";
+		ConsoleLog::reset();
+
+		try
+		{
+			std::cout << " - " << std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...)) << std::endl;
+		}
+		catch (const std::format_error& e)
+		{
+			std::cout << "Format error: " << e.what() << " - format: " << std::string(fmt) << std::endl;
+		}
+	}
+
+	// Debug macro for convenience
+	// Raw logging helpers: accept a pre-formatted message to avoid overload ambiguity
+	static void internalInfoRaw(const char* file, int line, const std::string& message)
+	{
+		std::cout << std::format("{}({}) : ", file, line);
+		ConsoleLog::set(ConsoleColor::Cyan);
+		std::cout << "INFO";
+		ConsoleLog::reset();
+
+		std::cout << " - " << message << std::endl;
+	}
+
+	static void internalWarnRaw(const char* file, int line, const std::string& message)
+	{
+		std::cout << std::format("{}({}) : ", file, line);
+		ConsoleLog::set(ConsoleColor::Yellow);
+		std::cout << "WARN";
+		ConsoleLog::reset();
+
+		std::cout << " - " << message << std::endl;
+	}
+
+	static void internalErrorRaw(const char* file, int line, const std::string& message)
+	{
+		std::cout << std::format("{}({}) : ", file, line);
+		ConsoleLog::set(ConsoleColor::Red);
+		std::cout << "ERROR";
+		ConsoleLog::reset();
+
+		std::cout << " - " << message << std::endl;
 	}
 };
 
-// Debug macro for convenience
-#define SLIME_INFO(...) ConsoleLog::internalInfo(std::format(__VA_ARGS__), __FILE__, __LINE__)
-#define SLIME_WARN(...) ConsoleLog::internalWarn(std::format(__VA_ARGS__), __FILE__, __LINE__)
+// Convenience macros that format using std::format (compile-time checked for literals)
+#define SLIME_INFO(...) ConsoleLog::internalInfoRaw(__FILE__, __LINE__, std::format(__VA_ARGS__))
+#define SLIME_WARN(...) ConsoleLog::internalWarnRaw(__FILE__, __LINE__, std::format(__VA_ARGS__))
 
 #define SLIME_ERROR(...)                                                                                                                                                      \
 	do                                                                                                                                                                        \
 	{                                                                                                                                                                         \
 		std::string message = std::format(__VA_ARGS__);                                                                                                                       \
-		ConsoleLog::internalError(message, __FILE__, __LINE__);                                                                                                               \
+		ConsoleLog::internalErrorRaw(__FILE__, __LINE__, message);                                                                                                            \
 		assert(false && message.c_str());                                                                                                                                     \
 	}                                                                                                                                                                         \
 	while (false)

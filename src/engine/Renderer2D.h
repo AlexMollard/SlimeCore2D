@@ -7,6 +7,8 @@
 #include <array>
 #include <glm.hpp>
 #include <iostream>
+#include <sstream>
+#include "engine/ConsoleLog.h"
 #include <map>
 #include <memory>
 #include <string>
@@ -39,10 +41,11 @@ std::string ShaderTypeToString(ShaderType type);
 template<typename... T>
 static void PrintIncomingVariables(ShaderType shaderType, T&&... args)
 {
-	std::cout << ShaderTypeToString(shaderType) << ": " << std::endl;
-	((std::cout << "Type T: " << typeid(T).name()), ...);
-	std::cout << "." << std::endl;
-}
+	std::ostringstream oss;
+	oss << ShaderTypeToString(shaderType) << ": ";
+	((oss << "Type T: " << typeid(T).name() << " "), ...);
+	ConsoleLog::log(oss.str(), ConsoleColor::Cyan);
+} 
 #else
 template<typename... T>
 static void PrintIncomingVariables(ShaderType shaderType, T&&... args){};

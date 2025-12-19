@@ -120,10 +120,10 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
 		char* errorMessage = (char*)alloca(length * sizeof(char));
 		glGetShaderInfoLog(id, length, &length, errorMessage);
-		std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "Vertex" : "fragment") << "Shader" << std::endl;
-		std::cout << errorMessage << std::endl;
+		SLIME_INFO("Failed to compile {} Shader", (type == GL_VERTEX_SHADER ? "Vertex" : "fragment"));
+		SLIME_INFO("{}", errorMessage);
 		glDeleteShader(id);
-		return 0;
+		return 0; 
 	}
 
 	return id;
@@ -139,7 +139,7 @@ void Shader::CheckCompileErrors(GLuint shader, std::string type)
 		if (!success)
 		{
 			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-			std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+			SLIME_ERROR("ERROR::SHADER_COMPILATION_ERROR of type: {}\n{}\n -- --------------------------------------------------- -- ", type, infoLog);
 		}
 	}
 	else
@@ -148,9 +148,9 @@ void Shader::CheckCompileErrors(GLuint shader, std::string type)
 		if (!success)
 		{
 			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-			std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+			SLIME_ERROR("ERROR::PROGRAM_LINKING_ERROR of type: {}\n{}\n -- --------------------------------------------------- -- ", type, infoLog);
 		}
-	}
+	} 
 }
 
 unsigned int Shader::GetID()

@@ -131,7 +131,7 @@ void Texture::load(std::string dir)
 	}
 	else
 	{
-		printf("Failed to load texture: %c\n", dir.c_str());
+		SLIME_WARN("Failed to load texture: {}", dir);
 	}
 	stbi_image_free(data);
 }

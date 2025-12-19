@@ -10,8 +10,8 @@ Window::Window(int width, int height, const char* name)
 
 	if (!Window_intit(width, height, name))
 	{
-		std::cout << "Failed to load window" << std::endl;
-	}
+		SLIME_ERROR("Failed to load window");
+	} 
 }
 
 Window::~Window()
@@ -76,22 +76,23 @@ int Window::Window_intit(int width, int height, const char* name)
 	}
 
 	// Output more verbose info
-	ConsoleLog::log("\nOpenGL Info:", ConsoleColor::Yellow);
-	std::cout << "  Version: " << glGetString(GL_VERSION) << std::endl;
-	std::cout << "  Vendor: " << glGetString(GL_VENDOR) << std::endl;
-	std::cout << "  Renderer: " << glGetString(GL_RENDERER) << std::endl;
-	std::cout << "  Shading Language Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+	SLIME_INFO("\nOpenGL Info:");
+	SLIME_INFO("  Version: {}", (const char*)glGetString(GL_VERSION));
+	SLIME_INFO("  Vendor: {}", (const char*)glGetString(GL_VENDOR));
+	SLIME_INFO("  Renderer: {}", (const char*)glGetString(GL_RENDERER));
+	SLIME_INFO("  Shading Language Version: {}", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	// Output more info about the GPU and its abilities
 	ConsoleLog::log("\nGPU Info:", ConsoleColor::Red);
 
 	int nrAttributes;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
-	std::cout << "  Max nr of vertex attributes supported: " << nrAttributes << std::endl;
+	SLIME_INFO("  Max nr of vertex attributes supported: {}", nrAttributes);
 
 	int nrTextureUnits;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &nrTextureUnits);
-	std::cout << "  Max nr of texture units supported: " << nrTextureUnits << "\n" << std::endl;
+	SLIME_INFO("  Max nr of texture units supported: {}", nrTextureUnits);
+
 
 	return 1;
 }

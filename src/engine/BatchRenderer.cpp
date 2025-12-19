@@ -1,7 +1,7 @@
 #include "BatchRenderer.h"
 #include "engine/MemoryDebugging.h"
+#include "engine/ConsoleLog.h"
 
-#include <iostream>
 #include "engine/GameObject.h"
 
 BatchRenderer::~BatchRenderer()
@@ -28,9 +28,9 @@ void BatchRenderer::AddObject(GameObject* newObject)
 
 	if (it != pool.end())
 	{
-		std::cout << "GameObject already in Renderer: " << &it << '\n';
+		SLIME_WARN("GameObject already in Renderer: {}", (void*)*it);
 		return;
-	}
+	} 
 
 	newObject->SetID(pool.size());
 
