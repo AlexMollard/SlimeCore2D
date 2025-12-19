@@ -1,5 +1,6 @@
 #include "FMODManager.h"
 
+#if ENABLE_FMOD
 FMODManager::FMODManager()
 {
 	result = FMOD::Studio::System::create(&system);
@@ -36,15 +37,24 @@ FMODManager::FMODManager()
 
 FMODManager::~FMODManager()
 {
-	musicBank->unload();
-	masterStringsBank->unload();
-	masterBank->unload();
+	if (musicBank)
+		musicBank->unload();
+	if (masterStringsBank)
+		masterStringsBank->unload();
+	if (masterBank)
+		masterBank->unload();
 
-	system->release();
+	if (system)
+		system->release();
 }
 
 void FMODManager::Update()
 {
-	if (system->isValid())
+	if (system && system->isValid())
 		system->update();
 }
+#else
+FMODManager::FMODManager() {}
+FMODManager::~FMODManager() {}
+void FMODManager::Update() {}
+#endif

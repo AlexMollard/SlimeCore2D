@@ -1,9 +1,8 @@
-
 #include "MapGenerator.h"
 #include "engine/MemoryDebugging.h"
 
 #include "gtc/noise.hpp"
-#include <__msvc_chrono.hpp>
+#include <chrono>
 #include <iostream>
 #include <random>
 #include <time.h>

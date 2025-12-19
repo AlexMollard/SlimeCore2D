@@ -1,7 +1,11 @@
 #pragma once
 
+#include "Config.h"
+
+#if ENABLE_FMOD
 #include "fmod_studio.hpp"
 #include "fmod.hpp"
+#endif
 
 class FMODManager
 {
@@ -12,10 +16,14 @@ public:
 	void Update();
 
 protected:
+#if ENABLE_FMOD
 	FMOD_RESULT ERR_CHECK(FMOD_RESULT func);
+#endif
 
 private:
 	void* extraDriverData = nullptr;
+
+#if ENABLE_FMOD
 	FMOD::Studio::System* system = nullptr;
 	FMOD::System* coreSystem = nullptr;
 
@@ -27,4 +35,5 @@ private:
 	FMOD::Studio::EventInstance* musicInst = nullptr;
 
 	FMOD_RESULT result = FMOD_OK;
+#endif
 };
